@@ -56,7 +56,7 @@ Both include the gradient hexagon mark plus the "cognizant moment" wordmark, loc
 <img src="brand/logos/Main_logo_reversed.svg" alt="Cognizant Moment" style="height:2rem;width:auto">
 ```
 
-> Paths are repo-root-relative. From a file in `/prototypes`, prefix with `../` (e.g. `../brand/logos/Main_logo.svg`). Keep the `alt` text as the full name **Cognizant Moment**.
+> Paths are repo-root-relative. From a case-study file in `/projects/{project-name}/`, prefix with `../../` (e.g. `../../brand/logos/Main_logo.svg`). Keep the `alt` text as the full name **Cognizant Moment**.
 
 ### Positioning
 
@@ -278,7 +278,7 @@ Components use the triangle arrows in [brand/icons/](brand/icons/): `arrow-right
 .icon-arrow--up   { -webkit-mask-image: url('brand/icons/arrow-up.svg');   mask-image: url('brand/icons/arrow-up.svg'); }
 ```
 
-> Paths are repo-root-relative. From a file in `/prototypes`, prefix with `../` (e.g. `../brand/icons/arrow-right.svg`).
+> Paths are repo-root-relative. From a case-study file in `/projects/{project-name}/`, prefix with `../../` (e.g. `../../brand/icons/arrow-right.svg`).
 
 ---
 
@@ -524,7 +524,7 @@ The design system is implemented as **linkable stylesheets in [brand/css/](brand
 
 - One `<link>` pulls the whole system — it `@import`s tokens → base → components → utilities in order.
 - The `<script>` (optional but recommended) makes tabs, accordions, and `data-cm-copy` interactive.
-- **Paths self-resolve:** fonts and icon masks are referenced relative to the CSS files, so the system works wherever your HTML lives — you only ever fix the one `href`. From a subfolder like `/prototypes`, use `../brand/css/cognizant-moment.css`.
+- **Paths self-resolve:** fonts and icon masks are referenced relative to the CSS files, so the system works wherever your HTML lives — you only ever fix the one `href`. From a case-study folder like `/projects/{project-name}/`, use `../../brand/css/cognizant-moment.css`.
 
 ### Files
 

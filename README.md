@@ -19,7 +19,7 @@ Anyone on the team can pull the latest state, make changes, and push updates. An
 | `DESIGN.md` | Design system reference for the product — tokens, components, patterns, principles |
 | `CLAUDE.md` | Project context and instructions for AI agents working in this repo |
 | `/brand` | The implemented design system — CSS, JS, fonts, icons, logos, plus a live `design-system.html` showcase |
-| `/prototypes` | HTML prototypes showcasing design work, versioned as they evolve |
+| `/projects/{project-name}/` | Each case study as a self-contained folder — `index.html` + its own `assets/` — versioned as they evolve |
 
 _Add more as the process grows: `/research`, `/synthesis`, `/assets`, etc._
 
