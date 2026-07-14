@@ -1,0 +1,76 @@
+/* ============================================================
+   Cognizant Moment — Utilities
+   Layout + content helpers for assembling case studies quickly.
+   All classes are prefixed or scoped to avoid clashing with your
+   own markup.  Requires tokens.css.
+   ============================================================ */
+
+/* ---- Layout ---- */
+.cm-container { width: 100%; max-width: 1080px; margin-inline: auto; padding-inline: clamp(1.25rem, 4vw, 4rem); }
+.cm-container--wide { max-width: 1320px; }
+.cm-container--narrow { max-width: 760px; }
+
+.cm-section { padding-block: clamp(3rem, 7vw, 6rem); }
+.cm-section + .cm-section { border-top: 1px solid var(--gray-lighter); }
+
+.grid { display: grid; gap: 1.5rem; }
+.grid--2 { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+.grid--3 { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+.grid--4 { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+.stack > * + * { margin-top: 1rem; }
+.cluster { display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; }
+
+/* ---- Content roles ---- */
+.eyebrow { font-size: var(--fs-tiny); letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent2-dark); font-weight: var(--fw-semibold); margin: 0 0 0.6rem; }
+.surface-dark .eyebrow { color: var(--accent3-light); }
+.lead { font-size: var(--fs-body); max-width: 62ch; }
+.sub  { font-weight: var(--fw-semibold); font-size: 1.35rem; color: var(--accent2-dark); margin: 2.5rem 0 1rem; }
+.hint { font-size: var(--fs-small); color: var(--gray-dark); }
+.measure { max-width: 62ch; }
+
+/* ---- Text sizes (paragraph scale) ---- */
+.text-small { font-size: var(--fs-small); }
+.text-tiny  { font-size: var(--fs-tiny); }
+
+/* ---- Text colours (use only per DESIGN.md §4 contrast pairings) ---- */
+.text-primary       { color: var(--primary); }
+.text-white         { color: var(--white); }
+.text-accent1-dark  { color: var(--accent1-dark); }
+.text-accent2-dark  { color: var(--accent2-dark); }
+.text-accent3-dark  { color: var(--accent3-dark); }
+.text-accent3-light { color: var(--accent3-light); }
+.text-muted         { color: var(--gray-dark); }
+.text-error         { color: var(--red); }
+.text-success       { color: var(--green); }   /* success confirmations ONLY */
+
+/* ---- Background surfaces ---- */
+.bg-white    { background: var(--white); }
+.bg-lightest { background: var(--gray-lightest); }
+.bg-lighter  { background: var(--gray-lighter); }
+.bg-primary  { background: var(--primary); color: var(--white); }
+
+/* ---- Alignment / spacing helpers ---- */
+.text-center { text-align: center; }
+.mt-0 { margin-top: 0; }  .mb-0 { margin-bottom: 0; }
+.mt-1 { margin-top: 1rem; }  .mt-2 { margin-top: 2rem; }  .mt-3 { margin-top: 3rem; }
+.mb-1 { margin-bottom: 1rem; }  .mb-2 { margin-bottom: 2rem; }  .mb-3 { margin-bottom: 3rem; }
+
+/* ---- Scroll-reveal (opt-in): add class="reveal"; JS enhancer adds .in) ---- */
+.reveal { opacity: 0; transform: translateY(16px); transition: opacity 600ms var(--ease-out), transform 600ms var(--ease-out); }
+.reveal.in { opacity: 1; transform: none; }
+
+/* ---- Copy toast (used by the JS enhancer's data-cm-copy) ---- */
+.cm-copybar {
+  position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%) translateY(8px) scale(0.96);
+  background: var(--primary); color: var(--white);
+  padding: 0.6rem 1.1rem; border-radius: var(--radius-button);
+  font-size: var(--fs-small); font-weight: var(--fw-semibold);
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 72, 0.6);
+  opacity: 0; pointer-events: none; z-index: 9999;
+  transition: opacity 200ms var(--ease-out), transform 200ms var(--ease-out);
+}
+.cm-copybar.show { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal { opacity: 1; transform: none; }
+}

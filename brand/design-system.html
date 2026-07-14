@@ -1,0 +1,476 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cognizant Moment — Design System Reference</title>
+
+<!-- ==========================================================
+     This page is a LIVE EXAMPLE of implementing DESIGN.md.
+     It links the shared brand stylesheets + enhancer exactly as
+     a case study would, so it doubles as a validation harness:
+     if a token/component looks right here, the CSS files are correct.
+
+     Because this file sits inside /brand, the paths are:
+       css/cognizant-moment.css   (fonts + icons self-resolve)
+       js/cognizant-moment.js
+     A case study at the repo root would use brand/css/… instead.
+     ========================================================== -->
+<link rel="stylesheet" href="css/cognizant-moment.css">
+<script src="js/cognizant-moment.js" defer></script>
+<noscript><style>.reveal{opacity:1;transform:none}</style></noscript>
+
+<style>
+/* ============================================================
+   PAGE-SPECIFIC CHROME ONLY.
+   Everything else (tokens, base type, components, utilities)
+   comes from css/cognizant-moment.css — not redefined here.
+   ============================================================ */
+html { scroll-behavior: smooth; }
+:root { --nav-w: 248px; }
+
+code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .85em; background: var(--gray-lightest); padding: .1em .4em; border-radius: 4px; }
+
+/* Scroll progress */
+.progress { position: fixed; top: 0; left: var(--nav-w); right: 0; height: 2px; background: var(--accent3-light); transform: scaleX(0); transform-origin: 0 50%; z-index: 20; }
+
+/* Side nav */
+.nav { position: fixed; top: 0; left: 0; bottom: 0; width: var(--nav-w); background: #00003a; color: var(--white); padding: 1.75rem 1.25rem; overflow-y: auto; z-index: 10;
+  border-right: 1px solid rgba(255,255,255,.10); box-shadow: 1px 0 0 rgba(0,0,0,.35), inset -18px 0 24px -22px rgba(0,0,0,.9); }
+.nav .brand { font-weight: var(--fw-semibold); font-size: 1.05rem; line-height: 1.25; }
+.nav .brand small { display: block; font-weight: var(--fw-light); font-size: .72rem; color: var(--accent2-light); margin-top: .3rem; }
+.nav ul { list-style: none; padding: 0; margin: 1.5rem 0 0; }
+.nav a { position: relative; display: block; color: var(--white); text-decoration: none; font-size: .9rem; padding: .5rem .7rem; border-radius: var(--radius-global); opacity: .7; transition: opacity 180ms var(--ease-out), background 180ms var(--ease-out), color 180ms var(--ease-out); }
+.nav a::before { content: ""; position: absolute; left: 0; top: 50%; transform: translateY(-50%) scaleY(0); height: 60%; width: 3px; border-radius: 3px; background: var(--accent3-light); transition: transform 200ms var(--ease-out); }
+.nav a.active { opacity: 1; color: var(--accent3-light); background: rgba(38,239,233,.08); }
+.nav a.active::before { transform: translateY(-50%) scaleY(1); }
+.nav a.section-num { color: var(--accent2-light); font-weight: var(--fw-semibold); font-size: .68rem; letter-spacing: .1em; text-transform: uppercase; padding: .15rem .7rem; opacity: .65; pointer-events: none; margin-top: 1.1rem; }
+.nav a.section-num::before { display: none; }
+@media (hover: hover) and (pointer: fine) { .nav a:not(.section-num):hover { opacity: 1; background: rgba(255,255,255,.06); } }
+
+main { margin-left: var(--nav-w); max-width: 1080px; padding: 0 clamp(1.25rem, 4vw, 4rem); }
+main section { padding: 4.5rem 0 3.25rem; border-bottom: 1px solid var(--gray-lighter); }
+main section:last-child { border-bottom: 0; }
+.sec-title { font-size: clamp(2rem, 1.4rem + 2vw, 3rem); font-weight: var(--fw-semibold); margin: 0 0 1.25rem; line-height: 1.1; letter-spacing: -0.01em; }
+
+/* Hero — atmospheric brand navy, distinct from the flat nav via gradient depth + teal seam */
+.hero { position: relative; margin-left: var(--nav-w); color: var(--white); padding: clamp(3.5rem, 8vw, 7rem) clamp(1.5rem, 4vw, 4.5rem); overflow: hidden;
+  background:
+    radial-gradient(120% 130% at 0% 0%, rgba(38,239,233,.16), transparent 46%),
+    radial-gradient(100% 130% at 100% 100%, rgba(115,115,216,.24), transparent 52%),
+    linear-gradient(135deg, #00013c 0%, #000048 52%, #0a1160 100%); }
+.hero::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: linear-gradient(var(--accent3-light), var(--accent1-medium)); }
+.hero > * { position: relative; }
+.hero h1 { font-size: clamp(2.5rem, 4.5vw, 4.75rem); font-weight: var(--fw-semibold); color: var(--white); margin: 0 0 1.1rem; line-height: 1.03; letter-spacing: -0.02em; max-width: 16ch; }
+.hero p { font-size: clamp(1.1rem, 1.6vw, 1.5rem); font-weight: var(--fw-light); max-width: 44ch; margin: 0; color: rgba(255,255,255,.86); }
+.hero .tag { display: inline-flex; align-items: center; gap: .5rem; font-size: var(--fs-tiny); letter-spacing: .12em; text-transform: uppercase; color: var(--accent3-light); font-weight: var(--fw-semibold); margin-bottom: 1.4rem; }
+.hero .tag::before { content: ""; width: 22px; height: 1px; background: var(--accent3-light); display: inline-block; }
+.hero .tag, .hero h1, .hero p { opacity: 0; animation: rise 700ms var(--ease-out) forwards; }
+.hero h1 { animation-delay: 90ms; }
+.hero p { animation-delay: 180ms; }
+@keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Colour swatches (reference display) */
+.swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 1rem; }
+.swatch { border: 1px solid var(--gray-lighter); border-radius: var(--radius-global); overflow: hidden; cursor: pointer; background: var(--white); transition: transform 200ms var(--ease-out), box-shadow 200ms var(--ease-out); }
+.swatch:active { transform: scale(0.985); }
+@media (hover: hover) and (pointer: fine) { .swatch:hover { transform: translateY(-3px); box-shadow: 0 12px 28px -14px rgba(0,0,72,.45); } }
+.swatch .chip { height: 96px; }
+.swatch .meta { padding: .6rem .75rem; }
+.swatch .name { font-weight: var(--fw-semibold); font-size: .9rem; }
+.swatch .val { font-size: .78rem; color: var(--gray-dark); font-family: ui-monospace, monospace; }
+.swatch .tok { font-size: .78rem; color: var(--accent2-dark); font-family: ui-monospace, monospace; }
+.swatch.border-chip .chip { border-bottom: 1px solid var(--gray-lighter); }
+
+/* Accessibility panels */
+.pair { padding: 1.5rem; border-radius: var(--radius-global); }
+.pair.on-white { background: var(--white); border: 1px solid var(--gray-lighter); }
+.pair.on-navy { background: var(--primary); }
+.pair h4 { margin: 0 0 1rem; font-size: .8rem; text-transform: uppercase; letter-spacing: .06em; font-weight: var(--fw-semibold); }
+.pair.on-white h4 { color: var(--gray-dark); }
+.pair.on-navy h4 { color: var(--gray-light); }
+.pair .row { display: flex; flex-wrap: wrap; gap: .4rem 1.25rem; font-size: 1.05rem; font-weight: var(--fw-semibold); }
+.pair .row span { white-space: nowrap; }
+.donot { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem; }
+.donot .cell { position: relative; padding: 1.5rem 1.25rem; border-radius: var(--radius-global); font-weight: var(--fw-semibold); overflow: hidden; }
+.donot .cell::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to top left, transparent calc(50% - 1.5px), var(--red) calc(50% - 1.5px), var(--red) calc(50% + 1.5px), transparent calc(50% + 1.5px)); }
+
+/* Typography specimen */
+.type-row { display: grid; grid-template-columns: 200px 1fr; gap: 1.5rem; align-items: baseline; padding: 1rem 0; border-top: 1px solid var(--gray-lighter); }
+.type-row .spec { font-size: var(--fs-small); color: var(--gray-dark); font-family: ui-monospace, monospace; line-height: 1.4; }
+.type-row .spec b { display: block; color: var(--primary); font-family: var(--font-sans); font-size: .95rem; }
+.sc-h1 { font-size: var(--fs-h1); font-weight: var(--fw-semibold); color: var(--primary); line-height: 1.05; }
+.sc-h2 { font-size: var(--fs-h2); font-weight: var(--fw-semibold); color: var(--primary); line-height: 1.1; }
+.sc-h3 { font-size: var(--fs-h3); font-weight: var(--fw-semibold); color: var(--primary); line-height: 1.1; }
+.sc-h4 { font-size: var(--fs-h4); font-weight: var(--fw-light); color: var(--accent2-dark); }
+.sc-h5 { font-size: var(--fs-h5); font-weight: var(--fw-light); color: var(--accent2-dark); }
+.sc-h6 { font-size: var(--fs-h6); font-weight: var(--fw-light); color: var(--accent2-dark); }
+.sc-body { font-size: var(--fs-body); font-weight: var(--fw-regular); }
+.sc-small { font-size: var(--fs-small); font-weight: var(--fw-regular); }
+.sc-tiny { font-size: var(--fs-tiny); font-weight: var(--fw-regular); }
+.weights { display: flex; gap: 2rem; flex-wrap: wrap; font-size: 2rem; margin-top: .5rem; }
+.weights span { display: block; }
+.weights small { display: block; font-size: .7rem; color: var(--gray-dark); font-family: ui-monospace, monospace; }
+
+/* Voice table + personality pillars */
+table.voice { width: 100%; border-collapse: collapse; font-size: var(--fs-small); }
+table.voice th, table.voice td { text-align: left; padding: .75rem .85rem; border-bottom: 1px solid var(--gray-lighter); vertical-align: top; }
+table.voice th { font-size: var(--fs-tiny); text-transform: uppercase; letter-spacing: .05em; color: var(--gray-dark); }
+table.voice .say { color: var(--accent3-dark); } table.voice .dont { color: var(--red); }
+.pillars { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.25rem; margin-top: 1rem; }
+.pillar h4 { font-size: var(--fs-h5); font-weight: var(--fw-light); margin: 0 0 .35rem; }
+.pillar.creative h4 { color: var(--accent2-dark); }
+.pillar p { font-size: var(--fs-small); color: var(--gray-dark); margin: 0; border-top: 2px solid var(--gray-light); padding-top: .6rem; }
+.pillar.creative p { border-top-color: var(--accent2-medium); }
+
+@media (max-width: 820px) {
+  :root { --nav-w: 0px; }
+  .nav { position: static; width: auto; height: auto; border-right: 0; box-shadow: none; border-bottom: 1px solid rgba(255,255,255,.1); }
+  .nav ul { display: flex; flex-wrap: wrap; gap: .25rem; }
+  .nav a { opacity: 1; }
+  main, .hero { margin-left: 0; }
+  .progress { left: 0; }
+  .type-row { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero .tag, .hero h1, .hero p { opacity: 1; animation: none; }
+  .swatch:hover, .card:hover { transform: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="progress" id="progress" aria-hidden="true"></div>
+
+<!-- ============ NAV ============ -->
+<nav class="nav">
+  <img src="logos/Main_logo_reversed.svg" alt="Cognizant Moment" style="height:34px;width:auto;margin-bottom:.75rem">
+  <div class="brand">Design System Reference<small>Sub-brand of Cognizant</small></div>
+  <ul>
+    <li><a class="section-num">Brand</a></li>
+    <li><a href="#identity">1 · Identity</a></li>
+    <li><a href="#voice">2 · Voice &amp; tone</a></li>
+    <li><a class="section-num">Visual</a></li>
+    <li><a href="#colour">3 · Colour</a></li>
+    <li><a href="#accessibility">4 · Accessibility</a></li>
+    <li><a href="#type">5 · Typography</a></li>
+    <li><a href="#components">6 · Components</a></li>
+    <li><a href="#tokens">7 · Tokens</a></li>
+  </ul>
+</nav>
+
+<!-- ============ HERO ============ -->
+<header class="hero">
+  <span class="tag">Sub-brand of Cognizant</span>
+  <h1>We are creative technologists.</h1>
+  <p>Bringing innovation to life — harnessing emerging technologies to deliver hyper-personalized, dynamic experiences.</p>
+</header>
+
+<main>
+
+<!-- 1 · IDENTITY -->
+<section id="identity" class="reveal">
+  <p class="eyebrow">01 · Brand identity</p>
+  <h2 class="sec-title">A shared purpose</h2>
+  <p class="lead"><strong>Cognizant Moment is a sub-brand of Cognizant.</strong> We partner with leading clients to differentiate, identify opportunities, and build customer engagement from conception to delivery. We use <strong>intelligent experience orchestration</strong> to connect data, technology, and operations across entire ecosystems — harnessing AI and personalization to delight customers and grow our clients' businesses.</p>
+
+  <div class="surface-dark" style="margin-top:1.5rem;padding:1.75rem;border-radius:var(--radius-global)">
+    <p style="font-size:var(--fs-h5);font-weight:var(--fw-light);margin:0;color:var(--white)">“We engineer modern business to improve everyday life.”</p>
+    <p style="color:var(--accent2-light);margin:.5rem 0 0;font-size:var(--fs-small)">Shared purpose with Cognizant</p>
+  </div>
+
+  <h3 class="sub">Naming rules</h3>
+  <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(230px,1fr))">
+    <div><strong>Cognizant Moment</strong><p class="hint">Always the full, trademarked name.</p></div>
+    <div><strong>Initial caps in copy</strong><p class="hint">The logo is lowercase, but writing always uses caps.</p></div>
+    <div><strong>Never “Moment”</strong><p class="hint">Never shorten or abbreviate the name.</p></div>
+    <div><strong>Always a sub-brand</strong><p class="hint">Present in relationship to Cognizant.</p></div>
+  </div>
+
+  <h3 class="sub">Logo</h3>
+  <p class="lead">Files live in <code>brand/logos/</code>. Only <strong>two</strong> variants exist. <strong>Never modify the logo</strong> — not the wordmark, not the hexagon; don't separate, recolour, or recreate it. Pick the variant by background; scale by height only (ratio 200×47 ≈ 4.26:1); min ~24px tall; keep clear space around it.</p>
+  <div class="grid" style="grid-template-columns:1fr 1fr;gap:1rem;margin-top:1rem">
+    <div class="pair on-white" style="display:flex;flex-direction:column;gap:.75rem;align-items:flex-start">
+      <img src="logos/Main_logo.svg" alt="Cognizant Moment" style="height:40px;width:auto">
+      <span class="hint" style="margin:0"><code>Main_logo.svg</code> — light backgrounds</span>
+    </div>
+    <div class="pair on-navy" style="display:flex;flex-direction:column;gap:.75rem;align-items:flex-start">
+      <img src="logos/Main_logo_reversed.svg" alt="Cognizant Moment" style="height:40px;width:auto">
+      <span class="hint" style="margin:0;color:var(--gray-light)"><code style="background:rgba(255,255,255,.12);color:#fff">Main_logo_reversed.svg</code> — dark backgrounds</span>
+    </div>
+  </div>
+
+  <h3 class="sub">Brand character — <em>accessible genius</em></h3>
+  <p class="lead">We make digital transformation understandable and attainable for all. This is why <strong>clarity</strong> and <strong>accessibility</strong> run through every decision in this system.</p>
+
+  <h3 class="sub">Personality attributes</h3>
+  <div class="pillars">
+    <div class="pillar"><h4>Innovative</h4><p>Inspiring awe at the transformative potential of technology.</p></div>
+    <div class="pillar"><h4>Agile</h4><p>Confident and sure-footed, clarifying the way forward and adapting at every turn.</p></div>
+    <div class="pillar"><h4>Intuitive</h4><p>Sharing knowledge that is clear and quick to grasp, easily guiding through complexity.</p></div>
+    <div class="pillar creative"><h4>Creative <span style="font-size:.7em">+</span></h4><p>Using ingenuity and insight to bring a fresh perspective and enhance experiences. <strong>Cognizant Moment's distinctive attribute.</strong></p></div>
+  </div>
+</section>
+
+<!-- 2 · VOICE -->
+<section id="voice" class="reveal">
+  <p class="eyebrow">02 · Brand voice &amp; tone</p>
+  <h2 class="sec-title">Clear, inspiring, purposeful</h2>
+  <p class="lead">Our tone complements the visual identity with a verbal one. No matter the audience, it must always be unmistakably Cognizant Moment.</p>
+  <table class="voice" style="margin-top:1.5rem">
+    <thead><tr><th style="width:22%">Principle</th><th style="width:34%">How we speak</th><th>✅ We say</th><th>🚫 We don't say</th></tr></thead>
+    <tbody>
+      <tr><td><strong>01 Inviting, not intimidating</strong></td><td>Speak with people, not at them. Confident but never condescending.</td><td class="say">“Let's look at this another way.”</td><td class="dont">“I don't think that will work.”</td></tr>
+      <tr><td><strong>02 Fresh, not forced</strong></td><td>Avoid jargon and corporate clichés. Intelligent, elegant, clear.</td><td class="say">“What if the real insight comes from our customers?”</td><td class="dont">“Let's circle back after taking this offline with leadership.”</td></tr>
+      <tr><td><strong>03 Warmly global</strong></td><td>Worldly intelligence — open, inclusive, curious; not rooted in one culture.</td><td class="say">“There's always another perspective. Let's explore it.”</td><td class="dont">“Here's the one-size-fits-all answer.”</td></tr>
+      <tr><td><strong>04 Grounded, yet elevated</strong></td><td>Show up with clarity, insight, and a touch of poetry. A conversation, not a performance.</td><td class="say">“Change doesn't have to be loud to be powerful.”</td><td class="dont">“Let's disrupt the paradigm with radical innovation.”</td></tr>
+      <tr><td><strong>05 Brave enough to be simple</strong></td><td>Get to the point with grace. Speak plainly, but never dully.</td><td class="say">“What matters here is what people feel.”</td><td class="dont">“Our proprietary framework optimizes emotional engagement.”</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- 3 · COLOUR -->
+<section id="colour" class="reveal">
+  <p class="eyebrow">03 · Colour</p>
+  <h2 class="sec-title">Palette</h2>
+  <p class="lead">Click any swatch to copy its hex value. Tokens mirror the brand SCSS / CSS variable names.</p>
+
+  <h3 class="sub">Base</h3>
+  <div class="swatches" data-group="base"></div>
+  <h3 class="sub">Accent 1 · Plum</h3>
+  <div class="swatches" data-group="a1"></div>
+  <h3 class="sub">Accent 2 · Blue</h3>
+  <div class="swatches" data-group="a2"></div>
+  <h3 class="sub">Accent 3 · Teal</h3>
+  <div class="swatches" data-group="a3"></div>
+  <h3 class="sub">Neutral</h3>
+  <div class="swatches" data-group="neutral"></div>
+  <h3 class="sub">Highlight</h3>
+  <div class="swatches" data-group="highlight"></div>
+  <p class="hint">⚠ Highlight <strong>green</strong> is used <strong>only</strong> for successful-confirmation alerts.</p>
+</section>
+
+<!-- 4 · ACCESSIBILITY -->
+<section id="accessibility" class="reveal">
+  <p class="eyebrow">04 · Accessibility</p>
+  <h2 class="sec-title">Colour contrast</h2>
+  <p class="lead">We follow WCAG <strong>AA</strong> — a contrast value of <strong>4.5 or greater</strong>. Use only these tested pairings.</p>
+
+  <div class="grid" style="grid-template-columns:1fr 1fr;gap:1rem;margin-top:1.5rem">
+    <div class="pair on-white">
+      <h4>Works on / with white</h4>
+      <div class="row">
+        <span style="color:var(--primary)">Midnight blue</span>
+        <span style="color:var(--accent3-dark)">Dark teal*</span>
+        <span style="color:var(--accent2-dark)">Dark blue*</span>
+        <span style="color:var(--accent1-dark)">Dark plum</span>
+        <span style="color:var(--accent1-medium)">Medium plum*</span>
+        <span style="color:var(--gray-dark)">Dark gray</span>
+        <span style="color:var(--red)">Highlight red</span>
+      </div>
+    </div>
+    <div class="pair on-navy">
+      <h4>Works on / with midnight blue</h4>
+      <div class="row">
+        <span style="color:var(--white)">White</span>
+        <span style="color:var(--accent3-dark)">Dark teal*</span>
+        <span style="color:var(--accent3-medium)">Medium teal</span>
+        <span style="color:var(--accent3-light)">Light teal</span>
+        <span style="color:var(--accent1-medium)">Medium plum</span>
+        <span style="color:var(--accent1-light)">Light plum</span>
+        <span style="color:var(--accent2-medium)">Medium blue</span>
+        <span style="color:var(--accent2-light)">Light blue</span>
+        <span style="color:var(--accent2-dark)">Dark blue*</span>
+        <span style="color:var(--gray-medium)">Medium gray</span>
+        <span style="color:var(--gray-light)">Light gray</span>
+        <span style="color:var(--yellow)">Highlight yellow</span>
+      </div>
+    </div>
+  </div>
+  <p class="hint">* Use dark teal, medium plum and dark blue as text only when larger than 19px/14pt bold, or 24px/18pt regular.</p>
+
+  <h3 class="sub">Do not combine</h3>
+  <div class="donot">
+    <div class="cell" style="background:var(--primary);color:var(--accent1-dark)">Accent colours from different groups</div>
+    <div class="cell" style="background:var(--accent1-medium);color:var(--accent3-medium)">Accent colours on accent colours</div>
+    <div class="cell" style="background:var(--accent3-medium);color:var(--gray-dark)">Neutral colours on accent colours</div>
+    <div class="cell" style="background:var(--accent2-light);color:var(--red)">Highlight colours on accent / neutral</div>
+  </div>
+</section>
+
+<!-- 5 · TYPOGRAPHY -->
+<section id="type" class="reveal">
+  <p class="eyebrow">05 · Typography</p>
+  <h2 class="sec-title">Gellix type scale</h2>
+  <p class="lead">Perfect-fourth ratio (1.333) on a 20px base. Text scales fluidly with <code>clamp()</code>. Colour adapts to background: midnight blue on light, white on dark.</p>
+
+  <h3 class="sub">Weights</h3>
+  <div class="weights">
+    <div><span style="font-weight:300">Gellix Light</span><small>300 · H4–H6</small></div>
+    <div><span style="font-weight:400">Gellix Regular</span><small>400 · body</small></div>
+    <div><span style="font-weight:600">Gellix SemiBold</span><small>600 · H1–H3</small></div>
+    <div><span style="font-weight:400;font-style:italic">Gellix Italic</span><small>italic</small></div>
+  </div>
+
+  <h3 class="sub">Scale</h3>
+  <div class="type-row"><div class="spec"><b>H1</b>84 / 92.4px · SemiBold</div><div class="sc-h1">Visual type scale</div></div>
+  <div class="type-row"><div class="spec"><b>H2</b>63 / 69.3px · SemiBold</div><div class="sc-h2">Visual type scale</div></div>
+  <div class="type-row"><div class="spec"><b>H3</b>47 / 56.4px · SemiBold</div><div class="sc-h3">Visual type scale</div></div>
+  <div class="type-row"><div class="spec"><b>H4</b>36 / 43.2px · Light</div><div class="sc-h4">Visual type scale</div></div>
+  <div class="type-row"><div class="spec"><b>H5</b>27 / 32.4px · Light</div><div class="sc-h5">Visual type scale</div></div>
+  <div class="type-row"><div class="spec"><b>H6</b>20 / 24px · Light</div><div class="sc-h6">Visual type scale</div></div>
+  <div class="type-row"><div class="spec"><b>Body</b>20 / 26px · Regular</div><div class="sc-body">Visual type scale — the quick brown fox jumps over the lazy dog.</div></div>
+  <div class="type-row"><div class="spec"><b>Small</b>15 / 19.5px · Regular</div><div class="sc-small">Visual type scale — the quick brown fox jumps over the lazy dog.</div></div>
+  <div class="type-row"><div class="spec"><b>Tiny</b>12 / 15.6px · Regular</div><div class="sc-tiny">Visual type scale — the quick brown fox jumps over the lazy dog.</div></div>
+</section>
+
+<!-- 6 · COMPONENTS -->
+<section id="components" class="reveal">
+  <p class="eyebrow">06 · Components</p>
+  <h2 class="sec-title">Basic components</h2>
+  <p class="lead">Built on the principle of <strong>clarity</strong>. Links are the default for most actions; buttons are reserved for primary, high-visibility actions and used sparingly. <span class="hint">All markup below uses the shared component classes + the JS enhancer — nothing is styled on this page.</span></p>
+
+  <h3 class="sub">Links</h3>
+  <div class="grid" style="gap:1rem">
+    <div><a class="link" href="#components">Learn more <span class="icon-arrow" aria-hidden="true"></span></a> <span class="hint">— block / CTA (no underline, with arrow)</span></div>
+    <p style="max-width:60ch">Read the <a class="link link--in-text" href="#components">full report</a> for details. <span class="hint">— link inside body copy (underlined)</span></p>
+    <div style="display:flex;gap:2rem;align-items:baseline;flex-wrap:wrap">
+      <a class="link link--tiny" href="#">Tiny link</a>
+      <a class="link link--small" href="#">Small link</a>
+      <a class="link" href="#">Standard link</a>
+      <a class="link link--large" href="#">Large link</a>
+    </div>
+  </div>
+
+  <h3 class="sub">Buttons</h3>
+  <div style="display:flex;gap:1rem;flex-wrap:wrap;align-items:center">
+    <button class="btn">Default button: 20px <span class="icon-arrow" aria-hidden="true"></span></button>
+    <button class="btn btn--hollow">Hollow button <span class="icon-arrow" aria-hidden="true"></span></button>
+  </div>
+  <div class="surface-dark" style="margin-top:1rem;padding:1.75rem;border-radius:var(--radius-global);display:flex;gap:1rem;flex-wrap:wrap;align-items:center">
+    <button class="btn">Filled on dark <span class="icon-arrow" aria-hidden="true"></span></button>
+    <button class="btn btn--hollow">Hollow on dark <span class="icon-arrow" aria-hidden="true"></span></button>
+    <a class="link" href="#">And a link on dark <span class="icon-arrow" aria-hidden="true"></span></a>
+  </div>
+  <p class="hint">Filled = light teal + midnight text. Hollow = dark blue border/text (light teal on dark). Shape: pill · text: 20px.</p>
+
+  <h3 class="sub">Tabs</h3>
+  <div class="tabs" data-cm-tabs>
+    <button class="tab tab--active" data-cm-tab="t1">Active tab</button>
+    <button class="tab" data-cm-tab="t2">Inactive tab</button>
+    <button class="tab" data-cm-tab="t3">Third tab</button>
+  </div>
+  <div class="tabpanel" data-cm-panel="t1">Active tab uses dark blue text with a dark-blue top indicator on white. Rounding: 0.5em.</div>
+  <div class="tabpanel" data-cm-panel="t2" hidden>Inactive tabs use a 20% tint of Accent 2 Light.</div>
+  <div class="tabpanel" data-cm-panel="t3" hidden>Tabs share a single rounded container.</div>
+
+  <h3 class="sub">Accordions</h3>
+  <div class="accordion" style="max-width:560px">
+    <button class="accordion__item" data-cm-accordion-item="p1" aria-expanded="false">Accordion 01 <span class="icon-arrow icon-arrow--down" aria-hidden="true"></span></button>
+    <div class="accordion__panel" data-cm-panel="p1" hidden>Background blends from midnight blue → dark blue down the stack (via <code>:nth-of-type</code> in components.css); white text; arrow-down icon.</div>
+    <button class="accordion__item" data-cm-accordion-item="p2" aria-expanded="false">Accordion 02 <span class="icon-arrow icon-arrow--down" aria-hidden="true"></span></button>
+    <div class="accordion__panel" data-cm-panel="p2" hidden>Rounding: 0.5em (global radius).</div>
+    <button class="accordion__item" data-cm-accordion-item="p3" aria-expanded="false">Accordion 03 <span class="icon-arrow icon-arrow--down" aria-hidden="true"></span></button>
+    <div class="accordion__panel" data-cm-panel="p3" hidden>Each item steps one tone lighter toward dark blue.</div>
+  </div>
+
+  <h3 class="sub">Cards / tiles</h3>
+  <p class="hint">Square corners (no rounding). Images follow the Visual Identity photography guidance — placeholders shown here.</p>
+  <div class="grid grid--3" style="margin-top:1rem">
+    <article class="card">
+      <span class="card__media" style="background:linear-gradient(135deg,var(--accent1-light),var(--accent3-medium))"></span>
+      <div class="card__body">
+        <p class="card__eyebrow">Environment, Social, Governance</p>
+        <h4 class="card__title">Close the gap between ESG commitments and action</h4>
+        <p class="text-small">90% of decision makers agree you can't be a modern business without a cohesive ESG strategy.</p>
+        <a class="link" href="#">Learn more <span class="icon-arrow" aria-hidden="true"></span></a>
+      </div>
+    </article>
+    <article class="card">
+      <span class="card__media" style="background:linear-gradient(135deg,var(--accent2-medium),var(--accent3-light))"></span>
+      <div class="card__body">
+        <p class="card__eyebrow">Utilities</p>
+        <h4 class="card__title">Automation center of excellence trims costs and fuels productivity</h4>
+        <p class="text-small">New energy for tired systems — intelligent, elegant, and clear.</p>
+        <a class="link" href="#">Read more <span class="icon-arrow" aria-hidden="true"></span></a>
+      </div>
+    </article>
+    <article class="card card--overlay" style="min-height:260px;background:linear-gradient(160deg,var(--accent1-dark),var(--primary))">
+      <span class="card__tag">Life sciences</span>
+      <span class="card__overlay-text">Focus on patients, not just prescriptions, to improve outcomes <span class="icon-arrow" aria-hidden="true"></span></span>
+    </article>
+  </div>
+</section>
+
+<!-- 7 · TOKENS -->
+<section id="tokens" class="reveal">
+  <p class="eyebrow">07 · Tokens</p>
+  <h2 class="sec-title">At a glance</h2>
+  <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(240px,1fr))">
+    <div><strong>Typeface</strong><p class="hint">Gellix — Light 300 · Regular 400 · SemiBold 600</p></div>
+    <div><strong>Type ratio</strong><p class="hint">Perfect fourth 1.333 · base 20px · fluid <code>clamp()</code></p></div>
+    <div><strong>Button radius</strong><p class="hint"><code>--radius-button: 9999px</code> (pill)</p></div>
+    <div><strong>Tab / accordion radius</strong><p class="hint"><code>--radius-global: 0.5em</code></p></div>
+    <div><strong>Card radius</strong><p class="hint"><code>--radius-card: 0</code> (square)</p></div>
+    <div><strong>Icon size</strong><p class="hint"><code>--icon-size: 1.25rem</code> · arrows recoloured via CSS mask</p></div>
+    <div><strong>Contrast target</strong><p class="hint">WCAG AA · ≥ 4.5:1</p></div>
+  </div>
+  <div class="surface-dark" style="margin-top:2rem;padding:1.5rem;border-radius:var(--radius-global)">
+    <p style="margin:0;color:var(--white)">This page links <code style="background:rgba(255,255,255,.12);color:#fff">css/cognizant-moment.css</code> + <code style="background:rgba(255,255,255,.12);color:#fff">js/cognizant-moment.js</code> — the same files a case study links as <code style="background:rgba(255,255,255,.12);color:#fff">brand/css/…</code>. The full spec lives in <code style="background:rgba(255,255,255,.12);color:#fff">DESIGN.md</code>.</p>
+  </div>
+</section>
+
+</main>
+
+<script>
+// Colour data → renders swatches. Copy is handled by the shared enhancer
+// (data-cm-copy), which also creates the .cm-copybar toast.
+const COLOURS = {
+  base:[["White","#FFFFFF","255,255,255","--white",1],["Primary · Midnight blue","#000048","0,0,72","--primary",0]],
+  a1:[["Dark plum","#2E308E","46,49,142","--accent1-dark",0],["Medium plum","#7373D8","115,115,216","--accent1-medium",0],["Light plum","#85A0F9","133,160,249","--accent1-light",0]],
+  a2:[["Dark blue","#2F78C4","47,120,196","--accent2-dark",0],["Medium blue","#6AA2DC","106,162,220","--accent2-medium",0],["Light blue","#92BBE6","146,187,230","--accent2-light",0]],
+  a3:[["Dark teal","#05819B","5,129,155","--accent3-dark",0],["Medium teal","#06C7CC","6,199,204","--accent3-medium",0],["Light teal","#26EFE9","38,239,233","--accent3-light",0]],
+  neutral:[["Dark gray","#53565A","83,86,90","--gray-dark",0],["Medium gray","#97999B","151,153,155","--gray-medium",0],["Light gray","#D0D0CE","208,208,206","--gray-light",0],["Lighter gray","#E8E8E6","232,232,230","--gray-lighter",1],["Lightest gray","#F7F7F5","247,247,245","--gray-lightest",1]],
+  highlight:[["Highlight red","#B81F2D","184,31,45","--red",0],["Highlight yellow","#E9C71D","233,199,29","--yellow",0],["Highlight green","#2DB81F","45,184,31","--green",0]]
+};
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;')}
+document.querySelectorAll('.swatches[data-group]').forEach(box=>{
+  (COLOURS[box.dataset.group]||[]).forEach(([name,hex,rgb,tok,needsBorder])=>{
+    const el=document.createElement('div');
+    el.className='swatch'+(needsBorder?' border-chip':'');
+    el.setAttribute('data-cm-copy',hex);
+    el.title='Click to copy '+hex;
+    el.innerHTML=`<div class="chip" style="background:${hex}"></div><div class="meta"><div class="name">${esc(name)}</div><div class="val">${hex} · rgb(${rgb})</div><div class="tok">${tok}</div></div>`;
+    box.appendChild(el);
+  });
+});
+
+// Scroll progress bar (page chrome; rAF-throttled)
+const prog=document.getElementById('progress');let ticking=false;
+function updateProgress(){
+  const h=document.documentElement.scrollHeight-innerHeight;
+  prog.style.transform='scaleX('+(h>0?Math.min(scrollY/h,1):0)+')';
+  ticking=false;
+}
+addEventListener('scroll',()=>{if(!ticking){ticking=true;requestAnimationFrame(updateProgress);}},{passive:true});
+updateProgress();
+
+// Scrollspy: highlight the active nav link (page chrome)
+const navLinks=[...document.querySelectorAll('.nav a[href^="#"]')];
+if('IntersectionObserver' in window && navLinks.length){
+  const spy=new IntersectionObserver(entries=>{
+    entries.forEach(en=>{
+      if(en.isIntersecting){
+        navLinks.forEach(a=>a.classList.remove('active'));
+        const link=navLinks.find(a=>a.getAttribute('href')==='#'+en.target.id);
+        if(link)link.classList.add('active');
+      }
+    });
+  },{rootMargin:'-45% 0px -50% 0px',threshold:0});
+  document.querySelectorAll('main section[id]').forEach(s=>spy.observe(s));
+}
+// Tabs, accordions, swatch-copy and reveal are all handled by the shared
+// enhancer (js/cognizant-moment.js) — this page adds no component JS.
+</script>
+</body>
+</html>

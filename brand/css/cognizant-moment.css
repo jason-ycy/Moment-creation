@@ -1,0 +1,21 @@
+/* ============================================================
+   Cognizant Moment — Design System (master stylesheet)
+   ------------------------------------------------------------
+   Link this ONE file in any case study / prototype:
+
+     <link rel="stylesheet" href="brand/css/cognizant-moment.css">
+     <script src="brand/js/cognizant-moment.js" defer></script>
+
+   Adjust the href if your HTML isn't at the repo root
+   (e.g. ../brand/css/cognizant-moment.css from /prototypes).
+   Fonts and icons resolve automatically — their paths are
+   relative to these CSS files, not to your HTML.
+
+   Full spec & usage rules: /DESIGN.md
+   Load order matters (tokens → base → components → utilities).
+   ============================================================ */
+
+@import "tokens.css";
+@import "base.css";
+@import "components.css";
+@import "utilities.css";
