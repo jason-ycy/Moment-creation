@@ -6,7 +6,14 @@
    ============================================================ */
 
 /* ---- Layout ---- */
-.cm-container { width: 100%; max-width: 1080px; margin-inline: auto; padding-inline: clamp(1.25rem, 4vw, 4rem); }
+/* Base sets the centering (auto margins), full width, and responsive gutters.
+   The --wide / --narrow modifiers only change the max-width cap, so they can be
+   used EITHER paired with .cm-container OR on their own — the shared rule below
+   gives the standalone modifiers the same centering + gutters as the base. */
+.cm-container,
+.cm-container--wide,
+.cm-container--narrow { width: 100%; margin-inline: auto; padding-inline: clamp(1.25rem, 4vw, 4rem); }
+.cm-container { max-width: 1080px; }
 .cm-container--wide { max-width: 1320px; }
 .cm-container--narrow { max-width: 760px; }
 
