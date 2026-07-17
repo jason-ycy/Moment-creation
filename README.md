@@ -119,7 +119,7 @@ own copy — it's yours to keep and share as files.
 | **[CLAUDE.md](CLAUDE.md)** | How the Creation Engine works + the rules. Claude reads this every session. |
 | **[agent.md](agent.md)** | The engine's decision flow — matches your brand + artefact to a folder and a skill, then builds. |
 | **[DesignLibrary/](DesignLibrary/)** | The Design Library — one folder per brand. e.g. **[CognizantMoment/](DesignLibrary/CognizantMoment/)** with its [DESIGN.md](DesignLibrary/CognizantMoment/DESIGN.md) + [brand/](DesignLibrary/CognizantMoment/brand/) (CSS, JS, fonts, icons, logos). You **link** it, never rewrite it. |
-| **[design-system.html](DesignLibrary/CognizantMoment/brand/design-system.html)** | A live page showing every Cognizant Moment component. **For review only** — see the system; the skill builds from the linked CSS/JS, not from this page. |
+| **`DesignLibrary/{Brand}/brand/design-system.html`** | A **human-facing** page for teammates to *view* a brand's components (e.g. [Cognizant Moment's](DesignLibrary/CognizantMoment/brand/design-system.html)). **For people to read only** — Claude never reads it or builds from it; the skill builds from the brand's `DESIGN.md` and linked CSS/JS. |
 | **[.claude/skills/](.claude/skills/)** | The skills the engine calls: `create-case-study` (✅), `create-proposal` (🚧), `create-design-system` (🚧). |
 | **[projects/](projects/)** | Where artefacts live — one self-contained `projects/{name}/` folder each. Your workspace. |
 
