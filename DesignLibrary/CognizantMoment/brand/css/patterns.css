@@ -1,0 +1,265 @@
+/* ============================================================
+   Cognizant Moment — Patterns (molecules) · DESIGN.md §6 Molecules
+   ------------------------------------------------------------
+   Reusable, composed patterns for assembling interactive
+   case-study playbooks: Hero (simple · split) · Editorial spread · Section head ·
+   Scroll progress + Table of contents · Footer · Stats grid ·
+   Data table · Testimonial · CTA · Figure · Quote.
+
+   These COMPOSE the atoms in components.css. Every value comes
+   from tokens.css — no off-palette colour, no ad-hoc font size;
+   colours follow the §4 contrast pairings. Interactivity
+   (scroll progress, scrollspy, parallax, count-up, meter fill,
+   staggered reveal) is driven by brand/js/cognizant-moment.js
+   via data-cm-* attributes.
+
+   Load order: after components.css, before utilities.css.
+   Requires tokens.css (+ base.css, components.css).
+   ============================================================ */
+
+/* ---- Hero (one bold line over a brand image with a legibility scrim) ----
+   The background is normally a project hero photograph (.hero__image, pulled
+   from the project's own assets/); a navy scrim (.hero__overlay) sits over it
+   so white copy always clears WCAG AA — no matter how bright the image. With
+   no image the .hero falls back to a solid field: pair with .surface-dark for
+   midnight blue + white, or leave on white for midnight type. Keep the copy to
+   a single statement. The one-liner is vertically centred in the band (a
+   hero-height min-height gives it room) but left-aligned: flex centres it on
+   the block axis while the title + subtitle hug the left edge. */
+.hero {
+  position: relative; overflow: hidden; background: var(--primary);
+  min-height: 60vh;
+  display: flex; flex-direction: column; justify-content: center; align-items: flex-start;
+  text-align: left;
+  padding-block: var(--space-2xl); padding-inline: var(--space-lg);
+}
+.hero > * { position: relative; z-index: 1; }
+.hero__title { font-size: var(--fs-h1); font-weight: var(--fw-semibold); line-height: 1.02; letter-spacing: -0.02em; margin: 0; max-width: 18ch; }
+/* Hero subtitle is a larger take on the .subtitle atom */
+.hero .subtitle { font-size: var(--fs-h5); max-width: 44ch; margin-top: var(--space-2xs); }
+/* Background image slot — fills the hero, sits behind the scrim + copy. */
+.hero__image {
+  position: absolute; inset: 0; z-index: 0; width: 100%; height: 100%;
+  object-fit: cover; pointer-events: none;
+}
+/* Legibility scrim — a navy wash (darkening toward the foot, where the copy
+   sits) laid over the photo. Worst case (a fully white image) the top of the
+   wash still yields ~5.8:1 for white text, so titles and subtitle clear AA. */
+.hero__overlay {
+  position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background: linear-gradient(180deg, rgba(0, 0, 72, 0.62) 0%, rgba(0, 0, 72, 0.80) 100%);
+}
+
+/* ---- Hero: Split (Type B) — layered image mask + navy panel.
+   Left panel holds two image slots: a background layer that fills the panel
+   and a smaller inset foreground layer centred on top of it. Right panel
+   carries a .tag badge + title + subtitle + body. */
+.hero-split { display: grid; grid-template-columns: 1fr 1fr; min-height: 72vh; }
+.hero-split__media { position: relative; overflow: hidden; background: var(--gray-lighter); }
+.hero-split__back { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+/* Foreground image: centred both axes, sized as a % of the media box so it
+   stays centred and proportional at any viewport. Add [data-cm-parallax] to
+   let it drift a little on scroll — the drift composes with the centring, so
+   at rest (in view) it stays dead-centre; only --cm-parallax-y moves. */
+.hero-split__front {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, calc(-50% + var(--cm-parallax-y, 0px)));
+  width: 76%; height: 82%;
+  object-fit: cover; box-shadow: var(--shadow-soft); will-change: transform;
+}
+.hero-split__panel {
+  background: var(--primary); color: var(--white);
+  display: flex; flex-direction: column; justify-content: center;
+  gap: var(--space-sm); padding: var(--space-xl);
+}
+/* On the navy panel the badge inverts to a white box with navy label (AA), and
+   the subtitle goes white — the panel is a dark surface, so don't inherit the
+   light-mode tag/subtitle colours. */
+.hero-split__panel .tag { align-self: flex-start; background: var(--white); color: var(--primary); }
+.hero-split__title { font-size: var(--fs-h1); font-weight: var(--fw-semibold); line-height: 1.0; letter-spacing: -0.02em; color: var(--white); margin: 0; }
+.hero-split__panel .subtitle { font-size: var(--fs-h5); margin-top: 0; color: var(--white); }
+.hero-split__body { color: var(--gray-light); max-width: 46ch; margin: var(--space-sm) 0 0; }
+@media (max-width: 820px) {
+  .hero-split { grid-template-columns: 1fr; }
+  .hero-split__media { min-height: 55vw; }
+}
+
+/* Larger badge for hero use (e.g. "Trend 4") */
+.tag--lg { font-size: var(--fs-body); padding: 0.5em 1em; letter-spacing: 0.08em; }
+
+/* ---- Section head (badge + title + subtitle, generous rhythm) ---- */
+.section-head { max-width: 60ch; margin-bottom: var(--space-lg); }
+.section-head .tag { margin-bottom: var(--space-sm); }   /* rectangular label, e.g. "Trend 4" */
+.section-head__title { font-size: var(--fs-h2); font-weight: var(--fw-semibold); line-height: 1.08; letter-spacing: -0.01em; margin: 0; }
+/* Optional longer intro paragraph, if a subtitle isn't enough */
+.section-head__lead { font-size: var(--fs-body); color: var(--gray-dark); margin: var(--space-sm) 0 0; max-width: 62ch; }
+.surface-dark .section-head__lead { color: var(--gray-light); }
+
+/* ---- Scroll-progress bar (fixed; JS scales the inner bar) ---- */
+.progress-top { position: fixed; top: 0; left: 0; right: 0; height: 3px; z-index: 100; pointer-events: none; background: var(--gray-lighter); }
+.progress-top__bar { height: 100%; background: var(--accent3-dark); transform: scaleX(0); transform-origin: 0 50%; }
+
+/* ---- Table of contents (sticky; JS toggles .is-active via scrollspy) ---- */
+.toc { position: sticky; top: var(--space-lg); align-self: start; display: flex; flex-direction: column; gap: var(--space-3xs); font-size: var(--fs-small); }
+.toc a {
+  text-decoration: none;
+  color: var(--gray-dark);
+  padding: 0.4em 0 0.4em var(--space-sm);
+  border-left: 2px solid var(--gray-lighter);
+  transition: color var(--dur-base) var(--ease-out), border-color var(--dur-base) var(--ease-out);
+}
+.toc a:hover { color: var(--primary); }
+.toc a.is-active { color: var(--primary); border-left-color: var(--accent2-dark); font-weight: var(--fw-semibold); }
+.surface-dark .toc a { color: var(--gray-light); border-left-color: rgba(255, 255, 255, 0.16); }
+.surface-dark .toc a.is-active { color: var(--accent3-light); border-left-color: var(--accent3-light); }
+
+/* ---- Site footer (minimal: reversed logo + copyright, on midnight blue) ----
+   A single bar — the reversed logo and a fine-print copyright note sit on one
+   line and wrap to stack on narrow widths. No link columns. */
+.site-footer { background: var(--primary); color: var(--white); padding-block: var(--space-lg); }
+.site-footer p { color: var(--white); }
+.site-footer a { color: var(--accent3-light); text-decoration: none; }
+.site-footer__bar {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: var(--space-sm) var(--space-lg); flex-wrap: wrap;
+}
+.site-footer__logo { height: 2rem; width: auto; }
+.site-footer__note { color: var(--gray-light); font-size: var(--fs-small); margin: 0; }
+
+/* ---- Stats grid (holds .stat atoms; count-up via data-cm-count) ---- */
+.stats { display: grid; gap: var(--space-lg); grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+
+/* ---- Data / comparison table (clean hairline rules) ---- */
+.table { width: 100%; border-collapse: collapse; font-size: var(--fs-small); }
+.table caption { text-align: left; color: var(--gray-dark); font-size: var(--fs-small); margin-bottom: var(--space-sm); }
+.table th, .table td { text-align: left; padding: var(--space-sm); border-bottom: 1px solid var(--gray-lighter); vertical-align: top; }
+.table thead th { font-size: var(--fs-tiny); text-transform: uppercase; letter-spacing: 0.06em; color: var(--gray-dark); font-weight: var(--fw-semibold); }
+.table--compare thead th:not(:first-child), .table--compare td:not(:first-child) { text-align: center; }
+/* On a dark surface every text field re-colours for AA: body cells go white
+   (~17:1 on midnight), while the header eyebrow and caption lift to light gray
+   (~12:1) — never left at the light-mode --gray-dark, which is ~2.6:1 here. */
+.surface-dark .table th, .surface-dark .table td { color: var(--white); border-color: rgba(255, 255, 255, 0.16); }
+.surface-dark .table thead th { color: var(--gray-light); }
+.surface-dark .table caption { color: var(--gray-light); }
+
+/* ---- Testimonial (quote + avatar + author) ---- */
+.testimonial__quote { font-size: var(--fs-h5); font-weight: var(--fw-light); line-height: 1.3; color: var(--primary); margin: 0; }
+.testimonial__author { display: flex; align-items: center; gap: var(--space-sm); margin-top: var(--space-md); }
+.testimonial__name { font-weight: var(--fw-semibold); font-size: var(--fs-small); }
+.testimonial__role { color: var(--gray-dark); font-size: var(--fs-small); }
+.surface-dark .testimonial__quote { color: var(--white); }
+.surface-dark .testimonial__role { color: var(--gray-light); }
+
+/* ---- CTA banner (closing call-to-action, on midnight blue) ---- */
+.cta { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-md); padding: var(--space-xl); background: var(--primary); color: var(--white); border-radius: var(--radius-global); }
+.cta__title { font-size: var(--fs-h3); font-weight: var(--fw-semibold); color: var(--white); margin: 0; max-width: 20ch; }
+.cta p { color: var(--gray-light); margin: 0; max-width: 52ch; }
+.cta .btn--hollow { border-color: var(--accent3-light); color: var(--accent3-light); }
+.cta--center { align-items: center; text-align: center; }
+
+/* ---- Figure (media + caption; pair with .reveal--clip to reveal on scroll) ---- */
+.figure { margin: 0; }
+.figure__media, .figure img { display: block; width: 100%; border-radius: var(--radius-card); }
+.figure__caption { margin-top: var(--space-sm); font-size: var(--fs-small); color: var(--gray-dark); }
+.surface-dark .figure__caption { color: var(--gray-light); }
+
+/* ---- Quote (feature message: oversized mark + statement + attribution) ----
+   A full-width quote moment. Best on `.surface-dark` (midnight + white),
+   per the reference; also works on light (midnight type). Sizes come from
+   the type scale; the decorative mark is derived from --fs-h1 (no literal px).
+   The component adds NO horizontal padding of its own — it fills its container,
+   so any inset comes only from the wrapper the page gives it (never doubled). */
+.quote { display: flex; gap: var(--space-md); align-items: flex-start; }
+.quote__mark {
+  flex: none;
+  font-family: var(--font-sans);
+  font-weight: var(--fw-semibold);
+  font-size: calc(var(--fs-h1) * 3);   /* oversized decorative opening quote */
+  line-height: 0.8;
+  margin-top: -0.08em;
+  color: var(--primary);
+  user-select: none;
+}
+.quote__body { min-width: 0; }
+.quote__text {
+  margin: 0;
+  font-size: var(--fs-h1);
+  font-weight: var(--fw-semibold);
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: var(--primary);
+  /* A generous measure: the statement fills the available width and only caps
+     for readability on very wide fields — it never packs into a tall, narrow
+     column the way a tight measure would once the wrapper adds its own padding. */
+  max-width: 32ch;
+}
+.quote__cite {
+  display: block;
+  margin-top: var(--space-md);
+  font-size: var(--fs-h5);
+  font-weight: var(--fw-regular);
+  font-style: normal;
+  color: var(--gray-dark);
+}
+.quote__cite::before { content: "– "; }   /* leading en dash */
+.surface-dark .quote__mark,
+.surface-dark .quote__text { color: var(--white); }
+.surface-dark .quote__cite { color: var(--gray-light); }
+@media (max-width: 720px) { .quote { flex-direction: column; gap: var(--space-2xs); } }
+
+/* ---- Editorial spread (two-page trend layout) ------------------------------
+   A full article spread: an ARTICLE column (display headline + navy label +
+   prose) beside an ASIDE column of stacked media + caption rows. It's an
+   editorial layout that WANTS width — give it a wide/full container
+   (e.g. .cm-container--wide). It stays responsive: the two columns collapse to
+   one when the page is narrow, and each image+caption row stacks (image over
+   caption, full width) based on its OWN width via a container query — so the
+   caption never gets squeezed into a tall, packed column.
+   Images are placeholders — drop an <img> into any .spread__media (relative
+   path to your project's assets/) and it fills the frame. The media is NOT
+   animation-gated (no .reveal on it), so images always appear whether or not
+   the JS runs; add .reveal only to the text pieces if you want a copy load-in.
+   Everything draws colour/type/space from the tokens. */
+.spread {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-xl);
+  align-items: start;
+}
+.spread__main { display: flex; flex-direction: column; gap: var(--space-xl); }
+/* The aside is a query container so its rows respond to their own width, not
+   the viewport — the fix for starved captions when the spread is only half-wide. */
+.spread__aside { display: flex; flex-direction: column; gap: var(--space-lg); container-type: inline-size; }
+
+/* Article column */
+.spread__header { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-sm); }
+.spread__title { margin: 0; max-width: 16ch; font-size: var(--fs-h1); font-weight: var(--fw-semibold); line-height: 1.0; letter-spacing: -0.02em; color: var(--primary); }
+/* Navy label under the title — a scaled-up take on the .tag idiom */
+.spread__label { display: inline-flex; align-items: center; padding: var(--space-2xs) var(--space-sm); background: var(--primary); color: var(--white); font-size: var(--fs-h5); font-weight: var(--fw-semibold); line-height: 1; }
+.spread__body { max-width: 60ch; color: var(--primary); font-size: var(--fs-body); line-height: 1.6; }
+.spread__body > * { margin: 0 0 1em; }
+.spread__body > *:last-child { margin-bottom: 0; }
+.spread__body strong, .spread__subhead { font-weight: var(--fw-semibold); }
+
+/* Aside column: image + caption rows. Caption keeps a fair, readable share. */
+.spread__item { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: var(--space-md); align-items: center; }
+/* Media placeholder: a neutral field with a defined edge + hint, so a missing
+   or wrong-path image still reads clearly as "image goes here" (rather than
+   blending into a light page). A real <img> covers the edge and hint entirely. */
+.spread__media { position: relative; overflow: hidden; aspect-ratio: 8 / 7; min-height: 8rem; border-radius: var(--radius-card); background: var(--gray-lighter); box-shadow: inset 0 0 0 1px var(--gray-light); display: grid; place-items: center; }
+.spread__media img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+.spread__media-hint { color: var(--gray-medium); font-size: var(--fs-small); letter-spacing: 0.08em; text-transform: uppercase; }
+.spread__caption { display: flex; flex-direction: column; gap: var(--space-2xs); color: var(--primary); }
+.spread__caption-title { margin: 0; font-size: var(--fs-h5); font-weight: var(--fw-semibold); line-height: 1.1; }
+.spread__caption p { margin: 0; font-size: var(--fs-body); line-height: 1.4; }
+
+/* When a row's own width is too tight for a comfortable side-by-side, stack the
+   image over the caption (full width) instead of squeezing the caption. */
+@container (max-width: 600px) {
+  .spread__item { grid-template-columns: 1fr; gap: var(--space-sm); }
+  .spread__media { aspect-ratio: 16 / 9; }
+}
+/* Collapse the two columns to one when the page itself is narrow. */
+@media (max-width: 900px) {
+  .spread { grid-template-columns: 1fr; gap: var(--space-lg); }
+}

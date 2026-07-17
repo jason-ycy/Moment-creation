@@ -11,10 +11,11 @@
      a case study would, so it doubles as a validation harness:
      if a token/component looks right here, the CSS files are correct.
 
-     Because this file sits inside /brand, the paths are:
+     Because this file sits inside this brand's /brand folder, the paths are:
        css/cognizant-moment.css   (fonts + icons self-resolve)
        js/cognizant-moment.js
-     A case study at the repo root would use brand/css/… instead.
+     A case study in /projects/{project-name}/ links these as
+     ../../DesignLibrary/CognizantMoment/brand/css/… instead.
      ========================================================== -->
 <link rel="stylesheet" href="css/cognizant-moment.css">
 <script src="js/cognizant-moment.js" defer></script>
@@ -30,9 +31,6 @@ html { scroll-behavior: smooth; }
 :root { --nav-w: 248px; }
 
 code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .85em; background: var(--gray-lightest); padding: .1em .4em; border-radius: 4px; }
-
-/* Scroll progress */
-.progress { position: fixed; top: 0; left: var(--nav-w); right: 0; height: 2px; background: var(--accent3-light); transform: scaleX(0); transform-origin: 0 50%; z-index: 20; }
 
 /* Side nav */
 .nav { position: fixed; top: 0; left: 0; bottom: 0; width: var(--nav-w); background: #00003a; color: var(--white); padding: 1.75rem 1.25rem; overflow-y: auto; z-index: 10;
@@ -54,20 +52,18 @@ main section:last-child { border-bottom: 0; }
 .sec-title { font-size: clamp(2rem, 1.4rem + 2vw, 3rem); font-weight: var(--fw-semibold); margin: 0 0 1.25rem; line-height: 1.1; letter-spacing: -0.01em; }
 
 /* Hero — atmospheric brand navy, distinct from the flat nav via gradient depth + teal seam */
-.hero { position: relative; margin-left: var(--nav-w); color: var(--white); padding: clamp(3.5rem, 8vw, 7rem) clamp(1.5rem, 4vw, 4.5rem); overflow: hidden;
+.ds-hero { position: relative; margin-left: var(--nav-w); color: var(--white); padding: clamp(3.5rem, 8vw, 7rem) clamp(1.5rem, 4vw, 4.5rem); overflow: hidden;
   background:
     radial-gradient(120% 130% at 0% 0%, rgba(38,239,233,.16), transparent 46%),
     radial-gradient(100% 130% at 100% 100%, rgba(115,115,216,.24), transparent 52%),
     linear-gradient(135deg, #00013c 0%, #000048 52%, #0a1160 100%); }
-.hero::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: linear-gradient(var(--accent3-light), var(--accent1-medium)); }
-.hero > * { position: relative; }
-.hero h1 { font-size: clamp(2.5rem, 4.5vw, 4.75rem); font-weight: var(--fw-semibold); color: var(--white); margin: 0 0 1.1rem; line-height: 1.03; letter-spacing: -0.02em; max-width: 16ch; }
-.hero p { font-size: clamp(1.1rem, 1.6vw, 1.5rem); font-weight: var(--fw-light); max-width: 44ch; margin: 0; color: rgba(255,255,255,.86); }
-.hero .tag { display: inline-flex; align-items: center; gap: .5rem; font-size: var(--fs-tiny); letter-spacing: .12em; text-transform: uppercase; color: var(--accent3-light); font-weight: var(--fw-semibold); margin-bottom: 1.4rem; }
-.hero .tag::before { content: ""; width: 22px; height: 1px; background: var(--accent3-light); display: inline-block; }
-.hero .tag, .hero h1, .hero p { opacity: 0; animation: rise 700ms var(--ease-out) forwards; }
-.hero h1 { animation-delay: 90ms; }
-.hero p { animation-delay: 180ms; }
+.ds-hero::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: linear-gradient(var(--accent3-light), var(--accent1-medium)); }
+.ds-hero > * { position: relative; }
+.ds-hero h1 { font-size: clamp(2.5rem, 4.5vw, 4.75rem); font-weight: var(--fw-semibold); color: var(--white); margin: 0 0 1.1rem; line-height: 1.03; letter-spacing: -0.02em; max-width: 16ch; }
+.ds-hero p { font-size: clamp(1.1rem, 1.6vw, 1.5rem); font-weight: var(--fw-light); max-width: 44ch; margin: 0; color: rgba(255,255,255,.86); }
+.ds-hero h1, .ds-hero p { opacity: 0; animation: rise 700ms var(--ease-out) forwards; }
+.ds-hero h1 { animation-delay: 90ms; }
+.ds-hero p { animation-delay: 180ms; }
 @keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
 
 /* Colour swatches (reference display) */
@@ -128,19 +124,19 @@ table.voice .say { color: var(--accent3-dark); } table.voice .dont { color: var(
   .nav { position: static; width: auto; height: auto; border-right: 0; box-shadow: none; border-bottom: 1px solid rgba(255,255,255,.1); }
   .nav ul { display: flex; flex-wrap: wrap; gap: .25rem; }
   .nav a { opacity: 1; }
-  main, .hero { margin-left: 0; }
-  .progress { left: 0; }
+  main, .ds-hero { margin-left: 0; }
   .type-row { grid-template-columns: 1fr; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .hero .tag, .hero h1, .hero p { opacity: 1; animation: none; }
+  .ds-hero h1, .ds-hero p { opacity: 1; animation: none; }
   .swatch:hover, .card:hover { transform: none; }
 }
 </style>
 </head>
 <body>
 
-<div class="progress" id="progress" aria-hidden="true"></div>
+<!-- Shared scroll-progress molecule (driven by the JS enhancer via data-cm-progress) -->
+<div class="progress-top" data-cm-progress aria-hidden="true"><span class="progress-top__bar"></span></div>
 
 <!-- ============ NAV ============ -->
 <nav class="nav">
@@ -155,15 +151,16 @@ table.voice .say { color: var(--accent3-dark); } table.voice .dont { color: var(
     <li><a href="#accessibility">4 · Accessibility</a></li>
     <li><a href="#type">5 · Typography</a></li>
     <li><a href="#components">6 · Components</a></li>
+    <li><a href="#atoms">6a · New atoms</a></li>
+    <li><a href="#patterns">6b · Playbook patterns</a></li>
     <li><a href="#tokens">7 · Tokens</a></li>
   </ul>
 </nav>
 
 <!-- ============ HERO ============ -->
-<header class="hero">
-  <span class="tag">Sub-brand of Cognizant</span>
+<header class="ds-hero">
   <h1>We are creative technologists.</h1>
-  <p>Bringing innovation to life — harnessing emerging technologies to deliver hyper-personalized, dynamic experiences.</p>
+  <p>A sub-brand of Cognizant, bringing innovation to life for a world of deeply connected human experiences.</p>
 </header>
 
 <main>
@@ -188,7 +185,7 @@ table.voice .say { color: var(--accent3-dark); } table.voice .dont { color: var(
   </div>
 
   <h3 class="sub">Logo</h3>
-  <p class="lead">Files live in <code>brand/logos/</code>. Only <strong>two</strong> variants exist. <strong>Never modify the logo</strong> — not the wordmark, not the hexagon; don't separate, recolour, or recreate it. Pick the variant by background; scale by height only (ratio 200×47 ≈ 4.26:1); min ~24px tall; keep clear space around it.</p>
+  <p class="lead">Files live in <code>DesignLibrary/CognizantMoment/brand/logos/</code>. Only <strong>two</strong> variants exist. <strong>Never modify the logo</strong> — not the wordmark, not the hexagon; don't separate, recolour, or recreate it. Pick the variant by background; scale by height only (ratio 200×47 ≈ 4.26:1); min ~24px tall; keep clear space around it.</p>
   <div class="grid" style="grid-template-columns:1fr 1fr;gap:1rem;margin-top:1rem">
     <div class="pair on-white" style="display:flex;flex-direction:column;gap:.75rem;align-items:flex-start">
       <img src="logos/Main_logo.svg" alt="Cognizant Moment" style="height:40px;width:auto">
@@ -402,6 +399,242 @@ table.voice .say { color: var(--accent3-dark); } table.voice .dont { color: var(
   </div>
 </section>
 
+<!-- 6a · NEW ATOMS -->
+<section id="atoms" class="reveal">
+  <p class="eyebrow">06a · Atoms</p>
+  <h2 class="sec-title">Building blocks</h2>
+  <p class="lead">The smallest pieces, added for the playbook library. Every one draws colour, type and spacing from the tokens — nothing is styled on this page.</p>
+
+  <h3 class="sub">Subtitle</h3>
+  <p class="hint">Sentence case, sits below the title, with an automatic leading en-dash.</p>
+  <div>
+    <p style="font-size:var(--fs-h3);font-weight:var(--fw-semibold);color:var(--primary);margin:0;line-height:1.1">Human+</p>
+    <p class="subtitle">A new age of identity</p>
+  </div>
+
+  <h3 class="sub">Badge &amp; tag</h3>
+  <div class="cluster">
+    <span class="badge">Draft</span>
+    <span class="badge badge--info">Info</span>
+    <span class="badge badge--success">Live</span>
+    <span class="badge badge--warning">Beta</span>
+    <span class="badge badge--error">Deprecated</span>
+    <span class="tag">Life sciences</span>
+  </div>
+
+  <h3 class="sub">Divider</h3>
+  <hr class="divider">
+  <p class="hint">A hairline rule — <code>.divider</code> (horizontal) or <code>.divider--vertical</code> inside a cluster.</p>
+
+  <h3 class="sub">Stat — counts up on scroll</h3>
+  <div class="stats">
+    <div class="stat">
+      <div class="stat__value" data-cm-count="3" data-cm-count-suffix="×">0</div>
+      <div class="stat__label">faster to launch</div>
+    </div>
+    <div class="stat">
+      <div class="stat__value" data-cm-count="87" data-cm-count-suffix="%">0</div>
+      <div class="stat__label">adoption in six months</div>
+      <div class="stat__delta">up on last year <span class="icon-arrow icon-arrow--up" aria-hidden="true"></span></div>
+    </div>
+    <div class="stat">
+      <div class="stat__value" data-cm-count="1.4" data-cm-count-decimals="1" data-cm-count-prefix="$" data-cm-count-suffix="M">0</div>
+      <div class="stat__label">annual saving</div>
+    </div>
+  </div>
+
+  <h3 class="sub">Meter — fills on scroll</h3>
+  <div class="stack" style="max-width:420px">
+    <div><p class="hint" style="margin:0 0 .35rem">Awareness · 72%</p><span class="meter" data-cm-meter="72"><span class="meter__fill"></span></span></div>
+    <div><p class="hint" style="margin:0 0 .35rem">Consideration · 45%</p><span class="meter" data-cm-meter="45"><span class="meter__fill"></span></span></div>
+  </div>
+
+  <h3 class="sub">Pull-quote</h3>
+  <blockquote class="pullquote">
+    <p class="pullquote__text">Change doesn't have to be loud to be powerful.</p>
+    <cite class="pullquote__cite">— Cognizant Moment</cite>
+  </blockquote>
+
+  <h3 class="sub">Avatar</h3>
+  <div class="cluster">
+    <span class="avatar avatar--sm" style="background:linear-gradient(135deg,var(--accent1-light),var(--accent3-medium))"></span>
+    <span class="avatar" style="background:linear-gradient(135deg,var(--accent2-medium),var(--accent3-light))"></span>
+    <span class="avatar avatar--lg" style="background:linear-gradient(135deg,var(--accent1-dark),var(--accent2-medium))"></span>
+  </div>
+
+  <h3 class="sub">Button sizes &amp; state</h3>
+  <div class="cluster">
+    <button class="btn btn--small">Small <span class="icon-arrow" aria-hidden="true"></span></button>
+    <button class="btn">Default <span class="icon-arrow" aria-hidden="true"></span></button>
+    <button class="btn btn--large">Large <span class="icon-arrow" aria-hidden="true"></span></button>
+    <button class="btn" disabled>Disabled</button>
+  </div>
+</section>
+
+<!-- 6b · PLAYBOOK PATTERNS (MOLECULES) -->
+<section id="patterns" class="reveal">
+  <p class="eyebrow">06b · Molecules</p>
+  <h2 class="sec-title">Playbook patterns</h2>
+  <p class="lead">Composed patterns for assembling interactive, informative case-study playbooks — generous whitespace, smooth scroll-triggered reveals, all on-brand.</p>
+
+  <h3 class="sub">Hero — one line over an image</h3>
+  <p class="hint">Single minimalist statement over a project hero photo, with a navy legibility scrim that keeps white copy above WCAG AA; staggered load reveal. The gradient below is a placeholder for the project image.</p>
+  <header class="hero surface-dark" data-cm-stagger style="border-radius:var(--radius-global);padding-inline:clamp(1.5rem,4vw,3.5rem);margin-top:1rem">
+    <span class="hero__image" aria-hidden="true" style="background:linear-gradient(135deg,var(--accent1-dark),var(--accent3-medium))"></span>
+    <div class="hero__overlay" aria-hidden="true"></div>
+    <h1 class="hero__title reveal">Human+</h1>
+    <p class="subtitle reveal">A new age of identity</p>
+  </header>
+
+  <h3 class="sub">Hero — split (Type B)</h3>
+  <p class="hint">Layered image mask (background + centred inset foreground that drifts subtly on scroll — parallax) beside a navy panel with badge, title, subtitle and body. Gradients below are placeholders for project images.</p>
+  <section class="hero-split" style="min-height:440px;border-radius:var(--radius-global);overflow:hidden;margin-top:1rem">
+    <div class="hero-split__media">
+      <span class="hero-split__back" style="background:linear-gradient(135deg,var(--accent1-dark),var(--accent2-dark))"></span>
+      <span class="hero-split__front" data-cm-parallax="0.06" style="background:linear-gradient(135deg,var(--accent3-medium),var(--accent2-light))"></span>
+    </div>
+    <div class="hero-split__panel">
+      <span class="tag tag--lg">Trend 4</span>
+      <h2 class="hero-split__title">Life Beyond the Screen</h2>
+      <p class="subtitle">Invisible tech is on its way</p>
+      <p class="hero-split__body">We're glimpsing a shift in personal computing, with emerging AI wearables promising to reduce our reliance on smartphones and screens.</p>
+    </div>
+  </section>
+
+  <h3 class="sub">Section head</h3>
+  <header class="section-head">
+    <span class="tag">Trend 4</span>
+    <h2 class="section-head__title">Life Beyond the Screen</h2>
+    <p class="subtitle">Invisible tech is on its way</p>
+  </header>
+
+  <h3 class="sub">Table of contents + scrollspy</h3>
+  <p class="hint">Sticky <code>.toc</code> highlights the section in view; pair with the <code>.split--toc</code> layout.</p>
+  <div class="split--toc" style="margin-top:1rem">
+    <nav class="toc" data-cm-toc aria-label="Contents">
+      <a href="#p-opportunity">The opportunity</a>
+      <a href="#p-approach">The approach</a>
+      <a href="#p-impact">The impact</a>
+    </nav>
+    <div class="stack--lg">
+      <div id="p-opportunity"><h4>The opportunity</h4><p class="measure">Every experience is a chance to build trust. We start by finding the moments that matter most to real people.</p></div>
+      <div id="p-approach"><h4>The approach</h4><p class="measure">Intelligent experience orchestration — connecting data, technology, and operations across the whole ecosystem.</p></div>
+      <div id="p-impact"><h4>The impact</h4><p class="measure">Delighted customers, measurable growth, and systems that keep improving after launch.</p></div>
+    </div>
+  </div>
+
+  <h3 class="sub">Stats grid</h3>
+  <div class="stats">
+    <div class="stat"><div class="stat__value" data-cm-count="12">0</div><div class="stat__label">markets launched</div></div>
+    <div class="stat"><div class="stat__value" data-cm-count="4.8" data-cm-count-decimals="1">0</div><div class="stat__label">avg. app rating</div></div>
+    <div class="stat"><div class="stat__value" data-cm-count="63" data-cm-count-suffix="%">0</div><div class="stat__label">lift in engagement</div></div>
+  </div>
+
+  <h3 class="sub">Data / comparison table</h3>
+  <p class="hint">Hairline-ruled comparison. On a dark field the text re-colours automatically for WCAG AA (body cells white, eyebrow + caption light gray).</p>
+  <table class="table table--compare" style="margin-top:1rem">
+    <caption>Before and after the transformation</caption>
+    <thead><tr><th scope="col">Capability</th><th scope="col">Before</th><th scope="col">After</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">Time to insight</th><td>6 weeks</td><td>2 days</td></tr>
+      <tr><th scope="row">Release cadence</th><td>Quarterly</td><td>Weekly</td></tr>
+      <tr><th scope="row">Personalised journeys</th><td>1</td><td>40+</td></tr>
+    </tbody>
+  </table>
+  <div class="surface-dark" style="border-radius:var(--radius-global);padding:clamp(1.5rem,4vw,2.5rem);margin-top:1rem">
+    <table class="table table--compare">
+      <caption>Same table on a midnight-blue surface</caption>
+      <thead><tr><th scope="col">Capability</th><th scope="col">Before</th><th scope="col">After</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Time to insight</th><td>6 weeks</td><td>2 days</td></tr>
+        <tr><th scope="row">Release cadence</th><td>Quarterly</td><td>Weekly</td></tr>
+        <tr><th scope="row">Personalised journeys</th><td>1</td><td>40+</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 class="sub">Testimonial</h3>
+  <figure class="testimonial" style="max-width:620px">
+    <blockquote class="testimonial__quote">They made a complex transformation feel effortless — and unmistakably human.</blockquote>
+    <figcaption class="testimonial__author">
+      <span class="avatar" style="background:linear-gradient(135deg,var(--accent2-medium),var(--accent3-light))"></span>
+      <span><span class="testimonial__name">Jordan Lee</span><br><span class="testimonial__role">VP Experience, Acme</span></span>
+    </figcaption>
+  </figure>
+
+  <h3 class="sub">Figure — wipes in on scroll</h3>
+  <figure class="figure" style="margin-top:1rem;max-width:720px">
+    <span class="figure__media reveal reveal--clip" style="aspect-ratio:16/9;background:linear-gradient(135deg,var(--accent1-dark),var(--accent3-medium))"></span>
+    <figcaption class="figure__caption">Fig 1. The end-to-end experience journey.</figcaption>
+  </figure>
+
+  <h3 class="sub">Quote — feature message</h3>
+  <p class="hint">Oversized mark + statement + attribution. Best on a midnight-blue field; the citation dash is automatic.</p>
+  <figure class="quote surface-dark" style="border-radius:var(--radius-global);padding:clamp(2rem,5vw,4rem);margin-top:1rem">
+    <span class="quote__mark" aria-hidden="true">“</span>
+    <div class="quote__body">
+      <blockquote class="quote__text">There is no such thing as ‘online vs. real life’ — all life is real.</blockquote>
+      <cite class="quote__cite">Matt Klein, on the Digital Dualism Fallacy</cite>
+    </div>
+  </figure>
+
+  <h3 class="sub">CTA banner</h3>
+  <section class="cta cta--center" style="margin-top:1rem">
+    <h2 class="cta__title">Let's build your moment.</h2>
+    <p>Start a conversation with the Cognizant Moment team.</p>
+    <a class="btn" href="#patterns">Get in touch <span class="icon-arrow" aria-hidden="true"></span></a>
+  </section>
+
+  <h3 class="sub">Site footer</h3>
+  <footer class="site-footer" style="border-radius:var(--radius-global);margin-top:1rem">
+    <div class="cm-container site-footer__bar">
+      <img class="site-footer__logo" src="logos/Main_logo_reversed.svg" alt="Cognizant Moment">
+      <p class="site-footer__note">© Cognizant Moment — a sub-brand of Cognizant.</p>
+    </div>
+  </footer>
+
+  <h3 class="sub">Editorial spread — trend article</h3>
+  <p class="hint">Two-column article spread: display headline + navy label + prose beside a stack of image + caption rows, closed by a running footer. Images are placeholders — drop an <code>&lt;img&gt;</code> into any <code>.spread__media</code>. Collapses to one column on narrow screens.</p>
+  <article class="spread" data-cm-stagger style="margin-top:1rem">
+    <div class="spread__main">
+      <header class="spread__header">
+        <h1 class="spread__title reveal">Screenless Futures</h1>
+        <span class="spread__label reveal">Looking back up</span>
+      </header>
+      <div class="spread__body reveal">
+        <p><strong>Advances in AI may allow us to finally let go of the smartphone.</strong> A new range of devices with no screens and minimal interfaces promises to remove the digital barrier between us and our ability to really live in the moment.</p>
+        <p>These devices promise to change the way we complete everyday tasks. Rather than using different apps for different tasks, we'll simply tell the device, in everyday language, what we want to do. AI will work in the background to support meaningful interactions — without the need to be tethered to screens.</p>
+        <p class="spread__subhead">Why it matters</p>
+        <p>Screenless tech represents a fundamental change in how we interact with, and experience, the digital world. For business, this trend opens up a realm of possibilities to innovate customer experiences that cater to the growing consumer demand for authenticity and simplicity.</p>
+        <p>By embracing AI wearables and screenless interfaces, organisations can create more immersive, personalised and seamless interactions with their products and services.</p>
+      </div>
+    </div>
+    <div class="spread__aside">
+      <div class="spread__item">
+        <div class="spread__media"><span class="spread__media-hint">Image</span></div>
+        <div class="spread__caption reveal">
+          <h3 class="spread__caption-title">No phone necessary</h3>
+          <p>Nike founder Phil Knight was the only one content to enjoy that winning moment without his phone.</p>
+        </div>
+      </div>
+      <div class="spread__item">
+        <div class="spread__media"><span class="spread__media-hint">Image</span></div>
+        <div class="spread__caption reveal">
+          <h3 class="spread__caption-title">AI Pin from Hu.ma.ne</h3>
+          <p>Ready to quash your dependency on smartphones? This screenless personal AI assistant brings you back to the present moment.</p>
+        </div>
+      </div>
+      <div class="spread__item">
+        <div class="spread__media"><span class="spread__media-hint">Image</span></div>
+        <div class="spread__caption reveal">
+          <h3 class="spread__caption-title">Hello spatial computing</h3>
+          <p>Apple Vision Pro dives into an infinite canvas that seamlessly blends digital content with your sensory physical space.</p>
+        </div>
+      </div>
+    </div>
+  </article>
+</section>
+
 <!-- 7 · TOKENS -->
 <section id="tokens" class="reveal">
   <p class="eyebrow">07 · Tokens</p>
@@ -416,7 +649,7 @@ table.voice .say { color: var(--accent3-dark); } table.voice .dont { color: var(
     <div><strong>Contrast target</strong><p class="hint">WCAG AA · ≥ 4.5:1</p></div>
   </div>
   <div class="surface-dark" style="margin-top:2rem;padding:1.5rem;border-radius:var(--radius-global)">
-    <p style="margin:0;color:var(--white)">This page links <code style="background:rgba(255,255,255,.12);color:#fff">css/cognizant-moment.css</code> + <code style="background:rgba(255,255,255,.12);color:#fff">js/cognizant-moment.js</code> — the same files a case study links as <code style="background:rgba(255,255,255,.12);color:#fff">brand/css/…</code>. The full spec lives in <code style="background:rgba(255,255,255,.12);color:#fff">DESIGN.md</code>.</p>
+    <p style="margin:0;color:var(--white)">This page links <code style="background:rgba(255,255,255,.12);color:#fff">css/cognizant-moment.css</code> + <code style="background:rgba(255,255,255,.12);color:#fff">js/cognizant-moment.js</code> — the same files a case study links as <code style="background:rgba(255,255,255,.12);color:#fff">../../DesignLibrary/CognizantMoment/brand/css/…</code>. The full spec lives in <code style="background:rgba(255,255,255,.12);color:#fff">DESIGN.md</code>.</p>
   </div>
 </section>
 
@@ -445,15 +678,8 @@ document.querySelectorAll('.swatches[data-group]').forEach(box=>{
   });
 });
 
-// Scroll progress bar (page chrome; rAF-throttled)
-const prog=document.getElementById('progress');let ticking=false;
-function updateProgress(){
-  const h=document.documentElement.scrollHeight-innerHeight;
-  prog.style.transform='scaleX('+(h>0?Math.min(scrollY/h,1):0)+')';
-  ticking=false;
-}
-addEventListener('scroll',()=>{if(!ticking){ticking=true;requestAnimationFrame(updateProgress);}},{passive:true});
-updateProgress();
+// Scroll progress is now the shared .progress-top molecule (data-cm-progress),
+// driven by js/cognizant-moment.js — no page chrome needed for it.
 
 // Scrollspy: highlight the active nav link (page chrome)
 const navLinks=[...document.querySelectorAll('.nav a[href^="#"]')];

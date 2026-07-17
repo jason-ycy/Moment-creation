@@ -44,8 +44,10 @@ Open the folder in your editor (with Claude Code / the Claude extension running)
 Figma, make sure the **Figma MCP connector** is enabled in Claude — that's what lets Claude read your
 Figma designs directly. If it isn't connected yet, ask Claude and it'll point you to the setup.
 
-> 📖 Before you build anything, skim **[DESIGN.md](DESIGN.md)** (the brand rules) and
-> **[CLAUDE.md](CLAUDE.md)** (how we work here). They're the single source of truth for both you and Claude.
+> 📖 Before you build anything, skim **[CLAUDE.md](CLAUDE.md)** (how the Creation Engine works) and the
+> brand spec for whatever brand you're using — e.g. **[DesignLibrary/CognizantMoment/DESIGN.md](DesignLibrary/CognizantMoment/DESIGN.md)**.
+> They're the single source of truth for both you and Claude. When you're ready to make something, Claude
+> follows **[agent.md](agent.md)** to match you to a brand + a skill and build it.
 
 ---
 
@@ -86,7 +88,7 @@ shared brand system, with Claude turning your Figma design into code.
    > Use the Cognizant Moment brand system."*
 3. Claude will:
    - read the design via the **Figma MCP** (`get_design_context`),
-   - **download any images/icons into `projects/acme-rebrand/assets/`** (never into `/brand`),
+   - **download any images/icons into `projects/acme-rebrand/assets/`** (never into the Design Library),
    - generate `projects/acme-rebrand/index.html`, linking the brand CSS/JS and using brand components,
    - keep everything on-palette, in Gellix, and in the Cognizant Moment voice.
 
@@ -105,12 +107,12 @@ The `index.html` links the shared system in one line, so every case study looks 
 **Cognizant Moment** without re-styling from scratch:
 
 ```html
-<link rel="stylesheet" href="../../brand/css/cognizant-moment.css">
-<script src="../../brand/js/cognizant-moment.js" defer></script>
+<link rel="stylesheet" href="../../DesignLibrary/CognizantMoment/brand/css/cognizant-moment.css">
+<script src="../../DesignLibrary/CognizantMoment/brand/js/cognizant-moment.js" defer></script>
 ```
 
-> 🔒 **`/brand` is read-only.** Your project's images and icons live **only** in
-> `projects/{your-project}/assets/` — never in `/brand` (that's everyone's shared foundation) or in
+> 🔒 **The Design Library is read-only.** Your project's images and icons live **only** in
+> `projects/{your-project}/assets/` — never in `DesignLibrary/` (that's everyone's shared foundation) or in
 > someone else's project folder. See [CLAUDE.md](CLAUDE.md) for the full asset & naming rules.
 
 **Preview as you build:** open `projects/acme-rebrand/index.html` in your browser (or use a live-server
@@ -166,14 +168,14 @@ case study is a self-contained folder, you can browse anyone's work without it a
 
 | Path | What it is |
 | --- | --- |
-| **[DESIGN.md](DESIGN.md)** | The brand & design-system spec — colours, type, components, voice. **Read first.** |
-| **[CLAUDE.md](CLAUDE.md)** | How we work here + Git guardrails + how to build a case study. Claude reads this every session. |
-| **[brand/](brand/)** | The implemented design system: CSS, JS, fonts, icons, logos. You **link** it, never rewrite it. |
-| **[brand/design-system.html](brand/design-system.html)** | A live page showing every component. **Copy its patterns.** |
-| **[projects/](projects/)** | Where case studies live — one self-contained `projects/{name}/` folder each. Your workspace. |
+| **[CLAUDE.md](CLAUDE.md)** | How the Creation Engine works + Git guardrails + the rules. Claude reads this every session. |
+| **[agent.md](agent.md)** | The engine's decision flow — matches your brand + artefact to a folder and a skill, then builds. |
+| **[DesignLibrary/](DesignLibrary/)** | The Design Library — one folder per brand. e.g. **[CognizantMoment/](DesignLibrary/CognizantMoment/)** with its [DESIGN.md](DesignLibrary/CognizantMoment/DESIGN.md) + [brand/](DesignLibrary/CognizantMoment/brand/) (CSS, JS, fonts, icons, logos). You **link** it, never rewrite it. |
+| **[design-system.html](DesignLibrary/CognizantMoment/brand/design-system.html)** | A live page showing every Cognizant Moment component. **Copy its patterns.** |
+| **[.claude/skills/](.claude/skills/)** | The skills the engine calls: `create-case-study` (✅), `create-proposal` (🚧), `create-design-system` (🚧). |
+| **[projects/](projects/)** | Where artefacts live — one self-contained `projects/{name}/` folder each. Your workspace. |
 
-Take a look at the existing case studies for reference: [projects/japan-cx/](projects/japan-cx/) and
-[projects/human-experience-playbook/](projects/human-experience-playbook/).
+Take a look at the existing case study for reference: [projects/meridian-health/](projects/meridian-health/).
 
 ---
 
