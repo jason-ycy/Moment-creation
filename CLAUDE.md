@@ -6,17 +6,18 @@ system. Jason has set up the foundation (the Design Library and the skills); you
 part: **tell the engine what you want to make, and build it on top of that foundation.**
 
 This file is for **two readers**:
-- **You (a teammate)** — even if you've never used Git, this walks you through it.
+- **You (a teammate)** — you **download** this project once, then build on top of it with Claude. No Git workflow to learn.
 - **Claude** — the AI assistant reads this every session so it follows our rules and keeps you safe.
 
-> **Two files, two jobs:** **`CLAUDE.md` (this file) is the *context*** — how the engine works, the
-> rules, and Git safety. **[`agent.md`](agent.md) is the *decision-maker*** — the step-by-step flow
+> **Two files, two jobs:** **`CLAUDE.md` (this file) is the *context*** — how the engine works and the
+> rules it must follow. **[`agent.md`](agent.md) is the *decision-maker*** — the step-by-step flow
 > Claude follows to route a request to the right brand and the right skill. When a teammate wants to
 > **create an artefact, Claude reads and follows [`agent.md`](agent.md).**
 
-> **The one golden rule:** `main` is our **shared foundation** — everyone starts from it, nobody edits
-> it directly. You build on **your own branch**, then share finished work back to `main` with a Pull
-> Request. You literally cannot break the shared version. 🙂
+> **How you use this:** the project is a **downloadable toolkit** — you grab a copy, open it with Claude,
+> and build your artefacts locally under `projects/`. The **Design Library is the shared, read-only
+> foundation** everyone builds on; your work lives in your own copy and never changes it. See the
+> [README](README.md) for how to download and get started.
 
 ---
 
@@ -25,8 +26,8 @@ This file is for **two readers**:
 - 🤖 **The engine drives.** Say what you're making; Claude follows [`agent.md`](agent.md) to match you to a **brand** (in the Design Library) and a **skill** (the tool that builds it), confirms, then builds.
 - 📚 **The [Design Library](DesignLibrary/) is the single source of truth.** Each brand lives in its own folder (e.g. [DesignLibrary/CognizantMoment/](DesignLibrary/CognizantMoment/)) with a `DESIGN.md` and its `brand/` assets. Link the brand stylesheet — never reinvent colours, fonts, or components.
 - 📁 **All outputs go in [projects/](projects/):** one self-contained folder each — `projects/{project-name}/` holds an `index.html` **and** its own `assets/`.
-- 🌿 **Never work directly on `main`.** Flow: get latest `main` → make your own branch → build in `projects/` → open a Pull Request back to `main`.
-- 🗣️ **New to Git? Just ask Claude in plain English** ("get me the latest", "make me a branch", "save my work"). Claude **explains what it's about to do and waits for your OK before running anything.**
+- ⬇️ **Download once, build locally.** Grab a copy of this project (see the [README](README.md)), open it with Claude, and build in `projects/`. There's no branching, committing, or pull requests to learn.
+- 🗣️ **Just talk to Claude in plain English** ("build me a case study for Acme from this Figma design"). Claude **explains what it's about to do and waits for your OK before running anything.**
 
 ---
 
@@ -40,7 +41,8 @@ This file is for **two readers**:
 | **[design-system.html](DesignLibrary/CognizantMoment/brand/design-system.html)** | A live page to **review** a brand's components (Cognizant Moment). A reference for *seeing* the system — not an implementation source. |
 | **[.claude/skills/](.claude/skills/)** | The **skills** — the tools the engine calls per artefact type: `create-case-study` (✅), `create-proposal` (🚧), `create-design-system` (🚧). |
 | **[projects/](projects/)** | Where **your** artefacts live — one self-contained folder each (`projects/{project-name}/`). This is your workspace. |
-| **CLAUDE.md** | This file — how the engine works + Git + the rules. |
+| **[README.md](README.md)** | Start here — how to **download** the project and start using the engine. |
+| **CLAUDE.md** | This file — how the engine works + the rules. |
 
 ---
 
@@ -79,76 +81,20 @@ HTML and its assets in one folder means an artefact can be reviewed, moved, or s
 
 ---
 
-## How we collaborate with Git (for people new to Git)
+## How you get and update the project
 
-**The mental model:**
-- 🏠 **`main`** = the shared start line. Always the latest, clean foundation. Nobody works on it directly.
-- 🌿 **Your branch** = your personal sandbox. Copy of `main` with your name on it. Play, experiment, break things freely — it's yours.
-- 🔀 **Pull Request (PR)** = "Hey team, my work is ready — please add it to `main`." That's how finished work becomes shared.
+There's **no Git workflow to learn** — you just need a copy of this project on your machine.
 
-You don't need to memorise any commands. **Just tell Claude what you want in plain English.**
-Claude will always say what it's about to do and ask you to confirm first. The exact commands
-are shown below only as a reference.
+- **Get it:** download the project once (a ZIP from GitHub, or `git clone` if you have Git). The
+  [README](README.md) walks through both. You end up with a `Moment-creation` folder — the whole engine.
+- **Open it:** open that folder in your editor with **Claude Code / the Claude extension** running.
+- **Build:** tell Claude what to make; it builds your artefact into its own `projects/{project-name}/`
+  folder. Your work lives in **your** copy — it's yours to keep, preview, and share as files.
+- **Update it later:** when Jason updates the shared foundation, grab a fresh copy (download the ZIP
+  again, or `git pull` if you cloned) to pick up the latest Design Library.
 
-### The four moments
-
-**1️⃣ Start — get the latest `main`**
-> 🗣️ *Say to Claude:* "Get me the latest version of main before I start."
-
-<details><summary>Commands (reference)</summary>
-
-```bash
-git checkout main
-git pull origin main
-```
-</details>
-
-**2️⃣ Branch — make your own sandbox**
-> 🗣️ *Say to Claude:* "Create a new branch for me called jane/acme-case-study."
-
-Branch name = **`yourname/topic`** (lowercase, dashes, no spaces).
-
-<details><summary>Commands (reference)</summary>
-
-```bash
-git checkout -b jane/acme-case-study
-```
-</details>
-
-**3️⃣ Work — vibe-code your artefact**
-
-Build your project in its own folder, `projects/{project-name}/`. Save often ("commit") so you have checkpoints.
-> 🗣️ *Say to Claude:* "Save my progress with a note about what I changed."
-
-<details><summary>Commands (reference)</summary>
-
-```bash
-git add projects/acme-rebrand/
-git commit -m "Add hero and intro section"
-```
-</details>
-
-**4️⃣ Save & share — push and open a Pull Request**
-
-When your work is ready to share:
-> 🗣️ *Say to Claude:* "Push my branch and open a pull request into main."
-
-<details><summary>Commands (reference)</summary>
-
-```bash
-git push -u origin jane/acme-case-study
-gh pr create --base main --title "Case study: Acme rebrand" --body "..."
-```
-</details>
-
-> 💚 **You can't break the shared foundation.** Your work stays on your branch until a PR is
-> reviewed and merged. And Claude confirms **every** Git action with you before running it — so
-> nothing happens by surprise.
-
-### Keeping your branch fresh
-
-If Jason updates the foundation on `main` while you're working, pull those updates into your branch:
-> 🗣️ *Say to Claude:* "Bring the latest changes from main into my branch."
+> 💚 **You can't break the shared foundation.** The Design Library is read-only, and your build only
+> ever adds files under `projects/` in your own copy. Nothing you do changes anyone else's version.
 
 ---
 
@@ -178,7 +124,7 @@ Those come from the Design Library via `../../DesignLibrary/{Brand}/brand/...` �
 > system) or into another project's folder. The Design Library changes only when Jason deliberately
 > updates a brand's foundation.
 
-> 💡 Tip: match your folder name to your branch topic — branch `jane/acme-rebrand` → folder `projects/acme-rebrand/`.
+> 💡 Tip: keep the project-folder name short and descriptive — e.g. `acme-rebrand`, `meridian-health`.
 
 ---
 
@@ -224,12 +170,14 @@ When working in this repo, Claude must:
 - **Never write into `DesignLibrary/`.** The Design Library is the shared, **read-only** foundation — treat it as off-limits for writes when building an artefact. Assets pulled from a Figma design (or created for a project) live **only** in that project's own `projects/{project-name}/assets/` folder and are scoped to that single project; never place them in `DesignLibrary/` or in another project's folder. Only touch the Design Library when the user explicitly asks to update a brand's foundation itself.
 - **Follow the chosen brand's voice and naming rules** in all generated copy, exactly as that brand's `DESIGN.md` defines them.
 
-**Git safety — critical:**
-- Before running **any** Git command (`pull`, `checkout`/branch, `add`, `commit`, `push`, or opening a PR), **state in plain English what it will do and why, then wait for the user's explicit confirmation.** These teammates are new to Git — keep them in control.
-- **Never commit directly to `main`.** Before committing, check the current branch; if the user is on `main`, offer to create a branch (`yourname/topic`) first.
-- **Never force-push, delete branches, or discard changes** without asking.
-- **Always surface the current branch** before acting, so the user knows where they are.
-- When an artefact looks finished, **offer** to push the branch and open a Pull Request into `main` (use `gh pr create` if available) — only after confirmation.
+**Git safety (the normal flow needs no Git):**
+- Teammates use this project by **downloading it and building locally** — the everyday flow involves
+  **no Git at all**. Don't push teammates toward branching, committing, or PRs; their work simply lives
+  as files under `projects/` in their own copy.
+- **If the user explicitly asks for a Git action** (or is a maintainer updating the foundation), treat Git
+  with care: before running **any** Git command, **state in plain English what it will do and why, then
+  wait for explicit confirmation.** Never commit directly to `main`, never force-push, delete branches, or
+  discard changes without asking, and always surface the current branch first.
 
 ---
 
@@ -242,11 +190,10 @@ When working in this repo, Claude must:
 ```
 (The exact file names are defined in that brand's `DESIGN.md`.)
 
-**Common Git asks** (say these to Claude; it'll confirm before running):
-- "Get me the latest main." → `git checkout main && git pull origin main`
-- "Make me a branch called `name/topic`." → `git checkout -b name/topic`
-- "Save my progress." → `git add … && git commit -m "…"`
-- "Push my branch and open a PR into main." → `git push -u origin name/topic && gh pr create --base main`
+**Get / update the project** (see the [README](README.md) for full steps):
+- **First time:** download the ZIP from GitHub, or `git clone https://github.com/jason-ycy/Moment-creation.git`.
+- **Get the latest foundation:** download a fresh ZIP, or `git pull` if you cloned.
+- **Build something:** just tell Claude — e.g. *"Create a case study for Cognizant Moment from this Figma design."*
 
 **The engine's decision flow:** [agent.md](agent.md)
 **Review a brand's components:** open `DesignLibrary/{Brand}/brand/design-system.html` — for seeing the system only. Do **not** implement from it or reuse its code.
@@ -255,9 +202,9 @@ When working in this repo, Claude must:
 
 ## Don't panic — beginner FAQ
 
-- **"Which branch am I on?"** → Ask Claude "which branch am I on?" It'll tell you. If it says `main`, ask it to make you a branch before you edit.
-- **"How do I get Jason's latest updates?"** → "Bring the latest changes from main into my branch."
-- **"I hit a merge conflict."** → "Help me resolve this merge conflict." Claude will walk you through it step by step.
-- **"I think I broke something."** → You almost certainly didn't break anything shared — your work is on your own branch. Ask Claude "can you help me undo my last change?" and it'll sort it out.
+- **"How do I get the project?"** → Download the ZIP from GitHub (green **Code** button → **Download ZIP**), or ask Claude to help you `git clone` it. The [README](README.md) has both.
+- **"How do I get Jason's latest updates?"** → Grab a fresh copy — download the ZIP again, or ask Claude "pull the latest" if you cloned with Git.
+- **"Where does my work live?"** → In your own copy, under `projects/{your-project}/`. It's yours — nothing you build changes the shared foundation.
+- **"I think I broke something."** → You can't break anything shared — the Design Library is read-only and you're working in your own downloaded copy. Ask Claude "help me undo my last change" and it'll sort it out.
 
 **When in doubt, ask Claude in plain English. That's the whole point.** 🎉
