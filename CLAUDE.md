@@ -38,7 +38,7 @@ This file is for **two readers**:
 | **[agent.md](agent.md)** | **The Creation Engine's decision flow.** Matches your brand + artefact to a folder and a skill, then hands off to build. Claude follows this to route a request. |
 | **[DesignLibrary/](DesignLibrary/)** | The **Design Library** — one folder per brand. Each holds that brand's `DESIGN.md` + `brand/` assets. The single source of truth. |
 | **[DesignLibrary/CognizantMoment/](DesignLibrary/CognizantMoment/)** | The Cognizant Moment brand: [DESIGN.md](DesignLibrary/CognizantMoment/DESIGN.md) (spec — colours, type, components, voice) + [brand/](DesignLibrary/CognizantMoment/brand/) ([css/](DesignLibrary/CognizantMoment/brand/css/), [js/](DesignLibrary/CognizantMoment/brand/js/), fonts, [icons/](DesignLibrary/CognizantMoment/brand/icons/), [logos/](DesignLibrary/CognizantMoment/brand/logos/)). You **link** these — you don't rewrite them. |
-| **[design-system.html](DesignLibrary/CognizantMoment/brand/design-system.html)** | A live page to **review** a brand's components (Cognizant Moment). A reference for *seeing* the system — not an implementation source. |
+| **`DesignLibrary/{Brand}/brand/design-system.html`** | A **human-facing** page for teammates to *view* a brand's components (e.g. [Cognizant Moment's](DesignLibrary/CognizantMoment/brand/design-system.html)). Claude never reads it or reasons from it — it just opens the file when a teammate asks to see the reference. |
 | **[.claude/skills/](.claude/skills/)** | The **skills** — the tools the engine calls per artefact type: `create-case-study` (✅), `create-proposal` (🚧), `create-design-system` (🚧). |
 | **[projects/](projects/)** | Where **your** artefacts live — one self-contained folder each (`projects/{project-name}/`). This is your workspace. |
 | **[README.md](README.md)** | Start here — how to **download** the project and start using the engine. |
@@ -196,7 +196,7 @@ When working in this repo, Claude must:
 - **Build something:** just tell Claude — e.g. *"Create a case study for Cognizant Moment from this Figma design."*
 
 **The engine's decision flow:** [agent.md](agent.md)
-**Review a brand's components:** open `DesignLibrary/{Brand}/brand/design-system.html` — for seeing the system only. Do **not** implement from it or reuse its code.
+**Review a brand's components:** open `DesignLibrary/{Brand}/brand/design-system.html` — a page for *teammates* to view the system. Claude never reads or implements from it; it only opens the file when a teammate asks to see the reference. Build from the brand's `DESIGN.md` and linked CSS/JS instead.
 
 ---
 
