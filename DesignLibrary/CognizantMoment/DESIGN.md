@@ -830,7 +830,9 @@ A **two-column article spread** for a trend/story page: an **article column** (a
 **Images are placeholders.** Each `.spread__media` shows a defined neutral box with an "image" hint until you drop an `<img>` inside, which then fills the frame. Put the `<img>` *inside* `.spread__media` and use a path relative to your `index.html` — e.g. `assets/no-phone.jpg` for an image in the project's own `assets/`. (If an image doesn't appear, the placeholder box stays visible — that's usually a wrong/relative path, not a layout bug.) In the article body, use `<strong>` for the lead sentence and `.spread__subhead` for an inline subheading. The **images are not animation-gated — they always render immediately.** If you want a subtle load-in for the *copy*, wrap the block in `[data-cm-stagger]` and add `.reveal` to the text pieces (headline, label, body, captions); leave `.spread__media` without any reveal class so images never depend on the script to appear.
 
 ```html
-<!-- Give it width: a full-bleed section + the WIDE container (not .cm-container) -->
+<!-- Give it width: a full-bleed section + the WIDE container.
+     .cm-container--wide centres itself, so it works alone OR paired as
+     `cm-container cm-container--wide`. Just don't cap it at the default 1080px. -->
 <section class="cm-section">
  <div class="cm-container--wide">
   <article class="spread" data-cm-stagger>
