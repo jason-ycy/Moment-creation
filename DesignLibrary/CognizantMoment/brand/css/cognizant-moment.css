@@ -12,10 +12,12 @@
    relative to these CSS files, not to your HTML.
 
    Full spec & usage rules: /DESIGN.md
-   Load order matters (tokens → base → components → utilities).
+   Load order matters (tokens → base → components → patterns → utilities).
+   components.css = atoms · patterns.css = molecules (Atomic Design).
    ============================================================ */
 
 @import "tokens.css";
 @import "base.css";
 @import "components.css";
+@import "patterns.css";
 @import "utilities.css";

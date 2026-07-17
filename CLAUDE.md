@@ -1,24 +1,32 @@
-# CLAUDE.md — How we work in this repo
+# CLAUDE.md — How the Creation Engine works
 
-Welcome 👋 This repo is how our team designs **together**. Jason has set up the brand
-foundation — the design system, colours, type, logo, icons, and ready-to-use components.
-Your job is the fun part: **rapid-prototype a case study as a single HTML page** that shows
-off design work, built on top of that foundation.
+Welcome 👋 This repo is a **Creation Engine**: it helps our team produce on-brand artefacts —
+case studies, proposals, design-system implementations — each grounded in a real brand's design
+system. Jason has set up the foundation (the Design Library and the skills); your job is the fun
+part: **tell the engine what you want to make, and build it on top of that foundation.**
 
 This file is for **two readers**:
 - **You (a teammate)** — even if you've never used Git, this walks you through it.
 - **Claude** — the AI assistant reads this every session so it follows our rules and keeps you safe.
 
-> **The one golden rule:** `main` is our **shared foundation** — everyone starts from it, nobody edits it directly. You build on **your own branch**, then share finished work back to `main` with a Pull Request. You literally cannot break the shared version. 🙂
+> **Two files, two jobs:** **`CLAUDE.md` (this file) is the *context*** — how the engine works, the
+> rules, and Git safety. **[`agent.md`](agent.md) is the *decision-maker*** — the step-by-step flow
+> Claude follows to route a request to the right brand and the right skill. When a teammate wants to
+> **create an artefact, Claude reads and follows [`agent.md`](agent.md).**
+
+> **The one golden rule:** `main` is our **shared foundation** — everyone starts from it, nobody edits
+> it directly. You build on **your own branch**, then share finished work back to `main` with a Pull
+> Request. You literally cannot break the shared version. 🙂
 
 ---
 
 ## TL;DR (60 seconds)
 
-- 📖 **[DESIGN.md](DESIGN.md) + [brand/](brand/) are the single source of truth.** Link the brand stylesheet — never reinvent colours, fonts, or components.
-- 🌿 **Never work directly on `main`.** Flow: get latest `main` → make your own branch → build your case study in its own folder under **[projects/](projects/)** → open a Pull Request back to `main`.
-- 📁 **One folder per case study:** `projects/{project-name}/` holds an `index.html` **and** its own `assets/` folder. Everything a case study needs lives together.
-- 🤖 **New to Git? Just ask Claude in plain English** ("get me the latest", "make me a branch", "save my work"). Claude will **explain what it's about to do and wait for your OK before running anything.**
+- 🤖 **The engine drives.** Say what you're making; Claude follows [`agent.md`](agent.md) to match you to a **brand** (in the Design Library) and a **skill** (the tool that builds it), confirms, then builds.
+- 📚 **The [Design Library](DesignLibrary/) is the single source of truth.** Each brand lives in its own folder (e.g. [DesignLibrary/CognizantMoment/](DesignLibrary/CognizantMoment/)) with a `DESIGN.md` and its `brand/` assets. Link the brand stylesheet — never reinvent colours, fonts, or components.
+- 📁 **All outputs go in [projects/](projects/):** one self-contained folder each — `projects/{project-name}/` holds an `index.html` **and** its own `assets/`.
+- 🌿 **Never work directly on `main`.** Flow: get latest `main` → make your own branch → build in `projects/` → open a Pull Request back to `main`.
+- 🗣️ **New to Git? Just ask Claude in plain English** ("get me the latest", "make me a branch", "save my work"). Claude **explains what it's about to do and waits for your OK before running anything.**
 
 ---
 
@@ -26,31 +34,48 @@ This file is for **two readers**:
 
 | Path | What it is |
 | --- | --- |
-| **[DESIGN.md](DESIGN.md)** | The brand & design-system spec — colours, type, components, voice. **Read this first.** Single source of truth. |
-| **[brand/](brand/)** | The actual implementation: [css/](brand/css/), [js/](brand/js/), fonts, [icons/](brand/icons/), [logos/](brand/logos/). You **link** these — you don't rewrite them. |
-| **[brand/design-system.html](brand/design-system.html)** | A live, working page showing every component. **Copy its patterns.** |
-| **[projects/](projects/)** | Where **your** case studies live — one self-contained folder each (`projects/{project-name}/`). This is your workspace. |
-| **CLAUDE.md** | This file — how we work + Git + how to build a case study. |
+| **[agent.md](agent.md)** | **The Creation Engine's decision flow.** Matches your brand + artefact to a folder and a skill, then hands off to build. Claude follows this to route a request. |
+| **[DesignLibrary/](DesignLibrary/)** | The **Design Library** — one folder per brand. Each holds that brand's `DESIGN.md` + `brand/` assets. The single source of truth. |
+| **[DesignLibrary/CognizantMoment/](DesignLibrary/CognizantMoment/)** | The Cognizant Moment brand: [DESIGN.md](DesignLibrary/CognizantMoment/DESIGN.md) (spec — colours, type, components, voice) + [brand/](DesignLibrary/CognizantMoment/brand/) ([css/](DesignLibrary/CognizantMoment/brand/css/), [js/](DesignLibrary/CognizantMoment/brand/js/), fonts, [icons/](DesignLibrary/CognizantMoment/brand/icons/), [logos/](DesignLibrary/CognizantMoment/brand/logos/)). You **link** these — you don't rewrite them. |
+| **[design-system.html](DesignLibrary/CognizantMoment/brand/design-system.html)** | A live page to **review** a brand's components (Cognizant Moment). A reference for *seeing* the system — not an implementation source. |
+| **[.claude/skills/](.claude/skills/)** | The **skills** — the tools the engine calls per artefact type: `create-case-study` (✅), `create-proposal` (🚧), `create-design-system` (🚧). |
+| **[projects/](projects/)** | Where **your** artefacts live — one self-contained folder each (`projects/{project-name}/`). This is your workspace. |
+| **CLAUDE.md** | This file — how the engine works + Git + the rules. |
 
 ---
 
+## The Design Library
+
+Every brand the engine can build for lives as **one self-contained folder** under [DesignLibrary/](DesignLibrary/):
+
+```
+DesignLibrary/
+  CognizantMoment/         ← one brand (PascalCase folder)
+    DESIGN.md              ← that brand's spec — the source of truth
+    brand/                 ← that brand's implementation
+      css/  js/  fonts/  icons/  logos/
+      design-system.html   ← page to review the components (not for implementation)
+```
+
+New brands are added as new folders here (a brand folder may start with just a `DESIGN.md`). The
+engine discovers brands by **listing the folder names** — nothing is hardcoded.
+
 ## The final outcome we're building
 
-**One self-contained folder per case study**, saved under `projects/`:
+**One self-contained folder per artefact**, saved under [projects/](projects/):
 
 ```
 projects/
   acme-rebrand/          ← your project folder (kebab-case name)
-    index.html           ← the case study page (always index.html)
+    index.html           ← the artefact page (always index.html)
     assets/              ← images/icons this page uses (e.g. pulled from Figma)
       hero.png
       diagram.svg
 ```
 
-The `index.html` links the brand CSS/JS and uses the brand's components and copy voice — so
-every case study looks unmistakably **Cognizant Moment** without anyone re-styling from
-scratch. Keeping the HTML and its assets in one folder means a case study can be reviewed,
-moved, or shared as a single unit.
+The `index.html` links the chosen brand's CSS/JS and uses that brand's components and copy voice —
+so every artefact looks unmistakably on-brand without anyone re-styling from scratch. Keeping the
+HTML and its assets in one folder means an artefact can be reviewed, moved, or shared as a single unit.
 
 ---
 
@@ -59,7 +84,7 @@ moved, or shared as a single unit.
 **The mental model:**
 - 🏠 **`main`** = the shared start line. Always the latest, clean foundation. Nobody works on it directly.
 - 🌿 **Your branch** = your personal sandbox. Copy of `main` with your name on it. Play, experiment, break things freely — it's yours.
-- 🔀 **Pull Request (PR)** = "Hey team, my case study is ready — please add it to `main`." That's how finished work becomes shared.
+- 🔀 **Pull Request (PR)** = "Hey team, my work is ready — please add it to `main`." That's how finished work becomes shared.
 
 You don't need to memorise any commands. **Just tell Claude what you want in plain English.**
 Claude will always say what it's about to do and ask you to confirm first. The exact commands
@@ -90,7 +115,7 @@ git checkout -b jane/acme-case-study
 ```
 </details>
 
-**3️⃣ Work — vibe-code your case study**
+**3️⃣ Work — vibe-code your artefact**
 
 Build your project in its own folder, `projects/{project-name}/`. Save often ("commit") so you have checkpoints.
 > 🗣️ *Say to Claude:* "Save my progress with a note about what I changed."
@@ -105,7 +130,7 @@ git commit -m "Add hero and intro section"
 
 **4️⃣ Save & share — push and open a Pull Request**
 
-When your case study is ready to share:
+When your work is ready to share:
 > 🗣️ *Say to Claude:* "Push my branch and open a pull request into main."
 
 <details><summary>Commands (reference)</summary>
@@ -129,86 +154,61 @@ If Jason updates the foundation on `main` while you're working, pull those updat
 
 ## 📁 Naming & file conventions
 
-Every case study is a **self-contained folder**. Follow this exactly (Claude will too):
+Every artefact is a **self-contained folder**. Follow this exactly (Claude will too):
 
 | Thing | Convention | Example |
 | --- | --- | --- |
+| **Brand folder** | `DesignLibrary/{Brand}/` — PascalCase, no spaces | `DesignLibrary/CognizantMoment/` |
 | **Project folder** | `projects/{project-name}/` — short, kebab-case, no spaces or capitals | `projects/acme-rebrand/` |
 | **HTML file** | always `index.html` (one per project) | `projects/acme-rebrand/index.html` |
 | **Assets folder** | `projects/{project-name}/assets/` | `projects/acme-rebrand/assets/` |
 | **Asset files** | kebab-case, descriptive | `assets/hero-banner.png`, `assets/journey-map.svg` |
 
-**What goes in `assets/`:** everything *this* page loads that isn't part of the shared brand —
+**What goes in `assets/`:** everything *this* page loads that isn't part of a brand's shared system —
 images, photography, and any custom icons (e.g. pulled from Figma). Reference them with plain
 relative paths: `<img src="assets/hero-banner.png">`.
 
 **What does NOT go in `assets/`:** the brand logo, arrow icons, fonts, and design-system CSS/JS.
-Those come from the shared foundation via `../../brand/...` — never copy them into your project.
+Those come from the Design Library via `../../DesignLibrary/{Brand}/brand/...` — never copy them into your project.
 
-> 🔒 **`/brand` is the shared foundation — never write project assets into it.** Any image, icon,
-> or file that comes from a Figma design (or anywhere else) for *your* case study belongs **only**
+> 🔒 **The Design Library is the shared foundation — never write project assets into it.** Any image,
+> icon, or file that comes from a Figma design (or anywhere else) for *your* artefact belongs **only**
 > inside that project's own `projects/{project-name}/assets/` folder. It stays scoped to that one
-> project — it must never be saved in `/brand/` (that would leak it into everyone's shared system)
-> or into another project's folder. `/brand` changes only when Jason deliberately updates the
-> foundation.
+> project — it must never be saved into `DesignLibrary/` (that would leak it into everyone's shared
+> system) or into another project's folder. The Design Library changes only when Jason deliberately
+> updates a brand's foundation.
 
 > 💡 Tip: match your folder name to your branch topic — branch `jane/acme-rebrand` → folder `projects/acme-rebrand/`.
 
 ---
 
-## How to build a case study
+## How an artefact gets built (the engine flow)
 
-1. **Read [DESIGN.md](DESIGN.md) first** — colours, type, voice, and the component rules. This is non-negotiable; everything you build must follow it.
-2. **Create your project folder** → `projects/{project-name}/` with an `index.html` inside and an `assets/` subfolder for its images/icons.
-3. **Link the brand system** in your `<head>`. Paths use `../../` because `index.html` sits **two levels down** (`projects/{project-name}/`):
+Claude follows [`agent.md`](agent.md) — here's the shape:
 
-```html
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Case study — Cognizant Moment</title>
+1. **Which brand?** You name the client/brand; the engine matches it to a folder in [DesignLibrary/](DesignLibrary/) (e.g. "Cognizant Moment" → `DesignLibrary/CognizantMoment/`) and suggests it. *No files are read yet.*
+2. **Which artefact?** Proposal, Case study, or Design-system implementation — the engine matches it to a skill (`create-proposal`, `create-case-study`, `create-design-system`) and suggests it.
+3. **Confirm → build.** Once you confirm, the matched skill runs. *That's* when the brand's `DESIGN.md` is read and the work happens. Case study is functional today; the other two are in development.
 
-  <!-- The whole design system in one line (fonts, tokens, components, utilities) -->
-  <link rel="stylesheet" href="../../brand/css/cognizant-moment.css">
-  <script src="../../brand/js/cognizant-moment.js" defer></script>
-</head>
-<body>
-  <main class="cm-container cm-section stack">
-    <p class="eyebrow">Case study</p>
-    <h1>Reimagining the Acme experience</h1>
-    <p class="lead">A short, human intro in the Cognizant Moment voice.</p>
-
-    <!-- Project assets live beside this file, in ./assets/ -->
-    <img src="assets/hero-banner.png" alt="Acme hero" class="card__media">
-
-    <a class="link" href="#">Read the approach <span class="icon-arrow" aria-hidden="true"></span></a>
-    <button class="btn">Launch the prototype <span class="icon-arrow" aria-hidden="true"></span></button>
-  </main>
-</body>
-</html>
-```
-
-4. **Copy patterns from [brand/design-system.html](brand/design-system.html)** — it demonstrates every component (links, buttons, tabs, accordions, cards) with real markup.
-5. **Use the brand classes** — `.link`, `.btn`, `.card`, `.tabs`, `.accordion`, plus layout helpers like `.cm-container`, `.grid`, `.stack`. The full list lives in [brand/css/components.css](brand/css/components.css) and [brand/css/utilities.css](brand/css/utilities.css).
-6. **Put images/icons in `assets/`** and reference them relatively (`assets/…`). If they come from Figma, Claude downloads them straight into your project's `assets/` folder.
-7. **Never hardcode** colours, fonts, or sizes. Use the tokens/classes from the design system. If a value isn't in the system, it's probably off-brand — ask.
+**The skill does the building — not this file.** How a case study is actually assembled (intake, the
+brand system link, components, motion, art direction) lives in the [`create-case-study`](.claude/skills/create-case-study/SKILL.md)
+skill, so it stays in one place and evolves with the tool. CLAUDE.md just sets the rules the skill works
+within (below). The other artefact types have their own skills (`create-proposal`, `create-design-system`).
 
 ---
 
-## Brand golden rules
+## Brand rules — they live in the brand, not here
 
-The details live in [DESIGN.md](DESIGN.md) — here are the ones people trip on, with links:
+**This file is brand-agnostic on purpose.** Every concrete rule — palette, typeface, logo usage, voice,
+naming, component guidance — belongs to whichever brand you're building for and lives in **that brand's
+`DESIGN.md`** (e.g. [DesignLibrary/CognizantMoment/DESIGN.md](DesignLibrary/CognizantMoment/DESIGN.md)).
+The skill reads it once you've picked a brand. The only rules that apply across *all* brands:
 
-- ✍️ **Name it right:** always **Cognizant Moment** in full, and always as a **sub-brand of Cognizant** — never shortened to "Moment." ([DESIGN.md §1](DESIGN.md#1-brand-identity))
-- 🔗 **Link the stylesheets, don't re-author them.** Build on the tokens/classes; only add page-specific CSS on top. ([DESIGN.md §8](DESIGN.md#8-ready-to-use-code))
-- 🎨 **Stay on-palette and honour the contrast pairings.** No off-palette colours; meet WCAG AA. ([DESIGN.md §3](DESIGN.md#3-colour-palette)–[§4](DESIGN.md#4-accessibility--colour-contrast))
-- 🅰️ **Gellix only**, and keep the type scale. ([DESIGN.md §5](DESIGN.md#5-typography))
-- 🖼️ **Never modify the logo** — don't recolour, redraw, separate, or distort it. Use the supplied files. ([DESIGN.md §1](DESIGN.md#1-brand-identity))
-- 🔘 **Prefer links over buttons;** reserve buttons for primary actions. ([DESIGN.md §6](DESIGN.md#6-components))
-- ✅ **Green is for success only.** Red = errors, yellow = warnings.
-- 🗣️ **Write in the brand voice:** inviting, fresh, warmly global, grounded yet elevated, brave enough to be simple. ([DESIGN.md §2](DESIGN.md#2-brand-voice--tone))
+- 🔗 **Link the stylesheets, don't re-author them.** Build on the brand's tokens/classes; only add page-specific CSS on top.
+- 🎨 **Stay on-system.** No off-`DESIGN.md` colours, no ad-hoc fonts or sizes. Meet WCAG AA contrast.
+- 🖼️ **Use brand assets as supplied** — never modify a logo (recolour, redraw, separate, distort).
+- 🔒 **The Design Library is read-only** — never edit a brand's foundation while building an artefact.
+- 🗣️ **Write in the chosen brand's voice and naming**, exactly as its `DESIGN.md` defines it.
 
 ---
 
@@ -216,30 +216,31 @@ The details live in [DESIGN.md](DESIGN.md) — here are the ones people trip on,
 
 When working in this repo, Claude must:
 
-- **Read [DESIGN.md](DESIGN.md) before** building any screen, component, or prototype, or writing any copy. It is the single source of truth; do not introduce values, names, or tones outside it.
-- **Link `brand/css/cognizant-moment.css`** (and `brand/js/cognizant-moment.js`) in every case study. **Never** duplicate or re-author the tokens, and never introduce off-palette colours or ad-hoc font sizes.
-- **Always build a case study as a self-contained folder:** `projects/{project-name}/` (kebab-case) containing `index.html` **and** an `assets/` subfolder — never a loose HTML file, never a shared/global assets folder.
-- **Link the brand system with `../../brand/...`** (two levels up, because `index.html` lives in `projects/{project-name}/`).
-- **When reading a Figma file via MCP:** transform the design to code, and for any images/icons used, **download them (Figma MCP `download_assets`) into that project's `projects/{project-name}/assets/` folder**, then reference them with relative `assets/…` paths. Do not inline external URLs or reach into another project's assets. Brand logo/icons/fonts stay linked from `../../brand/...` — do not copy them into `assets/`.
-- **Never save new/project assets into `/brand`.** `/brand` is the shared, read-only foundation — treat it as off-limits for writes when building a case study. Assets pulled from a Figma design (or created for a project) live **only** in that project's own `projects/{project-name}/assets/` folder and are scoped to that single project; never place them in `/brand/` or in another project's folder. Only touch `/brand` when the user explicitly asks to update the design-system foundation itself.
-- **Follow the brand voice and naming rules** in all generated copy (full name "Cognizant Moment", sub-brand framing).
+- **Route through [`agent.md`](agent.md).** When a teammate wants to create an artefact, follow that flow: match the brand to a `DesignLibrary/` folder and the artefact to a skill, **suggest both, and confirm before reading any `DESIGN.md` or `SKILL.md`.** Discover brands and skills by listing folders — never hardcode.
+- **Read the chosen brand's `DESIGN.md` before building** any screen, component, or prototype, or writing any copy — but only *after* the user confirms the brand + artefact. It is the single source of truth; do not introduce values, names, or tones outside it.
+- **Link the chosen brand's system** (its master CSS/JS under `DesignLibrary/{Brand}/brand/`) in every case study via `../../DesignLibrary/{Brand}/brand/...` (two levels up, because `index.html` lives in `projects/{project-name}/`). **Never** duplicate or re-author tokens; never introduce off-palette colours or ad-hoc font sizes.
+- **Always build an artefact as a self-contained folder:** `projects/{project-name}/` (kebab-case) containing `index.html` **and** an `assets/` subfolder — never a loose HTML file, never a shared/global assets folder.
+- **When reading a Figma file via MCP:** transform the design to code, and for any images/icons used, **download them (Figma MCP `download_assets`) into that project's `projects/{project-name}/assets/` folder**, then reference them with relative `assets/…` paths. Do not inline external URLs or reach into another project's assets. Brand logo/icons/fonts stay linked from `../../DesignLibrary/{Brand}/brand/...` — do not copy them into `assets/`.
+- **Never write into `DesignLibrary/`.** The Design Library is the shared, **read-only** foundation — treat it as off-limits for writes when building an artefact. Assets pulled from a Figma design (or created for a project) live **only** in that project's own `projects/{project-name}/assets/` folder and are scoped to that single project; never place them in `DesignLibrary/` or in another project's folder. Only touch the Design Library when the user explicitly asks to update a brand's foundation itself.
+- **Follow the chosen brand's voice and naming rules** in all generated copy, exactly as that brand's `DESIGN.md` defines them.
 
 **Git safety — critical:**
 - Before running **any** Git command (`pull`, `checkout`/branch, `add`, `commit`, `push`, or opening a PR), **state in plain English what it will do and why, then wait for the user's explicit confirmation.** These teammates are new to Git — keep them in control.
 - **Never commit directly to `main`.** Before committing, check the current branch; if the user is on `main`, offer to create a branch (`yourname/topic`) first.
 - **Never force-push, delete branches, or discard changes** without asking.
 - **Always surface the current branch** before acting, so the user knows where they are.
-- When a case study looks finished, **offer** to push the branch and open a Pull Request into `main` (use `gh pr create` if available) — only after confirmation.
+- When an artefact looks finished, **offer** to push the branch and open a Pull Request into `main` (use `gh pr create` if available) — only after confirmation.
 
 ---
 
 ## Quick reference
 
-**Link the design system** (from `projects/{project-name}/index.html`):
+**Link a brand's design system** (from `projects/{project-name}/index.html`) — swap `{Brand}` for the folder, e.g. `CognizantMoment`:
 ```html
-<link rel="stylesheet" href="../../brand/css/cognizant-moment.css">
-<script src="../../brand/js/cognizant-moment.js" defer></script>
+<link rel="stylesheet" href="../../DesignLibrary/{Brand}/brand/css/…">
+<script src="../../DesignLibrary/{Brand}/brand/js/…" defer></script>
 ```
+(The exact file names are defined in that brand's `DESIGN.md`.)
 
 **Common Git asks** (say these to Claude; it'll confirm before running):
 - "Get me the latest main." → `git checkout main && git pull origin main`
@@ -247,8 +248,8 @@ When working in this repo, Claude must:
 - "Save my progress." → `git add … && git commit -m "…"`
 - "Push my branch and open a PR into main." → `git push -u origin name/topic && gh pr create --base main`
 
-**See components in action:** [brand/design-system.html](brand/design-system.html)
-**Class lists:** [components.css](brand/css/components.css) · [utilities.css](brand/css/utilities.css)
+**The engine's decision flow:** [agent.md](agent.md)
+**Review a brand's components:** open `DesignLibrary/{Brand}/brand/design-system.html` — for seeing the system only. Do **not** implement from it or reuse its code.
 
 ---
 
