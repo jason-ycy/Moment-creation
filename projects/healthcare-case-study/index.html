@@ -1,0 +1,1108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Building the foundation for connected, intelligent care — Cognizant Moment</title>
+
+<!-- ============================================================
+     Cognizant Moment Enhanced — Healthcare case study
+     Page-scoped implementation grounded in the brand DESIGN.md.
+     This brand ships fonts + logos only (no base CSS/JS), so all
+     tokens below are declared from DESIGN.md's Quick Start block.
+     ============================================================ -->
+
+<style>
+/* ---------- Fonts (Gellix, local — never from a CDN) ---------- */
+@font-face{
+  font-family:'Gellix';font-style:normal;font-weight:300;font-display:swap;
+  src:url('../../DesignLibrary/CognizantMomentEnhanced/brand/fonts/Gellix-Light_R.woff2') format('woff2');
+}
+@font-face{
+  font-family:'Gellix';font-style:italic;font-weight:300;font-display:swap;
+  src:url('../../DesignLibrary/CognizantMomentEnhanced/brand/fonts/Gellix-LightItalic_R.woff2') format('woff2');
+}
+@font-face{
+  font-family:'Gellix';font-style:normal;font-weight:400;font-display:swap;
+  src:url('../../DesignLibrary/CognizantMomentEnhanced/brand/fonts/Gellix-Regular_R.woff2') format('woff2');
+}
+@font-face{
+  font-family:'Gellix';font-style:italic;font-weight:400;font-display:swap;
+  src:url('../../DesignLibrary/CognizantMomentEnhanced/brand/fonts/Gellix-RegularItalic_R.woff2') format('woff2');
+}
+@font-face{
+  font-family:'Gellix';font-style:normal;font-weight:600;font-display:swap;
+  src:url('../../DesignLibrary/CognizantMomentEnhanced/brand/fonts/Gellix-SemiBold_R.woff2') format('woff2');
+}
+/* Display weight is specced at 700; nearest supplied file is SemiBold — map 700 to it
+   so we render true SemiBold rather than a synthesized faux-bold. */
+@font-face{
+  font-family:'Gellix';font-style:normal;font-weight:700;font-display:swap;
+  src:url('../../DesignLibrary/CognizantMomentEnhanced/brand/fonts/Gellix-SemiBold_R.woff2') format('woff2');
+}
+
+/* ---------- Tokens (verbatim from DESIGN.md Quick Start) ---------- */
+:root{
+  /* Colors */
+  --color-navy:#00001F;
+  --color-blue:#1777FC;
+  --color-lavender:#D3BDFF;
+  --color-white:#FFFFFF;
+
+  /* Font family */
+  --font-gellix:'Gellix','General Sans','Aeonik','Inter',ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+
+  /* Type scale */
+  --text-caption:12px;      --leading-caption:1.3;      --tracking-caption:0.6px;
+  --text-body:16px;         --leading-body:1.43;        --tracking-body:0.8px;
+  --text-subheading:32px;   --leading-subheading:1.2;   --tracking-subheading:1px;
+  --text-heading-sm:48px;   --leading-heading-sm:1.15;  --tracking-heading-sm:-1.18px;
+  --text-heading:64px;      --leading-heading:1.14;     --tracking-heading:-1.25px;
+  --text-heading-lg:79px;   --leading-heading-lg:1.14;  --tracking-heading-lg:-2.65px;
+  --text-display:100px;     --leading-display:1.08;     --tracking-display:-2.6px;
+
+  /* Weights */
+  --font-weight-nav:380;
+  --font-weight-display:700;
+
+  /* Spacing (irregular by design — do not round) */
+  --spacing-10:10px; --spacing-11:11px; --spacing-15:15px; --spacing-19:19px;
+  --spacing-20:20px; --spacing-23:23px; --spacing-27:27px; --spacing-30:30px;
+  --spacing-36:36px; --spacing-38:38px; --spacing-60:60px; --spacing-63:63px;
+  --spacing-64:64px; --spacing-108:108px; --spacing-150:150px; --spacing-172:172px;
+
+  /* Layout */
+  --page-margin-x:64px;
+  --radius-none:0px;
+
+  /* Surfaces */
+  --surface-navy:#00001F;
+  --surface-white:#FFFFFF;
+
+  /* Pagination */
+  --pagination-indicator-on-white:#00001F;
+  --pagination-indicator-on-navy:#FFFFFF;
+  --pagination-indicator-hover-opacity:0.6;
+
+  /* Notched Hero */
+  --hero-gradient:radial-gradient(ellipse at center,#0a0f3d 0%,#00001F 70%);
+  --hero-notch-depth:85%;
+  --hero-notch-offset:40%;
+  --hero-content-gap:64px;
+  --hero-badge-translucent-bg:rgba(255,255,255,0.2);
+  --hero-badge-translucent-text:#FFFFFF;
+
+  /* Motion (Emil defaults — brand defines no easing tokens) */
+  --ease-out:cubic-bezier(0.23,1,0.32,1);
+  --ease-in-out:cubic-bezier(0.77,0,0.175,1);
+}
+
+/* ---------- Reset / base ---------- */
+*{margin:0;padding:0;box-sizing:border-box;}
+html{-webkit-text-size-adjust:100%;}
+@media (prefers-reduced-motion:no-preference){
+  html{scroll-behavior:smooth;}
+}
+body{
+  font-family:var(--font-gellix);
+  background:var(--surface-white);
+  color:var(--color-navy);
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+  overflow-x:hidden;
+}
+img{display:block;max-width:100%;}
+a{color:inherit;text-decoration:none;}
+::selection{background:var(--color-blue);color:var(--color-white);}
+
+/* Every surface is sharp-cornered by default (system-wide) */
+section,.card,.badge,.pager__dot,.impact__block{border-radius:var(--radius-none);}
+
+/* ---------- Atmospheric grain (static, tiled — never a live filter) ---------- */
+.grain{
+  position:fixed;inset:0;z-index:1;pointer-events:none;opacity:0.035;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  mix-blend-mode:normal;
+}
+
+/* ---------- Shared type helpers ---------- */
+.badge{
+  display:inline-flex;align-items:center;padding:8px 6px;
+  font-size:var(--text-caption);line-height:var(--leading-caption);
+  letter-spacing:var(--tracking-caption);text-transform:uppercase;font-weight:600;
+}
+.badge--navy{background:var(--color-navy);color:var(--color-white);}
+.badge--lavender{background:var(--color-lavender);color:var(--color-navy);}
+.badge--white{background:var(--color-white);color:var(--color-navy);}
+
+.eyebrow{ /* only ever a badge substitute is disallowed — kept for measure spacing */ }
+
+.display{
+  font-weight:700;line-height:var(--leading-display);letter-spacing:var(--tracking-display);
+}
+.kw{color:var(--color-blue);} /* single intentional keyword accent */
+
+/* ---------- Layout primitives ---------- */
+.section{position:relative;z-index:2;padding-inline:var(--page-margin-x);}
+.section--navy{background:var(--surface-navy);color:var(--color-white);}
+.section--white{background:var(--surface-white);color:var(--color-navy);}
+.pad-y{padding-block:var(--spacing-150);}
+@media (max-width:760px){
+  .pad-y{padding-block:var(--spacing-108);}
+  :root{--page-margin-x:24px;}
+}
+
+/* =====================================================================
+   MOTION — scroll reveal
+   Base state is fully VISIBLE, so content never depends on JS/animation.
+   Layer the movement only where motion is welcome & supported.
+   ===================================================================== */
+.reveal{opacity:1;}
+.reveal > *{opacity:1;}
+
+@media (prefers-reduced-motion:no-preference){
+  /* Preferred path: scroll-linked CSS, no JS */
+  @supports (animation-timeline:view()){
+    .reveal{
+      opacity:0;transform:translateY(22px);
+      animation:rise-in linear both;
+      animation-timeline:view();
+      animation-range:entry 5% entry 45%;
+    }
+    /* stagger grouped children */
+    .stagger > *{
+      opacity:0;transform:translateY(18px);
+      animation:rise-in linear both;
+      animation-timeline:view();
+      animation-range:entry 5% cover 22%;
+    }
+    .stagger > *:nth-child(2){animation-range:entry 9% cover 26%;}
+    .stagger > *:nth-child(3){animation-range:entry 13% cover 30%;}
+    .stagger > *:nth-child(4){animation-range:entry 17% cover 34%;}
+  }
+  /* Fallback path for browsers without animation-timeline (adds .io-mode) */
+  .io-mode .reveal{opacity:0;transform:translateY(22px);
+    transition:opacity 700ms var(--ease-out),transform 700ms var(--ease-out);}
+  .io-mode .reveal.is-visible{opacity:1;transform:none;}
+  .io-mode .stagger.is-visible > *{opacity:1;transform:none;}
+  .io-mode .stagger > *{opacity:0;transform:translateY(18px);
+    transition:opacity 600ms var(--ease-out),transform 600ms var(--ease-out);
+    transition-delay:calc(var(--i,0) * 60ms);}
+}
+@keyframes rise-in{to{opacity:1;transform:none;}}
+
+/* Reduced motion: keep the fade that aids comprehension, drop movement */
+@media (prefers-reduced-motion:reduce){
+  .io-mode .reveal{opacity:0;transition:opacity 400ms ease;}
+  .io-mode .reveal.is-visible{opacity:1;}
+}
+
+/* Pressable feedback */
+.pressable{transition:transform 160ms var(--ease-out);}
+.pressable:active{transform:scale(0.97);}
+
+/* =====================================================================
+   TOP NAV BAR — inline text, no fill/border, sticky, colour-adaptive
+   ===================================================================== */
+.nav{
+  position:fixed;top:0;left:0;width:100%;z-index:50;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:var(--spacing-23) var(--page-margin-x);
+  transition:color 300ms ease;
+  color:var(--color-white);
+}
+/* ---------- ScrollSmoother wrapper (nav stays fixed outside it) ---------- */
+#smooth-wrapper{overflow:hidden;position:fixed;inset:0;}
+#smooth-content{overflow:visible;width:100%;}
+.nav__logo{height:22px;width:auto;}
+.nav__logo--dark{display:none;}
+.nav.is-light .nav__logo--light{display:none;}
+.nav.is-light .nav__logo--dark{display:block;}
+.nav.is-light{color:var(--color-navy);}
+.nav__links{display:flex;gap:var(--spacing-30);list-style:none;}
+.nav__link{
+  position:relative;font-size:var(--text-caption);font-weight:var(--font-weight-nav);
+  text-transform:uppercase;letter-spacing:var(--tracking-caption);
+  padding-bottom:4px;white-space:nowrap;
+}
+.nav__link::after{
+  content:"";position:absolute;left:0;bottom:0;height:2px;width:0;
+  background:var(--color-blue);transition:width 200ms var(--ease-out);
+}
+.nav__link:hover::after,.nav__link.is-active::after{width:100%;}
+@media (max-width:900px){.nav__links{display:none;}}
+
+/* =====================================================================
+   HERO — Notched Hero organism
+   ===================================================================== */
+.hero{
+  position:relative;z-index:2;width:100%;height:100vh;height:100svh;
+  background:var(--surface-white);
+  /* nav is fixed (outside the ScrollSmoother wrapper) and reserves no flow
+     space, so the hero already starts at the true top — under the nav,
+     letting the notch own the full viewport. */
+}
+.hero__shape{
+  position:absolute;inset:0;
+  background:var(--hero-gradient);
+  clip-path:polygon(0% 0%,100% 0%,100% var(--hero-notch-depth),var(--hero-notch-offset) 100%,0% var(--hero-notch-depth));
+}
+.hero__content{
+  position:absolute;inset:0;z-index:3;
+  display:flex;align-items:center;justify-content:center;gap:var(--hero-content-gap);
+  padding:0 var(--page-margin-x);
+}
+.hero__media{
+  max-width:65vh; position:relative;flex:1 1 0;aspect-ratio:1/1;overflow:hidden;background:#0a0f3d;clip-path: polygon(100% 0%, 0% 40%, 0% 100% , 60% 100%, 100% 50%);
+}
+/* Oversized + recentred so the scroll-driven vertical drift (JS below)
+   never exposes empty edges inside the clipped .hero__media shape. */
+.hero__media-img{position:absolute;left:0;top:-10%;width:100%;height:120%;object-fit:cover;}
+.hero__media-ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  color:rgba(255,255,255,0.28);font-size:var(--text-caption);letter-spacing:var(--tracking-caption);
+  text-transform:uppercase;}
+.hero__text{
+  flex:1 1 0;display:flex;flex-direction:column;align-items:flex-start;gap:var(--spacing-11);
+  text-align:left;color:var(--color-white);
+}
+.hero__badge{background:var(--hero-badge-translucent-bg);color:var(--hero-badge-translucent-text);}
+.hero__headline{
+  font-weight:700;font-size:var(--text-heading-sm);
+  line-height:var(--leading-heading-sm);letter-spacing:var(--tracking-heading-sm);
+}
+.hero__desc{
+  font-size:var(--text-body);line-height:var(--leading-body);letter-spacing:var(--tracking-body);
+}
+.hero__scroll{
+  position:absolute;left:0;right:0;bottom:var(--spacing-64);z-index:3;
+  display:flex;flex-direction:column;align-items:center;gap:var(--spacing-11);
+  font-size:var(--text-caption);letter-spacing:var(--tracking-caption);text-transform:uppercase;
+  color:var(--color-white);
+}
+.hero__scroll svg{animation:scroll-bob 2.4s var(--ease-in-out) infinite;}
+@media (prefers-reduced-motion:reduce){.hero__scroll svg{animation:none;}}
+@keyframes scroll-bob{0%,100%{transform:translateY(0);}50%{transform:translateY(6px);}}
+@media (max-width:900px){
+  .hero__content{flex-direction:column;justify-content:center;gap:var(--spacing-30);padding-top:var(--spacing-64);}
+  .hero__media{width:100%;flex:0 0 auto;aspect-ratio:16/10;}
+  .hero__text{align-items:flex-start;}
+}
+@media (max-width:760px){
+  .hero__headline{font-size:34px;letter-spacing:-0.6px;line-height:1.1;}
+  .hero{clip-path:none;}
+}
+
+/* =====================================================================
+   SECTION HEADER (badge + heading blocks)
+   ===================================================================== */
+.block-head{max-width:60ch;}
+.block-head .badge{margin-bottom:var(--spacing-30);}
+.h-sm{font-weight:700;font-size:var(--text-heading-sm);
+  line-height:var(--leading-heading-sm);letter-spacing:var(--tracking-heading-sm);}
+.h-md{font-weight:700;font-size:var(--text-heading);
+  line-height:var(--leading-heading);letter-spacing:var(--tracking-heading);}
+.h-lg{font-weight:700;font-size:var(--text-heading-lg);
+  line-height:var(--leading-heading-lg);letter-spacing:var(--tracking-heading-lg);}
+.lede{font-size:var(--text-body);line-height:var(--leading-body);
+  letter-spacing:var(--tracking-body);max-width:62ch;}
+.lede + .lede{margin-top:var(--spacing-20);}
+@media (max-width:760px){
+  .h-sm{font-size:34px;letter-spacing:-0.6px;}
+  .h-md{font-size:40px;letter-spacing:-0.8px;line-height:1.08;}
+  .h-lg{font-size:44px;letter-spacing:-1px;line-height:1.06;}
+}
+
+/* ---------- Research: text block + showcase card gallery ---------- */
+.research__intro{width:100%; text-align:center; margin-bottom:var(--spacing-64);}
+.research__intro .badge{margin-bottom:var(--spacing-30);}
+.research__caption{margin:var(--spacing-20) auto 0;}
+.card-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--spacing-30);}
+@media (max-width:900px){.card-grid{grid-template-columns:1fr;max-width:520px;}}
+
+/* ---------- The insight: badge+headline group, Info Card row ---------- */
+.insight-head{display:flex;flex-direction:column;align-items:center;text-align:center;
+  gap:var(--spacing-11);margin-bottom:var(--spacing-64);}
+.insight-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--spacing-64);}
+@media (max-width:900px){.insight-grid{grid-template-columns:1fr;max-width:520px;}}
+
+/* Info Card — flat white panel, three labeled parts */
+.info-card{background:var(--color-white);padding:var(--spacing-27);
+  display:flex;flex-direction:column;gap:var(--spacing-23); min-height: 45vh;}
+.info-card__part{display:flex;flex-direction:column;gap:var(--spacing-10);}
+.info-card__part .badge{align-self:flex-start;}
+.info-card__headline{font-weight:700;color:var(--color-navy);
+  font-size:var(--text-heading-sm);line-height:var(--leading-subheading);letter-spacing:var(--tracking-subheading);}
+.info-card__label{color:var(--color-navy);text-transform:uppercase;
+  font-size:var(--text-caption);line-height:var(--leading-caption);letter-spacing:var(--tracking-caption);}
+.info-card__body{color:var(--color-navy);
+  font-size:var(--text-body);line-height:var(--leading-body);letter-spacing:var(--tracking-body);}
+
+/* Showcase Card — 3:4 photographic tile, text block pinned bottom */
+.card{
+  position:relative;aspect-ratio:3/4;overflow:hidden;background:#0a0f3d;
+  display:flex;align-items:flex-end;
+}
+.card__img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+.card__ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  color:rgba(255,255,255,0.28);font-size:var(--text-caption);letter-spacing:var(--tracking-caption);
+  text-transform:uppercase;}
+.card__text{
+  position:relative;z-index:2;width:100%;
+  padding:var(--spacing-38) var(--spacing-30) var(--spacing-38);
+  display:flex;flex-direction:column;gap:var(--spacing-10);
+  background:linear-gradient(to top,rgba(0,0,31,0.6) 0%,rgba(0,0,31,0) 100%);
+}
+.card__sub{color:var(--color-white);font-weight:300;
+  font-size:var(--text-subheading);line-height:var(--leading-subheading);letter-spacing:var(--tracking-subheading);}
+.card__text .badge{align-self:flex-start;}
+
+/* ---------- The Landscape: pinned split-headline gallery ----------
+   Section pins; the image+caption groups scroll internally on the right.
+   A single headline sits on the left, overlapping the image and inverting
+   navy→white where it crosses it (Introduction organism). Each group ties
+   to one headline — as a group reaches centre, its headline crossfades in. */
+.landscape{position:relative;z-index:2;background:var(--surface-white);color:var(--color-navy);}
+.landscape__pin{
+  position:relative;height:100vh;height:100svh;overflow:hidden;
+  padding:0 var(--page-margin-x);
+}
+.landscape__inner{position:relative;height:100%;max-width:1400px;margin:0 auto;}
+
+/* Left: headline stage — spans the full width so the headline can cross the image */
+.landscape__stage{
+  position:absolute;inset:0;z-index:2;pointer-events:none;
+  display:flex;flex-direction:column;justify-content:center;
+}
+.landscape__stage .badge{align-self:flex-start;margin-bottom:var(--spacing-36);}
+/* Fixed height so the absolutely-stacked headlines don't collapse the
+   flex column (which would let the big headline overlap the badge/cue).
+   Sized for the tallest headline; each headline is centred within it. */
+.headline-stack{position:relative;width:100%;height:44vh;}
+.headline-wrap{
+  position:absolute;left:0;top:50%;transform:translateY(-50%);width:100%;
+  opacity:0;transition:opacity 420ms var(--ease-out);
+}
+.headline-wrap.is-active{opacity:1;}
+.headline-wrap .hl{
+  font-weight:700;font-size:var(--text-display);line-height:var(--leading-display);
+  letter-spacing:var(--tracking-display);margin:0;max-width:58%;
+}
+/* Base layer: the full headline in navy — always legible on the white page. */
+.headline-wrap .hl--base{color:var(--color-navy);}
+/* Overlay layer: the same headline in white, clipped by JS to the image's
+   live rectangle so the inversion appears ONLY where text crosses the photo.
+   Starts fully clipped (hidden) until the script maps it to the image. */
+.headline-wrap .hl--overlay{position:absolute;inset:0;z-index:2;color:var(--color-white);
+  clip-path:inset(0 100% 0 0);}
+.landscape__scroll{align-self:flex-start;margin-top:var(--spacing-38);color:var(--color-navy);}
+.landscape__scroll svg{animation:scroll-bob 2.4s var(--ease-in-out) infinite;}
+@media (prefers-reduced-motion:reduce){.landscape__scroll svg{animation:none;}}
+
+/* Right: internally-scrolling image + caption groups */
+.landscape__viewport{
+  position:absolute;top:0;right:0;z-index:1;width:60%;height:100%;overflow:hidden;
+}
+.landscape__track{will-change:transform;}
+.landscape__group{
+  height:100vh;
+  display:flex;flex-direction:column;justify-content:center;gap:var(--spacing-64);
+}
+.landscape__img{
+  position:relative;width:100%;height:70vh;overflow:hidden;background:#0a0f3d;flex:none;
+}
+/* Oversized + recentred so the scroll-driven parallax drift (JS below)
+   never exposes empty edges. */
+.landscape__img img{position:absolute;left:0;top:-10%;width:100%;height:120%;object-fit:cover;}
+.landscape__img .ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  color:rgba(255,255,255,0.28);font-size:var(--text-caption);letter-spacing:var(--tracking-caption);
+  text-transform:uppercase;}
+.landscape__cap{display:flex;justify-content:flex-end;}
+.landscape__cap .lede{max-width:60%;}
+
+/* Mobile: no pin, no overlap — each group is a plain stacked block */
+@media (max-width:900px){
+  .landscape__pin{height:auto;overflow:visible;padding:var(--spacing-64) var(--page-margin-x);}
+  .landscape__inner{height:auto;}
+  .landscape__stage{display:none;}
+  .landscape__viewport{position:static;width:100%;height:auto;overflow:visible;}
+  .landscape__track{transform:none !important;}
+  .landscape__group{height:auto;gap:var(--spacing-20);}
+  .landscape__group + .landscape__group{margin-top:var(--spacing-108);}
+  .landscape__img{height:auto;aspect-ratio:4/3;}
+  .landscape__group-headline{
+    display:block;font-weight:700;font-size:44px;letter-spacing:-1px;line-height:1.06;
+    color:var(--color-navy);margin-bottom:var(--spacing-20);
+  }
+  .landscape__cap{justify-content:flex-start;}
+  .landscape__cap .lede{max-width:100%;}
+}
+.landscape__group-headline{display:none;}
+
+/* ---------- The Challenge: two-column prose block ---------- */
+/* ---------- Primary Content Section organism (image + labeled content, 3-col grid) ---------- */
+.content-organism{display:grid;grid-template-columns:1fr 2fr;gap:var(--spacing-64);align-items:stretch;}
+.content-organism__image{position:relative;overflow:hidden;background:#0a0f3d;min-height:60vh;}
+.content-organism__image img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+.content-organism__ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  color:rgba(255,255,255,0.28);font-size:var(--text-caption);letter-spacing:var(--tracking-caption);
+  text-transform:uppercase;}
+.content-organism__body{text-align:left;}
+.content-organism__body .badge{margin-bottom:var(--spacing-30);}
+@media (max-width:900px){
+  .content-organism{grid-template-columns:1fr;gap:var(--spacing-38);}
+  .content-organism__image{min-height:260px;}
+}
+
+/* ---------- Typographic Hero organism (photo + floating white text box) ---------- */
+.typo-hero{position:relative;width:100%;height:100vh;height:100svh;overflow:hidden;background:var(--surface-navy);}
+.typo-hero__bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;}
+.typo-hero__ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  color:rgba(255,255,255,0.22);font-size:var(--text-caption);letter-spacing:var(--tracking-caption);
+  text-transform:uppercase;}
+.typo-hero__box{
+  position:absolute;inset:var(--spacing-64);background:var(--surface-white);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
+  gap:var(--spacing-10);padding:var(--spacing-60);overflow:auto;
+}
+.typo-hero__box .badge{align-self:center;}
+.typo-hero__headline{font-weight:700;color:var(--color-navy);max-width:none;
+  font-size:var(--text-heading-lg);line-height:var(--leading-heading-lg);letter-spacing:var(--tracking-heading-lg);}
+.typo-hero__headline--dense{font-size:var(--text-heading);line-height:var(--leading-heading);letter-spacing:var(--tracking-heading);}
+.typo-hero__caption{font-style:italic;color:var(--color-navy);
+  font-size:var(--text-body);line-height:var(--leading-body);letter-spacing:var(--tracking-body);
+  max-width:56ch;}
+@media (max-width:760px){
+  .typo-hero__box{inset:var(--spacing-20);padding:var(--spacing-30);}
+  .typo-hero__headline{font-size:36px;letter-spacing:-0.8px;line-height:1.1;}
+  .typo-hero__headline--dense{font-size:32px;letter-spacing:-0.6px;line-height:1.12;}
+}
+
+/* ---------- Insight carousel ---------- */
+.carousel__head{margin-bottom:var(--spacing-64);}
+.carousel{position:relative;}
+.carousel__viewport{overflow:hidden;}
+.carousel__track{display:flex;transition:transform 560ms var(--ease-in-out);}
+.slide{flex:0 0 100%;display:grid;grid-template-columns:1fr 1fr;gap:var(--spacing-64);align-items:center;}
+@media (max-width:900px){.slide{grid-template-columns:1fr;gap:var(--spacing-30);}}
+.slide__img{aspect-ratio:4/5;position:relative;overflow:hidden;background:#0a0f3d;}
+.slide__img img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+.slide__ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  color:rgba(255,255,255,0.28);font-size:var(--text-caption);letter-spacing:var(--tracking-caption);text-transform:uppercase;}
+.slide__num{font-weight:700;font-size:var(--text-heading);line-height:1.05;letter-spacing:var(--tracking-heading);margin-bottom:var(--spacing-30);}
+.slide__num span{display:block;}
+.slide__desc{font-size:var(--text-body);line-height:var(--leading-body);letter-spacing:var(--tracking-body);max-width:52ch;}
+.slide__desc + .slide__desc{margin-top:var(--spacing-20);}
+
+.carousel__controls{display:flex;align-items:center;justify-content:space-between;
+  margin-top:var(--spacing-60);}
+/* Pagination — length-only indicators, sharp corners, colour by surface */
+.pager{display:flex;align-items:center;gap:var(--spacing-11);}
+.pager__dot{height:2px;width:22px;border:0;padding:0;cursor:pointer;
+  background:var(--pagination-indicator-on-navy);
+  transition:width 300ms var(--ease-out),opacity 200ms ease;}
+.pager__dot.is-active{width:52px;}
+.pager__dot:hover{opacity:var(--pagination-indicator-hover-opacity);}
+.carousel__arrows{display:flex;gap:var(--spacing-11);}
+.arrow{width:44px;height:44px;border:1px solid var(--color-white);background:transparent;
+  color:var(--color-white);cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:transform 160ms var(--ease-out),background 200ms ease,color 200ms ease;}
+.arrow:hover{background:var(--color-navy);color:var(--color-white);}
+.arrow:active{transform:scale(0.97);}
+.arrow:disabled{opacity:0.3;cursor:default;}
+
+/* ---------- Gallery showcase (navy) — Horizon cards ---------- */
+.gallery__head{width:100%; text-align: center; margin-bottom:var(--spacing-19);}
+.gallery__desc{max-width:100%;text-align: center; margin-bottom:var(--spacing-64);opacity:0.8;}
+.section--navy .card__text .badge{ } /* navy section keeps navy badge on photographic surface */
+
+/* ---------- Impact (white) — four stat blocks ---------- */
+.impact__head{width:100%; text-align: center; margin-bottom:var(--spacing-64);}
+.impact__grid{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--spacing-30);}
+@media (max-width:900px){.impact__grid{grid-template-columns:repeat(2,1fr);gap:var(--spacing-38);}}
+@media (max-width:520px){.impact__grid{grid-template-columns:1fr;}}
+.impact__block{padding-top:var(--spacing-30);border-top:1px solid rgba(0,0,31,0.18);}
+.impact__num{font-weight:700;font-size:var(--text-heading);line-height:1.02;letter-spacing:var(--tracking-heading);}
+.impact__num--sm{font-size:var(--text-heading-sm);letter-spacing:var(--tracking-heading-sm);}
+.impact__cap{margin-top:var(--spacing-20);font-size:var(--text-body);line-height:var(--leading-body);
+  letter-spacing:var(--tracking-body);opacity:0.72;max-width:34ch;}
+@media (max-width:760px){.impact__num{font-size:48px;letter-spacing:-1.18px;}}
+
+/* ---------- Closing statement + footer ---------- */
+.footer{padding:var(--spacing-63) var(--page-margin-x);background:var(--surface-navy);color:var(--color-white);
+  display:flex;align-items:center;justify-content:space-between;gap:var(--spacing-30);flex-wrap:wrap;
+  border-top:1px solid rgba(255,255,255,0.12);position:relative;z-index:2;}
+.footer img{height:20px;width:auto;}
+.footer__meta{font-size:var(--text-caption);letter-spacing:var(--tracking-caption);
+  text-transform:uppercase;opacity:0.6;}
+</style>
+</head>
+
+<body>
+<div class="grain" aria-hidden="true"></div>
+
+<!-- ===================== NAV ===================== -->
+<nav class="nav" id="nav" aria-label="Primary">
+  <a href="#top" aria-label="Cognizant Moment — home">
+    <img class="nav__logo nav__logo--light" src="../../DesignLibrary/CognizantMomentEnhanced/brand/logos/Main_logo_reversed.svg" alt="Cognizant Moment">
+    <img class="nav__logo nav__logo--dark" src="../../DesignLibrary/CognizantMomentEnhanced/brand/logos/Main_logo.svg" alt="Cognizant Moment">
+  </a>
+  <ul class="nav__links">
+    <li><a class="nav__link" href="#top">Building the foundation</a></li>
+    <li><a class="nav__link" href="#research">Our research</a></li>
+    <li><a class="nav__link" href="#landscape">The landscape</a></li>
+    <li><a class="nav__link" href="#challenge">The challenge</a></li>
+    <li><a class="nav__link" href="#insight">The insight</a></li>
+    <li><a class="nav__link" href="#impact">Impact</a></li>
+  </ul>
+</nav>
+
+<!-- ScrollSmoother requires this exact wrapper > content structure.
+     Fixed-position elements (nav, grain) stay outside it. -->
+<div id="smooth-wrapper">
+<div id="smooth-content">
+
+<!-- ===================== HERO (Notched Hero) ===================== -->
+<header class="hero" id="top" data-nav="dark">
+  <div class="hero__shape" aria-hidden="true"></div>
+  <div class="hero__content">
+    <div class="hero__media">
+      <img class="hero__media-img" src="assets/img/hero-img.png" alt="" onerror="this.style.display='none'">
+    </div>
+    <div class="hero__text">
+      <span class="badge hero__badge">Digital health transformation</span>
+      <h1 class="hero__headline">Architecting the foundations for a <span class="kw">new era</span> of healthcare</h1>
+      <p class="hero__desc">Healthcare isn’t short on technology, it’s short on connection. Across every stage of the customer journey and every horizon of transformation, the healthcare landscape is facing challenges such as
+        Through partnering with Cognizant Moment, we're bridging healthcare’s connection gap to deliver measurable impact across product, innovation, data, compliance, and core operations.</p>
+    </div>
+  </div>
+  <div class="hero__scroll">
+    <span>Scroll</span>
+    <svg width="16" height="57" viewBox="0 0 18 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path d="M9.62205 62.4101L17.3197 54.9589L18 55.6174L9.34015 64L8.65985 63.3415L8.66642 63.3351H8.65985L0 54.9525L0.680309 54.294L8.65985 62.0181V0H9.62205V62.4101Z" fill="currentColor"/>
+    </svg>
+  </div>
+</header>
+
+<!-- ===================== SECTION 1 — OUR RESEARCH (white) ===================== -->
+<section class="section section--white pad-y" id="research" data-nav="light">
+  <div class="research__intro reveal">
+    <span class="badge badge--navy">Our research</span>
+    <h2 class="h-sm">Insights shaping <span class="kw">tomorrow, today</span></h2>
+    <p class="lede research__caption">Across the healthcare industry and market, three themes are redefining what's possible, alongside the organisation's own experience — powering growth, innovation and adoption.</p>
+  </div>
+  <div class="card-grid stagger reveal">
+    <article class="card pressable">
+      <img class="card__img" src="assets/img/home-care.png" alt="" onerror="this.style.display='none'">
+      <div class="card__text">
+        <span class="badge badge--navy">Home &amp; Connected care</span>
+        <p class="card__sub">Connected, personalised care at home</p>
+      </div>
+    </article>
+    <article class="card pressable">
+      <img class="card__img" src="assets/img/AI-value.png" alt="" onerror="this.style.display='none'">
+      <div class="card__text">
+        <span class="badge badge--navy">AI value</span>
+        <p class="card__sub">AI: from hype to targeted, operational value</p>
+      </div>
+    </article>
+    <article class="card pressable">
+      <img class="card__img" src="assets/img/governance.png" alt="" onerror="this.style.display='none'">
+      <div class="card__text">
+        <span class="badge badge--navy">Governance &amp; Trust</span>
+        <p class="card__sub">From technology to governance, trust and adoption</p>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- ===================== SECTION 2 — THE LANDSCAPE (pinned split-headline gallery) ===================== -->
+<section class="landscape" id="landscape" data-nav="light">
+  <div class="landscape__pin" id="landscapePin">
+    <div class="landscape__inner">
+
+      <!-- Left: headline stage — one headline per group, only the active one visible -->
+      <div class="landscape__stage">
+        <span class="badge badge--lavender">The landscape</span>
+        <div class="headline-stack">
+          <div class="headline-wrap is-active" data-index="0">
+            <p class="hl hl--base">Demand for age care</p>
+            <p class="hl hl--overlay" aria-hidden="true">Demand for age care</p>
+          </div>
+          <div class="headline-wrap" data-index="1">
+            <p class="hl hl--base">Platform fragmentation and legacy sprawl</p>
+            <p class="hl hl--overlay" aria-hidden="true">Platform fragmentation and legacy sprawl</p>
+          </div>
+          <div class="headline-wrap" data-index="2">
+            <p class="hl hl--base">Regulatory overhead and compliance burdens</p>
+            <p class="hl hl--overlay" aria-hidden="true">Regulatory overhead and compliance burdens</p>
+          </div>
+          <div class="headline-wrap" data-index="3">
+            <p class="hl hl--base">Competitive pressure for AI enabled tools</p>
+            <p class="hl hl--overlay" aria-hidden="true">Competitive pressure for AI enabled tools</p>
+          </div>
+        </div>
+        <span class="landscape__scroll" aria-hidden="true">
+          <svg width="12" height="44" viewBox="0 0 18 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M9.62205 62.4101L17.3197 54.9589L18 55.6174L9.34015 64L8.65985 63.3415L8.66642 63.3351H8.65985L0 54.9525L0.680309 54.294L8.65985 62.0181V0H9.62205V62.4101Z" fill="currentColor"/>
+          </svg>
+        </span>
+      </div>
+
+      <!-- Right: internally-scrolling image + caption groups -->
+      <div class="landscape__viewport" id="landscapeViewport">
+        <div class="landscape__track" id="landscapeTrack">
+          <div class="landscape__group" data-index="0">
+            <h3 class="landscape__group-headline">Demand for age care</h3>
+            <div class="landscape__img">
+              <img src="assets/img/landscape1.png" alt="" onerror="this.style.display='none'">
+            </div>
+            <div class="landscape__cap">
+              <p class="lede">Demand across the Australian healthcare landscape is growing faster than workforce supply, driven by an ageing population and increasingly complex care needs. Additional pressures come in full flight as the government invests more money into this space.</p>
+            </div>
+          </div>
+          <div class="landscape__group" data-index="1">
+            <h3 class="landscape__group-headline">Platform fragmentation and legacy sprawl</h3>
+            <div class="landscape__img">
+              <img src="assets/img/landscape2.png" alt="" onerror="this.style.display='none'">
+            </div>
+            <div class="landscape__cap">
+              <p class="lede">Products live on different technology stacks, to massive unstructured datasets that continue to expand across different domains such as primary care, aged care, and hospital care. There is a need for more data-driven orchestration, consolidation and rationalisation.</p>
+            </div>
+          </div>
+          <div class="landscape__group" data-index="2">
+            <h3 class="landscape__group-headline">Regulatory overhead and compliance burdens</h3>
+            <div class="landscape__img">
+              <img src="assets/img/landscape3.png" alt="" onerror="this.style.display='none'">
+            </div>
+            <div class="landscape__cap">
+              <p class="lede">The Aged Care Act 2024 came into effect Nov 2025, with new regulatory needs to be met around quality, safety and privacy. The challenge here is managing conformance pressures across existing and new product suites.</p>
+            </div>
+          </div>
+          <div class="landscape__group" data-index="3">
+            <h3 class="landscape__group-headline">Competitive pressure for AI enabled tools</h3>
+            <div class="landscape__img">
+              <img src="assets/img/landscape4.png" alt="" onerror="this.style.display='none'">
+            </div>
+            <div class="landscape__cap">
+              <p class="lede">AI is the biggest conversation in industry today. Rising demand to stay competitive for AI-enabled tools that reduce admin burden and improve productivity, allowing healthcare workers to dedicate more time to empathetic communication, deeper patient engagement, and the delivery of personalised care.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ===================== SECTION 3 — THE CHALLENGE (Primary Content Section organism) ===================== -->
+<section class="section section--navy pad-y" id="challenge" data-nav="dark">
+  <div class="content-organism reveal">
+    <div class="content-organism__image">
+      <img src="assets/img/challenge.png" alt="" onerror="this.style.display='none'">
+    </div>
+    <div class="content-organism__body">
+      <span class="badge badge--lavender">The challenge</span>
+      <h2 class="h-sm" style="margin-bottom:var(--spacing-38);">Turning complexity into a strategic advantage.</h2>
+      <p class="lede">The organisation operates across aged care, primary care, hospital care and virtual health services. The business faced mounting pressure from evolving regulations, fragmented technology landscapes, growing demand for AI-enabled experiences, and rising customer expectations.</p>
+      <p class="lede">The challenge was not improving individual products. It was creating the conditions for future innovation while supporting today's operational realities.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== SECTION 4 — THE INSIGHT (Typographic Hero organism) ===================== -->
+<!-- ===================== SECTION 5 — THE INSIGHT (navy) ===================== -->
+<section class="section section--navy pad-y" id="insight" data-nav="dark">
+  <div class="insight-head reveal">
+    <span class="badge badge--white">The shift</span>
+    <h2 class="h-sm">Moving the needle, horizon by horizon</h2>
+  </div>
+  <div class="insight-grid stagger reveal">
+    <article class="info-card">
+      <div class="info-card__part">
+        <span class="badge badge--navy">Horizon 1</span>
+        <h3 class="info-card__headline">Strengthening the <span class="kw">foundations</span></h3>
+      </div>
+      <div class="info-card__part">
+        <p class="info-card__label">Challenge</p>
+        <p class="info-card__body">Administrative burden</p>
+      </div>
+      <div class="info-card__part">
+        <p class="info-card__label">Shift</p>
+        <p class="info-card__body">Ensuring conformance, audit and clinical safety of healthcare products is compliant and fit for purpose in an increasingly regulated environment.</p>
+      </div>
+    </article>
+    <article class="info-card">
+      <div class="info-card__part">
+        <span class="badge badge--navy">Horizon 2</span>
+        <h3 class="info-card__headline">Empowering <span class="kw">care today</span></h3>
+      </div>
+      <div class="info-card__part">
+        <p class="info-card__label">Challenge</p>
+        <p class="info-card__body">Vulnerable individuals / major national crises</p>
+      </div>
+      <div class="info-card__part">
+        <p class="info-card__label">Shift</p>
+        <p class="info-card__body">Providing integrated care where relief matters most by increasing accessibility of digital health support.</p>
+      </div>
+    </article>
+    <article class="info-card">
+      <div class="info-card__part">
+        <span class="badge badge--navy">Horizon 3</span>
+        <h3 class="info-card__headline">Unified <span class="kw">intelligence</span></h3>
+      </div>
+      <div class="info-card__part">
+        <p class="info-card__label">Challenge</p>
+        <p class="info-card__body">Fragmented data</p>
+      </div>
+      <div class="info-card__part">
+        <p class="info-card__label">Shift</p>
+        <p class="info-card__body">Creating the data infrastructure and AI capabilities needed to unlock a more connected, intelligent healthcare ecosystem.</p>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- ===================== SECTION 6 — GALLERY SHOWCASE (white) ===================== -->
+<section class="section section--white pad-y" data-nav="light">
+  <h2 class="h-md gallery__head reveal">Orchestrating <span class="kw">experiences</span> in healthcare to drive better outcomes</h2>
+  <p class="lede gallery__desc reveal">The organisation operates across aged care, primary care, hospital care and virtual health services. The business faced mounting pressure from evolving regulations, fragmented technology landscapes, growing demand for AI-enabled experiences, and rising customer expectations. The challenge was not improving individual products. It was creating the conditions for future innovation while supporting today's operational realities.</p>
+  <div class="card-grid stagger reveal">
+    <article class="card pressable">
+      <img class="card__img" src="assets/img/horizon1.png" alt="" onerror="this.style.display='none'">
+      
+      <div class="card__text">
+        <span class="badge badge--navy">Horizon 1</span>
+        <p class="card__sub">The Past</p>
+      </div>
+    </article>
+    <article class="card pressable">
+      <img class="card__img" src="assets/img/Horizon2.png" alt="" onerror="this.style.display='none'">
+      
+      <div class="card__text">
+        <span class="badge badge--navy">Horizon 2</span>
+        <p class="card__sub">The Present</p>
+      </div>
+    </article>
+    <article class="card pressable">
+      <img class="card__img" src="assets/img/horizon3.png" alt="" onerror="this.style.display='none'">
+      
+      <div class="card__text">
+        <span class="badge badge--navy">Horizon 3</span>
+        <p class="card__sub">The Future</p>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- ===================== SECTION 7 — THE IMPACT (navy) ===================== -->
+<section class="section section--navy pad-y" id="impact" data-nav="dark">
+  <div class="impact__head reveal">
+    <span class="badge badge--lavender" style="margin-bottom:var(--spacing-30);">The impact</span>
+    <h2 class="h-sm">Numbers rarely tell the whole story. But these are worth pausing on.</h2>
+  </div>
+  <div class="impact__grid stagger reveal">
+    <div class="impact__block">
+      <p class="impact__num">$2.5M</p>
+      <p class="impact__cap">Estimated year one opportunity identified through the Snowflake proof of concept</p>
+    </div>
+    <div class="impact__block">
+      <p class="impact__num">&lt;10s</p>
+      <p class="impact__cap">To generate clinical summaries using agentic AI orchestration</p>
+    </div>
+    <div class="impact__block">
+      <p class="impact__num impact__num--sm">Multiple products</p>
+      <p class="impact__cap">Data unified across the organisation's product ecosystem in a single proof of concept</p>
+    </div>
+    <div class="impact__block">
+      <p class="impact__num impact__num--sm">Directly validated</p>
+      <p class="impact__cap">Outputs confirmed directly with healthcare professionals, not assumed</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== SECTION 8 — CLOSING STATEMENT (navy) ===================== -->
+<section class="typo-hero" id="" data-nav="light">
+  <img class="typo-hero__bg" src="assets//img/typo-bg.png" alt="" onerror="this.style.display='none'">
+  <div class="typo-hero__ph" aria-hidden="true">Image placeholder</div>
+  <div class="typo-hero__box reveal">
+    <span class="badge badge--lavender">A foundation for the future</span>
+    <p class="typo-hero__headline typo-hero__headline--dense">Because the future of care isn't just intelligent. It's <span class="kw">connected</p>
+    <p class="typo-hero__caption">Our partnership with this healthcare provider demonstrates what becomes possible when experience design is treated as a strategic lever for transformation. Not just improving products—but strengthening trust, enabling innovation, and helping create a more connected healthcare future.</p>
+    <img src="../../DesignLibrary/CognizantMomentEnhanced/brand/logos/Main_logo.svg" style="width: 92px; height: atuo; padding-top: 64px;" alt="Cognizant Moment">
+  </div>
+</section>
+
+</div>
+</div>
+<!-- /#smooth-content, /#smooth-wrapper -->
+
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollSmoother.min.js"></script>
+<script>
+(function(){
+  "use strict";
+
+  /* ---- ScrollSmoother: smooth, lagged scroll for a more premium feel.
+     Must be created before any ScrollTrigger that pins/scrubs content
+     inside #smooth-content (the landscape section below), so those
+     triggers register against the smoothed scroll from the start.
+     Skips gracefully (native scroll) if the plugin failed to load or the
+     user prefers reduced motion. ---- */
+  var prefersReducedMotion = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+
+  var smootherActive = false;
+  if(window.gsap && window.ScrollTrigger && window.ScrollSmoother && !prefersReducedMotion){
+    gsap.registerPlugin(ScrollTrigger, ScrollSmoother);
+    ScrollSmoother.create({
+      wrapper: '#smooth-wrapper',
+      content: '#smooth-content',
+      smooth: 1.2,
+      effects: false,
+      normalizeScroll: true,
+      ignoreMobileResize: true
+    });
+    smootherActive = true;
+  }
+
+  /* ---- Hero media parallax: the image drifts opposite the scroll
+     direction inside its clipped shape as you scroll through the hero,
+     settling exactly back to centre once you've scrolled past it. ---- */
+  if(window.gsap && window.ScrollTrigger && !prefersReducedMotion){
+    gsap.registerPlugin(ScrollTrigger);
+    gsap.fromTo('.hero__media-img',
+      { yPercent: -10 },
+      {
+        yPercent: 10,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: '.hero',
+          start: 'top top',
+          end: 'bottom top',
+          scrub: true
+        }
+      }
+    );
+  }
+
+  /* ---- Scroll-reveal fallback: only when animation-timeline is unsupported —
+     OR when ScrollSmoother is active. CSS animation-timeline:view() measures
+     progress against the nearest scroll container, which ScrollSmoother makes
+     #smooth-wrapper (overflow:hidden, never actually scrolls — only its child
+     is transformed), so view() timelines would never progress and every
+     .reveal/.stagger element would stay stuck at its opacity:0 start state.
+     The JS/IntersectionObserver path below measures real viewport
+     intersection instead, which stays correct under the transform. ---- */
+  var supportsTimeline = (window.CSS && CSS.supports && CSS.supports('animation-timeline:view()')) && !smootherActive;
+  if(!supportsTimeline){
+    document.documentElement.classList.add('io-mode');
+    var reveals = document.querySelectorAll('.reveal, .stagger');
+    if('IntersectionObserver' in window){
+      // set stagger indices
+      document.querySelectorAll('.stagger').forEach(function(g){
+        Array.prototype.forEach.call(g.children,function(c,i){c.style.setProperty('--i',i);});
+      });
+      var io = new IntersectionObserver(function(entries){
+        entries.forEach(function(e){
+          if(e.isIntersecting){e.target.classList.add('is-visible');io.unobserve(e.target);}
+        });
+      },{threshold:0.12,rootMargin:'-80px 0px'});
+      reveals.forEach(function(el){io.observe(el);});
+    } else {
+      reveals.forEach(function(el){el.classList.add('is-visible');});
+    }
+  }
+
+  /* ---- Sticky nav: adapt colour to the section beneath it ---- */
+  var nav = document.getElementById('nav');
+  var themed = Array.prototype.slice.call(document.querySelectorAll('[data-nav]'));
+  function updateNav(){
+    var line = nav.offsetHeight * 0.5;
+    var current = 'dark';
+    for(var i=0;i<themed.length;i++){
+      var r = themed[i].getBoundingClientRect();
+      if(r.top <= line && r.bottom > line){current = themed[i].getAttribute('data-nav');break;}
+    }
+    nav.classList.toggle('is-light', current === 'light');
+  }
+  updateNav();
+  window.addEventListener('scroll',updateNav,{passive:true});
+  window.addEventListener('resize',updateNav);
+
+  /* ---- Active nav link on scroll ---- */
+  var links = Array.prototype.slice.call(document.querySelectorAll('.nav__link'));
+  var targets = links.map(function(l){return document.querySelector(l.getAttribute('href'));});
+  function updateActive(){
+    var line = nav.offsetHeight + 20;
+    var idx = 0;
+    for(var i=0;i<targets.length;i++){
+      if(targets[i] && targets[i].getBoundingClientRect().top <= line) idx = i;
+    }
+    links.forEach(function(l,i){l.classList.toggle('is-active', i===idx);});
+  }
+  updateActive();
+  window.addEventListener('scroll',updateActive,{passive:true});
+
+  /* ---- The Landscape: pinned split-headline gallery (GSAP + ScrollTrigger) ----
+     Pin the section; scrub-translate the right-hand track of image+caption
+     groups. The single left headline inverts navy→white where it crosses the
+     image column (split = the viewport's left edge as a % of the headline
+     width), and crossfades to the headline whose group is nearest centre. */
+  if(window.gsap && window.ScrollTrigger){
+    gsap.registerPlugin(ScrollTrigger);
+
+    gsap.matchMedia().add("(min-width: 901px)", function(){
+      var section = document.getElementById('landscape');
+      var viewport = document.getElementById('landscapeViewport');
+      var track = document.getElementById('landscapeTrack');
+      var groups = gsap.utils.toArray('#landscape .landscape__group');
+      var heads = gsap.utils.toArray('#landscape .headline-wrap');
+      var stage = document.querySelector('#landscape .landscape__stage');
+      if(!section || !viewport || !track || !groups.length) return;
+
+      var active = -1;
+      function setActive(i){
+        if(i === active) return;
+        active = i;
+        heads.forEach(function(h,idx){ h.classList.toggle('is-active', idx===i); });
+      }
+      /* Active headline = the group whose image centre is nearest the viewport
+         centre — accurate even when caption heights differ between groups. */
+      function syncActive(){
+        var mid = window.innerHeight / 2, best = 0, bestDist = Infinity;
+        for(var i=0;i<groups.length;i++){
+          var img = groups[i].querySelector('.landscape__img') || groups[i];
+          var r = img.getBoundingClientRect();
+          var c = r.top + r.height / 2;
+          var d = Math.abs(c - mid);
+          if(d < bestDist){ bestDist = d; best = i; }
+        }
+        setActive(best);
+      }
+      /* Clip the active headline's white overlay to the live rectangle of its
+         image, so the navy→white inversion appears ONLY where the headline
+         actually crosses the photo. As the image scrolls up and out, the box
+         shrinks to nothing and the headline reads fully navy — never white on
+         the white page or over the caption. */
+      function updateActiveOverlay(){
+        if(active < 0) return;
+        var overlay = heads[active].querySelector('.hl--overlay');
+        var img = groups[active] && groups[active].querySelector('.landscape__img');
+        if(!overlay || !img) return;
+        var o = overlay.getBoundingClientRect();
+        if(o.width === 0) return;
+        var r = img.getBoundingClientRect();
+        var top = Math.max(0, r.top - o.top);
+        var right = Math.max(0, o.right - r.right);
+        var bottom = Math.max(0, o.bottom - r.bottom);
+        var left = Math.max(0, r.left - o.left);
+        overlay.style.clipPath = 'inset(' + top + 'px ' + right + 'px ' + bottom + 'px ' + left + 'px)';
+      }
+      function onFrame(){ syncActive(); updateActiveOverlay(); }
+      function scrollAmount(){
+        return Math.max(0, track.scrollHeight - viewport.clientHeight);
+      }
+
+      var tween = gsap.to(track, {
+        y: function(){ return -scrollAmount(); },
+        ease: "none",
+        scrollTrigger: {
+          trigger: section,
+          pin: true,
+          start: "top top",
+          end: function(){ return "+=" + scrollAmount(); },
+          scrub: 0.4,
+          invalidateOnRefresh: true,
+          onRefresh: onFrame,
+          onUpdate: onFrame
+        }
+      });
+
+      /* Per-image parallax: each photo drifts slightly within its own
+         frame as its group crosses the pinned viewport — a layered-depth
+         feel on top of the track's own scrub-scroll. Each trigger fires off
+         the group's live on-screen position, which the track tween above
+         is already driving, so both stay in sync frame to frame. */
+      var parallaxTweens = groups.map(function(g){
+        var img = g.querySelector('.landscape__img img');
+        var frame = g.querySelector('.landscape__img');
+        if(!img || !frame) return null;
+        return gsap.fromTo(img, { yPercent: -8 }, {
+          yPercent: 8,
+          ease: "none",
+          scrollTrigger: {
+            trigger: frame,
+            start: "top bottom",
+            end: "bottom top",
+            scrub: true,
+            invalidateOnRefresh: true
+          }
+        });
+      }).filter(Boolean);
+
+      onFrame();
+
+      return function(){
+        if(tween.scrollTrigger) tween.scrollTrigger.kill(true);
+        tween.kill();
+        parallaxTweens.forEach(function(t){
+          if(t.scrollTrigger) t.scrollTrigger.kill(true);
+          t.kill();
+        });
+      };
+    });
+
+    /* Re-measure once resizing has actually settled. ScrollTrigger's own
+       auto-refresh-on-resize fires while the browser is still mid-resize
+       (and can land in the same tick as this matchMedia rebuild), so it can
+       measure "top top" mid-layout-shift and pin at the wrong scroll offset.
+       A trailing debounce guarantees one final, accurate refresh after the
+       dust settles — this is what actually fixes it, not the timing of the
+       rebuild above. */
+    var resizeSettle;
+    window.addEventListener('resize', function(){
+      clearTimeout(resizeSettle);
+      resizeSettle = setTimeout(function(){ ScrollTrigger.refresh(); }, 300);
+    });
+
+    if(document.fonts && document.fonts.ready){
+      document.fonts.ready.then(function(){ ScrollTrigger.refresh(); });
+    }
+  }
+
+  /* ---- Insight carousel ---- */
+  var track = document.getElementById('track');
+  var slides = track ? track.children.length : 0;
+  var pager = document.getElementById('pager');
+  var prev = document.getElementById('prev');
+  var next = document.getElementById('next');
+  var index = 0;
+  function renderPager(){
+    pager.innerHTML='';
+    for(var i=0;i<slides;i++){
+      var b=document.createElement('button');
+      b.className='pager__dot'+(i===index?' is-active':'');
+      b.setAttribute('role','tab');
+      b.setAttribute('aria-label','Go to slide '+(i+1));
+      b.setAttribute('aria-selected', i===index?'true':'false');
+      (function(n){b.addEventListener('click',function(){go(n);});})(i);
+      pager.appendChild(b);
+    }
+  }
+  function go(n){
+    index = Math.max(0,Math.min(slides-1,n));
+    track.style.transform = 'translateX(' + (-index*100) + '%)';
+    prev.disabled = index===0;
+    next.disabled = index===slides-1;
+    renderPager();
+  }
+  if(track && slides){
+    renderPager();
+    prev.addEventListener('click',function(){go(index-1);});
+    next.addEventListener('click',function(){go(index+1);});
+    go(0);
+  }
+})();
+</script>
+</body>
+</html>

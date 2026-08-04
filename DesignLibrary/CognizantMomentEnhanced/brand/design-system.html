@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cognizant Moment Enhanced — Design System</title>
+  <link rel="stylesheet" href="css/cognizant-moment-enhanced.css" />
+  <style>
+    /* ---- Page chrome for THIS reference page only (not part of the system) ---- */
+    body { background: var(--color-white); color: var(--color-navy); }
+    .doc-wrap { max-width: 1180px; margin: 0 auto; padding: var(--spacing-64); }
+    .doc-section { margin-bottom: var(--spacing-108); }
+    .doc-h {
+      font-family: var(--font-gellix); font-weight: 700;
+      font-size: var(--text-heading-sm); line-height: var(--leading-heading-sm);
+      letter-spacing: var(--tracking-heading-sm); margin: 0 0 var(--spacing-30);
+      color: var(--color-navy);
+    }
+    .doc-sub {
+      font-family: var(--font-gellix); font-weight: 600;
+      font-size: var(--text-subheading); letter-spacing: var(--tracking-subheading);
+      margin: var(--spacing-60) 0 var(--spacing-20); color: var(--color-navy);
+    }
+    .doc-note { font-size: var(--text-body); color: var(--color-navy); opacity: 0.7; margin-bottom: var(--spacing-30); }
+    .doc-swatches { display: flex; flex-wrap: wrap; gap: var(--spacing-20); }
+    .doc-swatch { width: 180px; }
+    .doc-swatch__chip { height: 96px; border: 1px solid rgba(0,0,31,0.12); }
+    .doc-swatch__meta { font-size: var(--text-caption); letter-spacing: var(--tracking-caption); margin-top: var(--spacing-10); }
+    .doc-swatch__meta strong { display: block; font-weight: 600; }
+    .doc-panel { padding: var(--spacing-38); border: 1px solid rgba(0,0,31,0.12); }
+    .doc-panel--navy { background: var(--color-navy); border-color: transparent; }
+    .doc-row { display: flex; flex-wrap: wrap; gap: var(--spacing-20); align-items: center; }
+    .doc-fullbleed { margin: var(--spacing-30) calc(-1 * var(--spacing-64)); }
+    .doc-typerow { display: flex; align-items: baseline; gap: var(--spacing-20); margin-bottom: var(--spacing-20); border-bottom: 1px solid rgba(0,0,31,0.08); padding-bottom: var(--spacing-15); }
+    .doc-typerow__label { flex: 0 0 160px; font-size: var(--text-caption); letter-spacing: var(--tracking-caption); opacity: 0.6; }
+    .doc-cardgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--spacing-30); }
+  </style>
+</head>
+<body>
+  <div class="doc-wrap">
+    <header class="doc-section">
+      <img src="logos/Main_logo.svg" alt="Cognizant Moment" style="height:32px;width:auto;margin-bottom:var(--spacing-30);" />
+      <h1 class="doc-h" style="font-size:var(--text-heading);letter-spacing:var(--tracking-heading);">Cognizant Moment Enhanced</h1>
+      <p class="doc-note">A living reference of the tokens, components, and organisms defined in DESIGN.md. This page is for teammates to view the system — build from DESIGN.md and the linked CSS/JS, not from this HTML.</p>
+    </header>
+
+    <!-- ============ COLORS ============ -->
+    <section class="doc-section">
+      <h2 class="doc-h">Colors</h2>
+      <div class="doc-swatches">
+        <div class="doc-swatch"><div class="doc-swatch__chip" style="background:var(--color-navy);"></div><div class="doc-swatch__meta"><strong>Dark Navy</strong>#00001F · --color-navy</div></div>
+        <div class="doc-swatch"><div class="doc-swatch__chip" style="background:var(--color-blue);"></div><div class="doc-swatch__meta"><strong>Bright Blue</strong>#1777FC · --color-blue</div></div>
+        <div class="doc-swatch"><div class="doc-swatch__chip" style="background:var(--color-lavender);"></div><div class="doc-swatch__meta"><strong>Lavender</strong>#D3BDFF · --color-lavender</div></div>
+        <div class="doc-swatch"><div class="doc-swatch__chip" style="background:var(--color-white);"></div><div class="doc-swatch__meta"><strong>White</strong>#FFFFFF · --color-white</div></div>
+      </div>
+    </section>
+
+    <!-- ============ TYPE SCALE ============ -->
+    <section class="doc-section">
+      <h2 class="doc-h">Type Scale — Gellix</h2>
+      <div class="doc-typerow"><span class="doc-typerow__label">caption · 12</span><span class="cme-text-caption" style="text-transform:uppercase;">The message arrives</span></div>
+      <div class="doc-typerow"><span class="doc-typerow__label">body · 16</span><span class="cme-text-body">The message arrives, and everything else steps back.</span></div>
+      <div class="doc-typerow"><span class="doc-typerow__label">subheading · 32/300</span><span style="font-size:var(--text-subheading);font-weight:300;letter-spacing:var(--tracking-subheading);">The message arrives</span></div>
+      <div class="doc-typerow"><span class="doc-typerow__label">heading-sm · 48/700</span><span style="font-size:var(--text-heading-sm);font-weight:700;letter-spacing:var(--tracking-heading-sm);">The message</span></div>
+      <div class="doc-typerow"><span class="doc-typerow__label">heading · 64/700</span><span style="font-size:var(--text-heading);font-weight:700;letter-spacing:var(--tracking-heading);">Moment</span></div>
+      <div class="doc-typerow"><span class="doc-typerow__label">heading-lg · 79/700</span><span style="font-size:var(--text-heading-lg);font-weight:700;letter-spacing:var(--tracking-heading-lg);">Moment</span></div>
+      <div class="doc-typerow"><span class="doc-typerow__label">display · 100/700</span><span style="font-size:var(--text-display);font-weight:700;letter-spacing:var(--tracking-display);">Moment</span></div>
+    </section>
+
+    <!-- ============ COMPONENTS ============ -->
+    <section class="doc-section">
+      <h2 class="doc-h">Components</h2>
+
+      <h3 class="doc-sub">Top Nav Bar</h3>
+      <p class="doc-note">The bar has no fill — it sits directly on whatever section scrolls beneath it. Over a dark/photographic surface the reversed logo and labels are white; once a white section scrolls under, the standard logo and labels invert to dark navy (<code>#00001F</code>). The active blue underline stays the same on both.</p>
+      <div class="doc-panel doc-panel--navy" style="margin-bottom:var(--spacing-20);">
+        <nav class="cme-nav cme-nav--on-navy" style="position:static;padding:0;">
+          <a class="cme-nav__logo" href="#"><img src="logos/Main_logo_reversed.svg" alt="Cognizant Moment" /></a>
+          <ul class="cme-nav__list">
+            <li><a class="cme-nav__link cme-nav__link--active" href="#">Work</a></li>
+            <li><a class="cme-nav__link" href="#">About</a></li>
+            <li><a class="cme-nav__link" href="#">Contact</a></li>
+          </ul>
+        </nav>
+      </div>
+      <div class="doc-panel" style="background:var(--color-white);">
+        <nav class="cme-nav cme-nav--on-white" style="position:static;padding:0;">
+          <a class="cme-nav__logo" href="#"><img src="logos/Main_logo.svg" alt="Cognizant Moment" /></a>
+          <ul class="cme-nav__list">
+            <li><a class="cme-nav__link cme-nav__link--active" href="#">Work</a></li>
+            <li><a class="cme-nav__link" href="#">About</a></li>
+            <li><a class="cme-nav__link" href="#">Contact</a></li>
+          </ul>
+        </nav>
+      </div>
+
+      <h3 class="doc-sub">Display Headline</h3>
+      <div class="doc-panel doc-panel--navy">
+        <p class="cme-headline cme-headline--heading-lg">Everything else <span class="cme-keyword">steps back</span>.</p>
+      </div>
+
+      <h3 class="doc-sub">Badge</h3>
+      <div class="doc-row" style="margin-bottom:var(--spacing-20);">
+        <span class="cme-badge cme-badge--navy">Case Study</span>
+        <span class="cme-badge cme-badge--lavender">Introduction</span>
+      </div>
+      <div class="doc-panel doc-panel--navy">
+        <div class="doc-row">
+          <span class="cme-badge cme-badge--lavender">Introduction</span>
+          <span class="cme-badge cme-badge--white">Case Study</span>
+        </div>
+      </div>
+
+      <h3 class="doc-sub">Pagination</h3>
+      <div class="doc-panel" style="margin-bottom:var(--spacing-20);">
+        <div class="cme-pagination cme-pagination--on-white">
+          <span class="cme-pagination__item cme-pagination__item--active"></span>
+          <span class="cme-pagination__item"></span>
+          <span class="cme-pagination__item"></span>
+        </div>
+      </div>
+      <div class="doc-panel doc-panel--navy">
+        <div class="cme-pagination cme-pagination--on-navy">
+          <span class="cme-pagination__item cme-pagination__item--active"></span>
+          <span class="cme-pagination__item"></span>
+          <span class="cme-pagination__item"></span>
+        </div>
+      </div>
+
+      <h3 class="doc-sub">Showcase Card</h3>
+      <div class="doc-cardgrid">
+        <article class="cme-showcase-card">
+          <img class="cme-showcase-card__img" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='400'><rect width='300' height='400' fill='%233a4a6b'/></svg>" alt="Placeholder" />
+          <div class="cme-showcase-card__text">
+            <span class="cme-badge cme-badge--navy">Case Study</span>
+            <p class="cme-showcase-card__subheading">A quiet moment</p>
+          </div>
+        </article>
+        <article class="cme-showcase-card">
+          <img class="cme-showcase-card__img" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='400'><rect width='300' height='400' fill='%235b4a6b'/></svg>" alt="Placeholder" />
+          <div class="cme-showcase-card__text">
+            <span class="cme-badge cme-badge--navy">Project</span>
+            <p class="cme-showcase-card__subheading">One thing at a time</p>
+          </div>
+        </article>
+        <article class="cme-showcase-card">
+          <img class="cme-showcase-card__img" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='400'><rect width='300' height='400' fill='%236b5a3a'/></svg>" alt="Placeholder" />
+          <div class="cme-showcase-card__text">
+            <span class="cme-badge cme-badge--navy">Story</span>
+            <p class="cme-showcase-card__subheading">A line of light</p>
+          </div>
+        </article>
+      </div>
+
+      <h3 class="doc-sub">Info Card</h3>
+      <p class="doc-note">Flat white panel, 27px padding, no border or radius. Three parts (23px gap): a navy badge + 32px bold headline, then two caption + body-line blocks. The surrounding grey frame here is the reference page only — the card itself is pure white.</p>
+      <div class="doc-panel" style="background: rgba(0,0,31,0.04); display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--spacing-30);">
+        <article class="cme-info-card">
+          <div class="cme-info-card__part">
+            <span class="cme-badge cme-badge--navy">Impact</span>
+            <h3 class="cme-info-card__headline">Faster by design</h3>
+          </div>
+          <div class="cme-info-card__part">
+            <p class="cme-info-card__caption">Time saved</p>
+            <p class="cme-info-card__body">Cut onboarding from weeks to days.</p>
+          </div>
+          <div class="cme-info-card__part">
+            <p class="cme-info-card__caption">Reach</p>
+            <p class="cme-info-card__body">Rolled out across twelve markets.</p>
+          </div>
+        </article>
+        <article class="cme-info-card">
+          <div class="cme-info-card__part">
+            <span class="cme-badge cme-badge--navy">Approach</span>
+            <h3 class="cme-info-card__headline">One clear moment</h3>
+          </div>
+          <div class="cme-info-card__part">
+            <p class="cme-info-card__caption">Principle</p>
+            <p class="cme-info-card__body">Say one thing at a time.</p>
+          </div>
+          <div class="cme-info-card__part">
+            <p class="cme-info-card__caption">Result</p>
+            <p class="cme-info-card__body">Every screen reads instantly.</p>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- ============ ORGANISMS ============ -->
+    <section class="doc-section">
+      <h2 class="doc-h">Organisms</h2>
+      <p class="doc-note">Organisms are shown full-bleed (edge to edge) to reflect how they render in a real page.</p>
+
+      <h3 class="doc-sub">Typographic Hero</h3>
+      <div class="doc-fullbleed">
+        <section class="cme-typographic-hero" style="height:70vh;">
+          <img class="cme-typographic-hero__img" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='1200' height='800'><rect width='1200' height='800' fill='%232a3350'/></svg>" alt="Editorial photography" />
+          <div class="cme-typographic-hero__box">
+            <span class="cme-badge cme-badge--lavender">Introduction</span>
+            <h2 class="cme-typographic-hero__headline">The message arrives</h2>
+            <p class="cme-typographic-hero__caption">and everything else steps back.</p>
+          </div>
+        </section>
+      </div>
+
+      <h3 class="doc-sub">Notched Hero</h3>
+      <p class="doc-note">Section frame, notch silhouette/gradient, and scroll cue are unchanged. Content inside the notch is now a two-column row (64px gap): media on the left, a text stack (translucent badge, 48px headline, body description) on the right, 11px gap between the three text elements.</p>
+      <div class="doc-fullbleed">
+        <section class="cme-notched-hero" style="height:80vh;">
+          <div class="cme-notched-hero__shape"></div>
+          <div class="cme-notched-hero__content">
+            <div class="cme-notched-hero__row">
+              <div class="cme-notched-hero__media">
+                <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='500' height='500'><rect width='500' height='500' fill='%235b4a6b'/></svg>" alt="Hero media" />
+              </div>
+              <div class="cme-notched-hero__text">
+                <span class="cme-badge cme-badge--translucent">Introduction</span>
+                <h2 class="cme-notched-hero__headline">A single line of light</h2>
+                <p class="cme-notched-hero__description">Dark navy void, one message at a time — the interface steps back so the moment can speak.</p>
+              </div>
+            </div>
+            <div class="cme-notched-hero__scroll">
+              <span>Scroll</span>
+              <svg width="16" height="56" viewBox="0 0 16 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <line x1="8" y1="0" x2="8" y2="40" stroke="currentColor" stroke-width="1"/>
+                <path d="M1 40L8 47L15 40" stroke="currentColor" stroke-width="1" fill="none"/>
+              </svg>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <h3 class="doc-sub">Primary Content Section</h3>
+      <div class="doc-fullbleed">
+        <section class="cme-primary-content">
+          <img class="cme-primary-content__img" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='500'><rect width='400' height='500' fill='%233a4a6b'/></svg>" alt="Supporting photography" />
+          <div class="cme-primary-content__box">
+            <span class="cme-badge cme-badge--lavender">Capability</span>
+            <h3 class="cme-primary-content__headline">Restraint as a discipline</h3>
+            <p class="cme-primary-content__description">The fewer decisions the interface visibly makes, the more confident the moment feels. Innovation and intuition are expressed through silence, not noise — every screen says one thing at a time.</p>
+          </div>
+        </section>
+      </div>
+
+      <h3 class="doc-sub">Introduction — Light (default)</h3>
+      <p class="doc-note">White canvas. Headline is duplicated into a navy base layer + white overlay layer, clipped at a JS-measured split so it stays dark over the white page and white over the photograph.</p>
+      <div class="doc-fullbleed">
+        <section class="cme-introduction">
+          <div class="cme-introduction__inner">
+            <div class="composed">
+              <div class="left">
+                <span class="cme-badge cme-badge--lavender">Introduction</span>
+                <div class="headline-wrap">
+                  <h3 class="headline-base">The message arrives quietly</h3>
+                  <h3 class="headline-overlay" aria-hidden="true">The message arrives quietly</h3>
+                </div>
+              </div>
+              <div class="image-box">
+                <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='500' height='500'><rect width='500' height='500' fill='%235b4a6b'/></svg>" alt="Square photograph" />
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <h3 class="doc-sub">Introduction — Dark Navy</h3>
+      <p class="doc-note">Dark navy canvas, lavender badge unchanged. Headline is a single white line — no overlay, no clip-path, no split measurement — always sitting on top of the image (white reads over both the navy canvas and the photo).</p>
+      <div class="doc-fullbleed">
+        <section class="cme-introduction cme-introduction--navy">
+          <div class="cme-introduction__inner">
+            <div class="composed">
+              <div class="left">
+                <span class="cme-badge cme-badge--lavender">Introduction</span>
+                <div class="headline-wrap">
+                  <h3 class="headline-base">The message arrives quietly</h3>
+                </div>
+              </div>
+              <div class="image-box">
+                <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='500' height='500'><rect width='500' height='500' fill='%235b4a6b'/></svg>" alt="Square photograph" />
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </section>
+  </div>
+
+  <script src="js/cognizant-moment-enhanced.js" defer></script>
+</body>
+</html>
