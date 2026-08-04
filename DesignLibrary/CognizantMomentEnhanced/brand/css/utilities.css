@@ -1,0 +1,28 @@
+/* ============================================================
+   Cognizant Moment Enhanced — Utilities
+   Small helpers for surfaces & type, all pointing at tokens.
+   ============================================================ */
+
+/* Surfaces */
+.cme-surface-navy  { background: var(--surface-navy); color: var(--color-white); }
+.cme-surface-white { background: var(--surface-white); color: var(--color-navy); }
+
+/* Type roles */
+.cme-text-caption {
+  font-size: var(--text-caption);
+  line-height: var(--leading-caption);
+  letter-spacing: var(--tracking-caption);
+}
+.cme-text-body {
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+  letter-spacing: var(--tracking-body);
+}
+.cme-text-subheading {
+  font-size: var(--text-subheading);
+  line-height: var(--leading-subheading);
+  letter-spacing: var(--tracking-subheading);
+}
+
+/* Layout helpers */
+.cme-page-margin-x { padding-left: var(--page-margin-x); padding-right: var(--page-margin-x); }

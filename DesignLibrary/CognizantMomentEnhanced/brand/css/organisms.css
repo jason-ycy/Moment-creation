@@ -1,0 +1,247 @@
+/* ============================================================
+   Cognizant Moment Enhanced — Organisms
+   Typographic Hero, Notched Hero, Primary Content Section,
+   Introduction. Structure & styling fixed; only content varies.
+   ============================================================ */
+
+/* ---- Typographic Hero ------------------------------------- */
+.cme-typographic-hero {
+  position: relative;
+  width: 100%;
+  max-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
+}
+.cme-typographic-hero__img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  background-repeat: no-repeat; /* full-bleed rule: cover, center, never repeat */
+}
+.cme-typographic-hero__box {
+  position: absolute;
+  inset: var(--spacing-64);
+  background: var(--color-white);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-10);
+  padding: var(--spacing-60);
+  text-align: center;
+}
+.cme-typographic-hero__headline {
+  font-family: var(--font-gellix);
+  font-weight: var(--font-weight-display);
+  font-size: var(--text-heading-lg);
+  line-height: var(--leading-heading-lg);
+  letter-spacing: var(--tracking-heading-lg);
+  color: var(--color-navy);
+  width: 100%;
+}
+.cme-typographic-hero__caption {
+  font-style: italic;
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+  letter-spacing: var(--tracking-body);
+  color: var(--color-navy);
+  width: 100%;
+}
+
+/* ---- Notched Hero ----------------------------------------- */
+.cme-notched-hero {
+  position: relative;
+  width: 100%;
+  height: 100vh; /* fixed — notch geometry is measured against it */
+  background: var(--color-white);
+}
+.cme-notched-hero__shape {
+  position: absolute;
+  inset: 0;
+  background: var(--hero-gradient);
+  clip-path: polygon(0% 0%, 100% 0%, 100% var(--hero-notch-depth), var(--hero-notch-offset) 100%, 0% var(--hero-notch-depth));
+}
+.cme-notched-hero__content {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-30);
+  padding: 0 var(--page-margin-x);
+}
+/* Two-column row: left = media, right = text stack. 1180px matches the
+   centered-container width used by other organisms (e.g. Introduction). */
+.cme-notched-hero__row {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  max-width: 1180px;
+  gap: var(--hero-content-gap);
+}
+.cme-notched-hero__media {
+  flex: 1 1 0;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+}
+.cme-notched-hero__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.cme-notched-hero__text {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  gap: var(--spacing-11);
+}
+/* Organism-scoped badge override — translucent white fill, white text
+   (not one of the standard navy/lavender/white Badge variants). */
+.cme-notched-hero .cme-badge--translucent {
+  background: var(--hero-badge-translucent-bg);
+  color: var(--hero-badge-translucent-text);
+}
+.cme-notched-hero__headline {
+  font-family: var(--font-gellix);
+  font-weight: var(--font-weight-display);
+  font-size: var(--text-heading-sm);
+  line-height: var(--leading-heading-sm);
+  letter-spacing: var(--tracking-heading-sm);
+  color: var(--color-white);
+}
+.cme-notched-hero__description {
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+  letter-spacing: var(--tracking-body);
+  color: var(--color-white);
+}
+.cme-notched-hero__scroll {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-10);
+  color: var(--color-white);
+}
+.cme-notched-hero__scroll span {
+  font-size: var(--text-caption);
+  line-height: var(--leading-caption);
+  letter-spacing: var(--tracking-caption);
+  text-transform: uppercase;
+}
+
+/* ---- Primary Content Section ------------------------------ */
+.cme-primary-content {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-64);
+  background: var(--color-navy);
+  padding: var(--spacing-64) var(--page-margin-x);
+}
+.cme-primary-content__img {
+  grid-column: span 1;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.cme-primary-content__box {
+  grid-column: span 2;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--spacing-20);
+  text-align: left;
+}
+.cme-primary-content__headline {
+  font-family: var(--font-gellix);
+  font-weight: var(--font-weight-display);
+  font-size: var(--text-heading-sm);
+  line-height: var(--leading-heading-sm);
+  letter-spacing: var(--tracking-heading-sm);
+  color: var(--color-white);
+}
+.cme-primary-content__description {
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+  letter-spacing: var(--tracking-body);
+  color: var(--color-white);
+}
+
+/* ---- Introduction ----------------------------------------- */
+.cme-introduction {
+  display: flex;
+  align-items: center;
+  min-height: 100vh;
+  background: var(--color-white);
+  padding: var(--spacing-108);
+}
+.cme-introduction__inner {
+  width: 100%;
+  max-width: 1180px;
+  margin: 0 auto;
+}
+.cme-introduction .composed {
+  position: relative;
+}
+.cme-introduction .left {
+  width: 100%;
+}
+.cme-introduction .cme-badge {
+  margin-bottom: var(--spacing-36);
+}
+.cme-introduction .headline-wrap {
+  position: relative;
+}
+.cme-introduction .headline-base,
+.cme-introduction .headline-overlay {
+  font-family: var(--font-gellix);
+  font-weight: var(--font-weight-display);
+  font-size: var(--text-display);
+  line-height: var(--leading-display);
+  letter-spacing: var(--tracking-display);
+  margin: 0;
+}
+.cme-introduction .headline-base {
+  color: var(--color-navy);
+  /* Only the portion over the plain white page is visible. */
+  clip-path: inset(0 calc(100% - var(--intro-split, 100%)) 0 0);
+}
+.cme-introduction .headline-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2; /* paints above the photograph */
+  color: var(--color-white);
+  /* Only the portion over the photograph is visible. */
+  clip-path: inset(0 0 0 var(--intro-split, 100%));
+}
+.cme-introduction .image-box {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+  aspect-ratio: 1 / 1;
+  width: 40%;
+}
+.cme-introduction .image-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Dark Navy variant — navy canvas, single white headline, no overlay/clip.
+   White reads over both the navy canvas and the photo, so the headline is
+   one plain white line sitting on top of the image (no --intro-split JS). */
+.cme-introduction--navy {
+  background: var(--color-navy);
+}
+.cme-introduction--navy .headline-base {
+  color: var(--color-white);
+  clip-path: none; /* no inverted-color region — text is white everywhere */
+  position: relative;
+  z-index: 2; /* always paints on top of the image box */
+}
