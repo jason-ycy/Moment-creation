@@ -1,7 +1,7 @@
 /* ============================================================
    Cognizant Moment Enhanced — Components
-   Top Nav Bar, Display Headline, Badge, Pagination, Showcase Card.
-   All values sourced from DESIGN.md.
+   Top Nav Bar, Display Headline, Badge, Pagination, Showcase Card,
+   Info Card, Notch Frame, Notch Outline. All values sourced from DESIGN.md.
    ============================================================ */
 
 /* ---- Top Nav Bar ------------------------------------------ */
@@ -213,4 +213,57 @@
   line-height: var(--leading-body);
   letter-spacing: var(--tracking-body);
   color: var(--color-navy);
+}
+
+/* ---- Notch Frame -------------------------------------------- */
+/* Crops any image/media to a rectangle with its top-left and
+   bottom-right corners cut off diagonally. Fills its parent
+   container — sizing/aspect ratio is set by whatever wraps it. */
+.cme-notch-frame {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  clip-path: polygon(100% 0%, 0% var(--notch-left-y), 0% 100%, var(--notch-bottom-x) 100%, 100% var(--notch-right-y));
+}
+.cme-notch-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* ---- Notch Outline ------------------------------------------- */
+/* Same angled-corner family as Notch Frame, but a distinct 6-point
+   shape (extra flat segment on the top edge) with NO fill — only a
+   1px gradient-stroked outline. Implemented as inline SVG (not
+   clip-path) since a gradient can't be applied to a CSS border, and
+   CSS border-image only follows the rectangular border box, not an
+   arbitrary polygon. Fills its parent container; no fixed aspect ratio.
+   NOTE: the gradient itself (<linearGradient id="...">) lives in each
+   instance's own <defs> in the markup, not here — SVG ids must be
+   unique per document, so the stroke's url(#id) is set per-instance
+   (inline or via a per-instance modifier), never hardcoded to one
+   fixed id in this shared stylesheet. */
+.cme-notch-outline {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.cme-notch-outline polygon {
+  fill: none;
+  stroke-width: 1.5; /* bumped from 1px — reduces how visible the inherent
+                         anti-aliasing contrast is between the shape's flat
+                         edges and its diagonal cuts (diagonal strokes always
+                         render thinner than axis-aligned ones at the same
+                         nominal width; this isn't fully eliminable by any
+                         CSS/JS fix, only made less noticeable). */
+  opacity: 0.3;
+  /* preserveAspectRatio="none" scales the viewBox non-uniformly to fill
+     any container size/ratio — without this, stroke-width would scale
+     unevenly with it instead of staying a true 1px line on screen. This
+     is a no-JS fallback only; cognizant-moment-enhanced.js rewrites the
+     viewBox/points to the container's real pixel size on load/resize,
+     which is what actually keeps the stroke even on every edge — see
+     initNotchOutlines(). */
+  vector-effect: non-scaling-stroke;
 }

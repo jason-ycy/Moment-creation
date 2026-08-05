@@ -5,6 +5,9 @@
       complementary at any copy length / viewport size.
    2. Top Nav Bar: adapt item color to whatever surface scrolls
       beneath the sticky bar (white items over dark, navy over white).
+   3. Notch Outline: rebuild the polygon's points/viewBox in real
+      pixel units so its 1px stroke renders evenly on every edge
+      regardless of the container's aspect ratio.
    ============================================================ */
 (function () {
   'use strict';
@@ -74,9 +77,61 @@
     window.addEventListener('resize', updateNav);
   }
 
+  /* ---- 3. Notch Outline precise sizing --------------------- */
+  function pctVar(el, name, fallback) {
+    var raw = getComputedStyle(el).getPropertyValue(name).trim();
+    var num = parseFloat(raw);
+    return isNaN(num) ? fallback : num / 100;
+  }
+
+  function sizeNotchOutline(svg) {
+    var rect = svg.getBoundingClientRect();
+    var w = rect.width, h = rect.height;
+    if (!w || !h) return;
+
+    var topX = pctVar(svg, '--notch-outline-top-x', 0.8) * w;
+    var leftY = pctVar(svg, '--notch-outline-left-y', 0.4) * h;
+    var bottomX = pctVar(svg, '--notch-outline-bottom-x', 0.6) * w;
+    var rightY = pctVar(svg, '--notch-outline-right-y', 0.5) * h;
+
+    // viewBox now matches the element's real pixel size exactly (scale 1:1
+    // in both axes) — this is what makes the 1px stroke render evenly on
+    // every edge; the static markup's stretched 0-100 viewBox is only a
+    // no-JS fallback.
+    svg.setAttribute('viewBox', '0 0 ' + w + ' ' + h);
+
+    var poly = svg.querySelector('polygon');
+    if (!poly) return;
+    poly.setAttribute('points', [
+      w + ',0',
+      topX + ',0',
+      '0,' + leftY,
+      '0,' + h,
+      bottomX + ',' + h,
+      w + ',' + rightY
+    ].join(' '));
+  }
+
+  function initNotchOutlines() {
+    var outlines = document.querySelectorAll('.cme-notch-outline');
+    if (!outlines.length) return;
+
+    function sizeAll() {
+      outlines.forEach(sizeNotchOutline);
+    }
+
+    sizeAll();
+    window.addEventListener('resize', sizeAll);
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(sizeAll);
+    }
+    window.addEventListener('load', sizeAll);
+  }
+
   function init() {
     initIntroductions();
     initAdaptiveNav();
+    initNotchOutlines();
   }
 
   if (document.readyState === 'loading') {

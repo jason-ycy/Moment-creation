@@ -74,6 +74,11 @@
   --color-lavender: #D3BDFF;
   --color-white: #FFFFFF;
 
+  /* Notch Outline — decorative-only colors, distinct from the core
+     --color-navy palette above. Not used for text, surfaces, or badges. */
+  --notch-outline-gradient-start: #003B50;
+  --notch-outline-gradient-end: #D9D9D9;
+
   /* Typography — Font Families */
   --font-gellix: 'Gellix', 'General Sans', 'Aeonik', 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 
@@ -151,16 +156,25 @@
   --pagination-indicator-on-navy: #FFFFFF;
   --pagination-indicator-hover-opacity: 0.6;
 
-  /* Notched Hero */
-  --hero-gradient: radial-gradient(ellipse at center, #0a0f3d 0%, #00001F 70%);
-  --hero-notch-depth: 85%;
-  --hero-notch-offset: 40%;
-  --hero-content-gap: 64px; /* gap between the media column and the text column */
-  --hero-badge-translucent-bg: rgba(255, 255, 255, 0.1);
-  --hero-badge-translucent-text: #FFFFFF;
-  /* --hero-description-max-width / --hero-description-opacity: deprecated —
-     tied to the old single centered stack; the two-column layout is
-     left-aligned at full opacity with no max-width clamp. */
+  /* Split Hero — no dedicated tokens needed; reuses --page-margin-x, --spacing-36,
+     --badge-navy-bg/text, and --text-display. Columns are a 2:1 ratio (text:image).
+     Formerly "Notched Hero" — the dark gradient, clip-path notch, and translucent
+     badge tokens have been removed. */
+
+  /* Notch Frame — a rectangle with its top-left and bottom-right corners
+     cut off diagonally (not the shallow-point pentagon used earlier). */
+  --notch-left-y: 40%; /* left edge: where the top-left diagonal cut lands */
+  --notch-bottom-x: 60%; /* bottom edge: where the bottom-right diagonal cut starts */
+  --notch-right-y: 50%; /* right edge: where the bottom-right diagonal cut lands */
+
+  /* Notch Outline — a distinct component from Notch Frame above: same family
+     of angled-corner shape but with an extra flat segment on the top edge,
+     no fill, gradient border only. Kept as its own tokens so edits to one
+     shape never bleed into the other. */
+  --notch-outline-top-x: 80%; /* top edge: where the flat segment ends before the top-left cut begins */
+  --notch-outline-left-y: 40%;
+  --notch-outline-bottom-x: 60%;
+  --notch-outline-right-y: 50%;
 
   /* Introduction — --intro-split is set inline per-instance by JS
      measuring the actual image/headline overlap. */
