@@ -280,7 +280,7 @@ Organisms are reusable, page-section-scoped structures composed from one or more
      There is no caption or description line in this organism — the stack is badge + headline only.
      
      **Implementation note:** put the 64px left inset on an inner wrapper nested inside the text column, not on the flex column itself — placing padding directly on a `flex-basis: 0` flex item (with `box-sizing: border-box`) adds that padding back as a size floor before the 2:1 grow ratio is applied, which skews the columns off-ratio.
-   - **Right column — Media** (1/3 width). A single image or GIF (`object-fit: cover`), no border-radius (sharp corners, per the system-wide default), filling the full height of the section (top and bottom edges of the viewport) and running flush to the right screen edge — no right-hand inset, no page margin on this side. This is the one place in the system where content deliberately breaks the 64px page-margin rule, since the image is meant to touch the edge.
+   - **Right column — Media** (1/3 width). A single image or GIF (`object-fit: cover`), no border-radius (sharp corners, per the system-wide default), running flush to the right screen edge — no right-hand inset, no page margin on this side (this is the one place in the system where content deliberately breaks the 64px page-margin rule, since the image is meant to touch the edge). The image is deliberately **shorter than the section**, not edge-to-edge top-to-bottom: `height: 70vh`, vertically centered within the row (it inherits the row's own centering rather than stretching), leaving white space above and below it. This was changed from an earlier full-`100%`-height treatment — the shorter, centered image reads as a quieter, more editorial insert rather than a second full-bleed surface competing with the text column.
 
 **What stays fixed vs. what varies:**
 
@@ -296,7 +296,7 @@ Organisms are reusable, page-section-scoped structures composed from one or more
 |36px gap between badge and headline (`--spacing-36`)|
 |Headline at `--text-display` (100px), `--color-navy`|
 |No caption/description line|
-|Image fills full section height, `object-fit: cover`, no border-radius|
+|Image height `70vh`, vertically centered (not full-height/edge-to-edge), `object-fit: cover`, no border-radius|
 |No scroll cue|
 
 
@@ -383,6 +383,29 @@ The two variants share every layout decision above — section padding and max-w
 **Why the Dark Navy variant is simpler:** the Light variant's dual-layer clip exists solely because a single navy-colored headline would vanish where it crosses the photograph, so the overlapping portion has to be recolored white — which forces the pixel-measured split. In the Dark Navy variant the headline is white *everywhere* from the start: white reads clearly both over the dark navy canvas and over the photograph, so there is nothing to recolor. The headline is therefore **one plain white line rendered on top of the image** (a `z-index` above the image box), and the entire clip-path / `--intro-split` / resize-and-font-load measurement machinery is dropped. This is deliberately the simpler of the two — no inverted color region, text always on top of the image.
 
 *Implementation note:* because the Dark Navy variant carries no overlay layer and no measured split, it does **not** need the JS that drives the Light variant's `--intro-split`. A Dark Navy instance must not run that measurement (there is no base/overlay pair to keep in sync); a Light instance still must.
+
+
+### Quote
+
+**Role:** A reusable, center-aligned organism for a single testimonial or pull-quote moment. A badge names the context, a large bright-blue quotation mark signals that what follows is someone else's words rather than the system's own declarative copy, and the quote itself carries the weight as a headline rather than running body prose. Use it as a deliberate pause between denser content sections, or to bookend a case study before its closing statement.
+
+**Structure (top to bottom) — every element center-aligned (`text-align: center`, and the stack itself horizontally centered within its container):**
+
+1. **Badge** — variant chosen by the surface it sits on, per the Badge usage rule (navy or lavender on a white/photographic surface; lavender or white on a dark-navy surface). Sits above the quote mark with the same `--spacing-36` (36px) gap used elsewhere between a badge and the content it labels.
+2. **Quote mark** — a single opening quotation mark (`"`), always colored `--color-blue` (bright blue) regardless of the surface underneath — the one deliberate accent element in this organism, marking the words below as quoted speech. Set large relative to body/caption scale since it's a graphic mark rather than running text — `--text-display` (100px) or `--text-heading-lg` (79px) — at weight 700 to match the system's display weight. Set its `line-height` tight (`0.6`, well below the type scale's own `--leading-display`) and pull it toward the headline with a small negative margin (`-0.2em`) rather than a positive gap — at display size, the glyph sits near the top of its line-box, so the type scale's normal leading alone reads as an oversized gap before the headline.
+3. **Headline** — the quote itself, Gellix weight 700 (bold), set at `--text-heading` (64px / 1.14 / -1.25px tracking). Color adapts to the surface per the system's flat surface-inversion rule — `--color-navy` on a white surface, `--color-white` on a dark-navy surface. One or two lines. **No `--color-blue` keyword accent inside this line** — blue is already spent on the quote mark above it, and the system never doubles up the accent within one moment.
+4. **Caption** — the attribution line (name, role, organisation), set in *italic*, `--text-body` (16px / 1.43 / 0.8px tracking), same surface-adapted color as the headline. Sits below the headline with a modest `--spacing-20` (20px) gap.
+
+**What stays fixed vs. what varies:**
+
+|Fixed (do not change per use)|Varies per use|
+|-|-|
+|Badge, quote mark, headline, and caption all center-aligned|Badge label text|
+|Quote mark always `--color-blue`, regardless of surface|Quote/headline copy (1–2 lines)|
+|`--spacing-36` gap (badge → quote mark); quote mark uses a tight `0.6` line-height + `-0.2em` margin into the headline, not a positive spacing gap; `--spacing-20` gap (headline → caption)|Attribution caption copy|
+|Headline at `--text-heading` (64px), weight 700|Surface (white or dark navy) — badge variant and text color adapt accordingly, per the Badge usage rule|
+|Caption in italic, `--text-body` (16px)|Content-driven vertical padding around the stack|
+|No blue keyword accent inside the headline — blue is reserved for the quote mark only||
 
 
 ## Page Section Planning Guidance
@@ -592,6 +615,10 @@ The type scale is intentionally clustered at two poles rather than progressing s
 
   /\* Introduction — no static token here: --intro-split is set inline, per-instance,
      by JS measuring the actual image/headline overlap (see Introduction organism spec) \*/
+
+  /\* Quote — no dedicated tokens needed; reuses --color-blue (quote mark),
+     --text-heading (headline), --text-body italic (caption), the badge
+     tokens, and surface-adaptive text color per the Badge usage rule. \*/
 }
 ```
 
