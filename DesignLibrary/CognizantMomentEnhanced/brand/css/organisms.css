@@ -1,7 +1,7 @@
 /* ============================================================
    Cognizant Moment Enhanced — Organisms
    Typographic Hero, Notched Hero, Primary Content Section,
-   Introduction. Structure & styling fixed; only content varies.
+   Introduction, Quote. Structure & styling fixed; only content varies.
    ============================================================ */
 
 /* ---- Typographic Hero ------------------------------------- */
@@ -52,15 +52,15 @@
 }
 
 /* ---- Split Hero (formerly Notched Hero) -------------------- */
-/* Plain white canvas, text left / full-height image flush to the right
-   edge. No gradient, no clip-path notch, no scroll cue. */
+/* Plain white canvas, text left / shorter, vertically centered image flush
+   to the right edge. No gradient, no clip-path notch, no scroll cue. */
 .cme-split-hero {
   position: relative;
   width: 100%;
   height: 100vh;
   background: var(--color-white);
   display: flex;
-  align-items: stretch;
+  align-items: center;
   gap: var(--spacing-36);
 }
 .cme-split-hero__text {
@@ -96,7 +96,8 @@
 .cme-split-hero__media {
   flex: 1 1 0;
   min-width: 0;
-  height: 100%;
+  height: 70vh; /* deliberately shorter than the section, not edge-to-edge —
+    centered within the row via .cme-split-hero's own align-items: center */
   overflow: hidden;
 }
 /* Text:image column ratio is 2:1 (flex-grow 2 vs 1 above), not equal. */
@@ -215,4 +216,60 @@
   clip-path: none; /* no inverted-color region — text is white everywhere */
   position: relative;
   z-index: 2; /* always paints on top of the image box */
+}
+
+/* ---- Quote --------------------------------------------------
+   Center-aligned testimonial/pull-quote moment. Default surface is white
+   (navy text); add --navy for the dark-navy surface (white text). The quote
+   mark is always --color-blue regardless of surface — the one accent in
+   this organism — and the headline never carries its own keyword accent,
+   since blue is already spent on the mark above it. */
+.cme-quote {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  background: var(--color-white);
+  padding: var(--spacing-108);
+}
+.cme-quote .cme-badge {
+  margin-bottom: var(--spacing-36);
+}
+.cme-quote__mark {
+  font-family: var(--font-gellix);
+  font-weight: var(--font-weight-display);
+  font-size: var(--text-display);
+  line-height: 0.6; /* tightened well below --leading-display: the glyph
+    sits near the top of its own line-box, so the default 1.08 leading reads
+    as a large gap before the headline even with margin at 0 */
+  color: var(--color-blue); /* always blue, on either surface */
+  margin: 0 0 -0.2em 0; /* pulls the headline up into the glyph's own
+    bottom whitespace instead of stacking a positive gap on top of it */
+}
+.cme-quote__headline {
+  font-family: var(--font-gellix);
+  font-weight: var(--font-weight-display);
+  font-size: var(--text-heading);
+  line-height: var(--leading-heading);
+  letter-spacing: var(--tracking-heading);
+  color: var(--color-navy);
+  max-width: 900px;
+}
+.cme-quote__caption {
+  font-style: italic;
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+  letter-spacing: var(--tracking-body);
+  color: var(--color-navy);
+  margin-top: var(--spacing-20);
+}
+
+/* Dark Navy variant — navy canvas, white headline/caption. Quote mark stays
+   --color-blue unchanged; only the headline/caption invert to white. */
+.cme-quote--navy {
+  background: var(--color-navy);
+}
+.cme-quote--navy .cme-quote__headline,
+.cme-quote--navy .cme-quote__caption {
+  color: var(--color-white);
 }
