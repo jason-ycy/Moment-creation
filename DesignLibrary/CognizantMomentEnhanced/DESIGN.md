@@ -30,6 +30,13 @@ The brand logo lives in **[brand/logos/](brand/logos/)**. Always use these files
 
 *Bright blue and lavender are never applied as large solid backgrounds — they are accent/badge colors only, applied intentionally to small surfaces or individual words. Dark navy is the only color licensed to carry full-bleed background real estate.*
 
+**Decorative-only colors** — not part of the core palette above; used exclusively by the Notch Outline component's gradient stroke and never for text, surfaces, or badges:
+
+|Name|Value|Token|Role|
+|-|-|-|-|
+|Notch Outline Gradient Start|`#003B50`|`--notch-outline-gradient-start`|Notch Outline stroke's 0% stop — a dark teal-navy, distinct from `--color-navy`|
+|Notch Outline Gradient End|`#D9D9D9`|`--notch-outline-gradient-end`|Notch Outline stroke's 100% stop — a light grey|
+
 ## Tokens — Typography
 
 ### Gellix — A geometric grotesque with a warm, confident character; the sole typeface across the system, doing everything from a whisper-quiet nav label to a room-filling display headline · `--font-gellix`
@@ -174,6 +181,57 @@ A solid white (`--color-white` / `#FFFFFF`) rectangle with **no border, no borde
 
 Content is left-aligned, per the system's default alignment convention. Because the base subheading token is weight 300, the headline here explicitly overrides to weight 700 (bold) — this is the intended treatment, not the default subheading weight.
 
+### Notch Frame
+
+**Role:** A reusable image/media crop — takes any photograph or GIF and clips it to a rectangle with its top-left and bottom-right corners cut off diagonally, rather than a plain rectangle. Use this wherever an image needs that signature angled-corner framing outside of a full hero section.
+
+A single element (an `<img>`, or a `<div>` with a background image) with `object-fit: cover` and:
+
+```css
+clip-path: polygon(100% 0%, 0% var(--notch-left-y), 0% 100%, var(--notch-bottom-x) 100%, 100% var(--notch-right-y));
+```
+
+Starting at the top-right corner, the top-left corner is cut diagonally — the top edge is dropped entirely and the left edge instead begins at `--notch-left-y` (40% down from the top). The bottom-left corner stays square. The bottom-right corner is cut the same way — the bottom edge runs to `--notch-bottom-x` (60% across) before angling up to meet the right edge at `--notch-right-y` (50% down from the top). The two cuts are independent (different depths, on opposite corners), giving the shape an asymmetric, off-balance diagonal rather than a symmetrical chevron. The frame has no fixed aspect ratio of its own — it fills whatever width/height its parent container gives it, so the same component can sit inside a square media slot, a full-bleed section, or a smaller in-page card. No border-radius (sharp corners outside the clip, consistent with the system-wide default); no border, no shadow.
+
+|Fixed (do not change per use)|Varies per use|
+|-|-|
+|Clip-path silhouette via `--notch-left-y` (40%) / `--notch-bottom-x` (60%) / `--notch-right-y` (50%)|The image/GIF inside the frame|
+|`object-fit: cover` on the media|Container size/aspect ratio (set by the parent, not the frame itself)|
+|No border-radius, no border, no shadow|
+
+### Notch Outline
+
+**Role:** A distinct, separate shape from Notch Frame above — a decorative outline-only silhouette (no fill, no image) used to frame or accent empty background space with a gradient-stroked line. Where Notch Frame crops a photo, Notch Outline draws nothing but its own border.
+
+A 6-point polygon outline, rendered as inline SVG rather than `clip-path`, because a gradient can't be applied to a plain CSS `border`, and `border-image` only follows the rectangular border box — not an arbitrary polygon:
+
+```html
+<svg class="cme-notch-outline" viewBox="0 0 100 100" preserveAspectRatio="none">
+  <defs>
+    <linearGradient id="notch-outline-gradient-1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#003B50" />
+      <stop offset="100%" stop-color="#D9D9D9" />
+    </linearGradient>
+  </defs>
+  <polygon points="100,0 80,0 0,40 0,100 60,100 100,50" stroke="url(#notch-outline-gradient-1)" />
+</svg>
+```
+
+Points (as percentages of the frame's own width/height): top-right corner (100%, 0%) → top edge runs flat to (`--notch-outline-top-x`, 0%) = (80%, 0%) → diagonal down to (0%, `--notch-outline-left-y`) = (0%, 40%) → bottom-left corner (0%, 100%), staying square → bottom edge flat to (`--notch-outline-bottom-x`, 100%) = (60%, 100%) → diagonal up to (100%, `--notch-outline-right-y`) = (100%, 50%), closing the shape. **No fill** (`fill: none`) — the polygon is stroked only, at 1.5px and **30% opacity** (`opacity: 0.3`), with a linear gradient from `--notch-outline-gradient-start` (`#003B50`) to `--notch-outline-gradient-end` (`#D9D9D9`). No border-radius, no drop shadow. The outline has no fixed aspect ratio of its own — it stretches to fill whatever width/height its parent container gives it.
+
+**Implementation notes:**
+- SVG `<linearGradient>` ids must be unique per document — give each Notch Outline instance on a page its own `id` (e.g. `notch-outline-gradient-1`, `-2`, …) and point that instance's `stroke="url(#...)"` at its own id. Never hardcode one shared gradient id across multiple instances; the second instance would silently fail to render its stroke.
+- **Uneven stroke thickness on a non-square container:** the static markup's `viewBox="0 0 100 100"` + `preserveAspectRatio="none"` stretches non-uniformly whenever the container isn't square (different x/y scale factors) — `vector-effect: non-scaling-stroke` is a partial no-JS fallback, but browser support for correcting *non-uniform* scaling that way is inconsistent. The real fix for the scaling distortion is `initNotchOutlines()` in `cognizant-moment-enhanced.js`: on mount and on resize, it measures the element's actual rendered pixel width/height, rewrites `viewBox` to those exact pixel dimensions (so the scale is always 1:1 in both axes), and recomputes the `<polygon points>` from the `--notch-outline-*` percentage tokens against that real size — same "measure the real DOM, write it back as an inline value" pattern the Introduction organism uses for `--intro-split`.
+- **Even with the scaling distortion fully corrected, diagonal segments still render visibly thinner than the shape's flat (axis-aligned) edges.** This is inherent anti-aliasing behavior in all vector rendering (SVG, Canvas, Figma, Illustrator) — a 1px stroke drawn at an angle spreads its coverage across more pixels than one running horizontally/vertically, so it reads as lighter/thinner. No CSS or JS fix removes this fully; the stroke is set to **1.5px** (rather than 1px) specifically to reduce how noticeable that contrast is, at the cost of a very slightly heavier line overall. `shape-rendering="crispEdges"` would make the flat edges pixel-perfect but turn the diagonal cuts into a jagged stair-step — not used here for that reason.
+
+|Fixed (do not change per use)|Varies per use|
+|-|-|
+|6-point silhouette via `--notch-outline-top-x` (80%) / `--notch-outline-left-y` (40%) / `--notch-outline-bottom-x` (60%) / `--notch-outline-right-y` (50%)|Container size/aspect ratio (the outline stretches to fit)|
+|No fill (`fill: none`) — outline only|Placement on the page|
+|1.5px stroke at 30% opacity, gradient from `--notch-outline-gradient-start` to `--notch-outline-gradient-end`|
+|No border-radius, no drop shadow|
+|Points/viewBox recomputed from real pixel size via JS on load/resize|
+
 ## Organisms
 
 Organisms are reusable, page-section-scoped structures composed from one or more of the components above, with their own fixed layout. Unlike a component, an organism is not a single primitive — it's a template: the structure and style stay constant across every use, and only the content inside the slots changes.
@@ -207,48 +265,39 @@ Organisms are reusable, page-section-scoped structures composed from one or more
 |Background image at 100% width, capped at 100vh height|
 
 
-### Notched Hero
+### Split Hero
 
-**Role:** A reusable, full-viewport opening organism for a dark, declarative moment — the inverse of the Typographic Hero's photo+white-box pattern. Instead of photography behind a white text box, this organism paints a radial-gradient dark-navy shape directly on the page's white surface, clipped to a shallow-point silhouette. Inside that shape, content is now a two-column pairing of media and text (previously a single centered text stack) plus a scroll cue.
+**Role:** A reusable, full-viewport opening organism for a quiet, editorial moment on a plain white canvas — text on the left, a single full-height image flush against the right screen edge. Renamed from the earlier "Notched Hero": the dark-navy radial gradient, the clip-path notch silhouette, and the scroll cue have all been removed in favor of this simpler, lighter composition. There is no scrim, no gradient shape, no dark surface anywhere in this organism.
 
 **Structure (back to front):**
 
-1. **Section frame** — the page surface behind this organism is white (`--color-white`), same as the rest of the system. The section itself is `width: 100%`, `height: 100vh` — always exactly one viewport tall (unlike the Typographic Hero and other organisms, which cap *at* 100vh but can shrink with content, this section's height is fixed, since the notch geometry below is measured against it).
-2. **Shape + background** — the section's own background and its silhouette are produced together, on the same element:
-   - **Background:** a radial gradient in dark-navy tones — a lighter, more saturated navy at the center fading out to `--color-navy` toward the edges, producing the soft central glow seen in the reference. New token: `--hero-gradient: radial-gradient(ellipse at center, #0a0f3d 0%, #00001F 70%)` (stays within the existing navy family; no off-palette color introduced).
-   - **Silhouette:** `clip-path: polygon(0% 0%, 100% 0%, 100% 85%, 40% 100%, 0% 85%)` crops that gradient rectangle down to a shallow, off-center point — square across the top, both shoulders holding at 85% of the section's height, then drawing in to a single point at 40% of the width, 100% of the height. The apex is intentionally off-center (40%, not 50%), matching the reference image rather than a symmetrical chevron. Everywhere *inside* the polygon shows the dark gradient; everywhere *outside* it (between the shoulders and where a square corner would otherwise sit) reveals the plain white page surface behind — there is no separate white shape or element, white is simply the page's own background showing through the clip. New tokens: `--hero-notch-depth: 85%` (the shoulder height) and `--hero-notch-offset: 40%` (the apex position), so both are documented decisions rather than magic numbers embedded in the polygon.
-3. **Content — two-column layout** — replaces the earlier single centered stack. A row of **two equal-width columns** with a constant `--spacing-64` (64px) gap between them, itself centered both horizontally and vertically within the section:
-   - **Left column — Media.** Holds a single image or GIF (`object-fit: cover`), no border-radius (sharp corners, per the system-wide default). This column exists purely to carry motion/photography — it does not take a headline or badge.
-   - **Right column — Text stack**, left-aligned (this organism's text is no longer center-aligned now that it sits beside the media column rather than alone in the notch), with a `--spacing-11` (11px) gap between its three elements:
-     1. **Badge** — an organism-specific translucent variant of the white Badge: same shape/padding/typography as the standard Badge (`padding: 8px 6px`, caption-scale uppercase text), but the fill is dropped to 10% opacity white (`rgba(255, 255, 255, 0.1)`) instead of solid white, and the label text is recolored `--color-white` (not navy) so it stays legible against its own translucent fill sitting over the dark navy notch. New tokens: `--hero-badge-translucent-bg: rgba(255, 255, 255, 0.1)` / `--hero-badge-translucent-text: var(--color-white)`. This variant is scoped to this organism — it does not replace or alter the standard navy/lavender/white Badge variants defined in Components.
-     2. **Headline** — one or two lines, Gellix weight 700 (bold), **downscaled to `--text-heading-sm` (48px)** from the previous 100px display size (the two-column layout gives the headline less horizontal room, so the display scale no longer fits), color `--color-white`.
-     3. **Description** — a single supporting line (or short two-line block) set at `--text-body` (16px / 1.43 / 0.8px tracking), color `--color-white`. *(The previous 0.7-opacity treatment was tied to the old centered/display-scale composition; left-aligned beside the smaller headline, full-opacity white is the current spec — revisit if a quieter treatment is wanted here later.)*
-4. **Scroll cue** — unchanged from before: sits near the bottom of the section, above the notch, centered horizontally across the full section width (independent of the two-column content row above it) — an uppercase "SCROLL" label at `--text-caption` (12px), `--tracking-caption` (+0.6px), color `--color-white`, followed by a short vertical line and a downward open chevron. Since this brand's `brand/` folder has no `icons/` directory (unlike CognizantMoment), the cue is drawn as a small inline SVG rather than referencing a brand icon asset:
-   ```html
-   <svg width="16" height="56" viewBox="0 0 16 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-     <line x1="8" y1="0" x2="8" y2="40" stroke="currentColor" stroke-width="1"/>
-     <path d="M1 40L8 47L15 40" stroke="currentColor" stroke-width="1" fill="none"/>
-   </svg>
-   ```
-   `currentColor` inherits `--color-white` from the surrounding text color, consistent with how the arrow icons in CognizantMoment use `fill="currentColor"` to follow their host element's color.
+1. **Section frame** — a plain white (`--color-white`) canvas, `width: 100%`, `height: 100vh` — always exactly one viewport tall. No background shape, gradient, or clip-path is applied to the section; white is simply the page's own background.
+2. **Content — two-column row**, vertically centered within the section, with a `--spacing-36` (36px) gap between columns. Columns are not equal-width: the text column takes **2/3** of the row and the media column takes **1/3** (`flex: 2` vs `flex: 1`), giving the headline more room than the image:
+   - **Left column — Text stack** (2/3 width). Inset from the left screen edge by the standard `--page-margin-x` (64px). Left-aligned, per the system's default alignment convention, with a `--spacing-36` (36px) gap between its two elements (the same badge-to-headline gap used in the Introduction organism, reused here rather than inventing a new value):
+     1. **Badge** — navy variant (`--badge-navy-bg` / `--badge-navy-text`), sanctioned on this white surface per the Badge usage rule.
+     2. **Headline** — one or two lines, Gellix weight 700 (bold), set at `--text-display` (100px), color `--color-navy`. Stepped up from the old 48px (`--text-heading-sm`) now that the plain white canvas gives the headline more visual room to be declarative.
+     
+     There is no caption or description line in this organism — the stack is badge + headline only.
+     
+     **Implementation note:** put the 64px left inset on an inner wrapper nested inside the text column, not on the flex column itself — placing padding directly on a `flex-basis: 0` flex item (with `box-sizing: border-box`) adds that padding back as a size floor before the 2:1 grow ratio is applied, which skews the columns off-ratio.
+   - **Right column — Media** (1/3 width). A single image or GIF (`object-fit: cover`), no border-radius (sharp corners, per the system-wide default), filling the full height of the section (top and bottom edges of the viewport) and running flush to the right screen edge — no right-hand inset, no page margin on this side. This is the one place in the system where content deliberately breaks the 64px page-margin rule, since the image is meant to touch the edge.
 
 **What stays fixed vs. what varies:**
 
 |Fixed (do not change per use)|Varies per use|
 |-|-|
-|100% width, exactly 100vh height (not content-shrinkable)|Media (image/GIF) in the left column|
-|White page surface behind the section|Badge label text|
-|Dark-navy radial gradient background (`--hero-gradient`)|Headline copy (1–2 lines)|
-|Notch silhouette via `clip-path: polygon()`, shoulders at `--hero-notch-depth` (85%)|Description copy|
-|Notch apex at `--hero-notch-offset` (40%, off-center)|Content-driven vertical rhythm within the fixed viewport height|
-|Two equal-width columns, 64px gap (`--spacing-64`)|
-|Left column = media only; right column = text stack|
-|Right column left-aligned, 11px gap between badge / headline / description (`--spacing-11`)|
-|Translucent white badge: `rgba(255,255,255,0.2)` fill, white text (`--hero-badge-translucent-bg` / `--hero-badge-translucent-text`)|
-|Headline at `--text-heading-sm` (48px), `--color-white`|
-|Description at `--text-body` (16px), `--color-white`|
-|Scroll cue centered across the full section, independent of the two-column row|
-|"SCROLL" cue: 12px uppercase caption + inline SVG line/chevron, `currentColor`|
+|100% width, exactly 100vh height (not content-shrinkable)|Image/GIF in the right column|
+|Plain white section background — no gradient, no shape, no clip-path|Badge label text|
+|Text column inset from the left edge by `--page-margin-x` (64px)|Headline copy (1–2 lines)|
+|Image column flush to the right screen edge (no right inset)|Content-driven vertical rhythm within the fixed viewport height|
+|36px gap between the text column and the image column (`--spacing-36`)|
+|2:1 column ratio — text column 2/3 width, media column 1/3 width|
+|Navy badge variant|
+|36px gap between badge and headline (`--spacing-36`)|
+|Headline at `--text-display` (100px), `--color-navy`|
+|No caption/description line|
+|Image fills full section height, `object-fit: cover`, no border-radius|
+|No scroll cue|
 
 
 ### Primary Content Section
@@ -343,7 +392,7 @@ The two variants share every layout decision above — section padding and max-w
 **Suggested structure (top to bottom):**
 
 1. **Top Nav Bar** — always present and always first, sitting above the Hero rather than as a separate stacked section. Nav items (logo and nav labels) must remain legible against whatever sits beneath them as the page scrolls: since the bar is `position: sticky` (persistent for quick navigation while scrolling), and the canvas beneath it changes between the dark-navy/photographic Hero and lighter sections further down, the item color must adapt to keep contrast — white items over a dark/photographic surface, dark-navy items once a white section scrolls underneath. Do not hardcode a single color and assume it will read correctly against every section.
-2. **Hero section** — the opening, full-viewport moment (Notched Hero). Always the first section beneath the nav bar; sets the declarative tone before any supporting content appears.
+2. **Hero section** — the opening, full-viewport moment (Split Hero). Always the first section beneath the nav bar; sets the declarative tone before any supporting content appears.
 3. **Content section** — the Primary Content Section organism, used for prose-level detail (a capability, point of view, or supporting detail) that the Hero's single declarative moment doesn't carry.
 4. **Typographic hero section** — a second, closing use of the Typographic Hero organism, employed here as a declarative closing statement rather than an opener — the same organism, reused to bookend the page.
 
@@ -418,7 +467,9 @@ Example Component Prompts
 6. Build pagination controls: a horizontal row of short flat line indicators (no numerals, no dots), sharp-cornered with `border-radius: 0` — never rounded, evenly spaced. On a white background, indicators are `#00001F`; on a dark navy background, indicators are `#FFFFFF`. The active indicator is longer than the rest; all inactive indicators share one shorter, equal length. State is shown by length only — never by color change, shadow, border, or added weight. On hover, an indicator's opacity reduces slightly (e.g. to \~0.6) as the only interactive feedback — no color or length change on hover.
 7. Build an info card: solid `#FFFFFF` background, no border, no border-radius (sharp corners), no shadow. Padding 27px on all four sides. Inside, a single vertical stack of three parts with a 23px gap between parts; each part is a two-element stack with a 10px inner gap. Part 1: a navy badge (flat `#00001F` fill, `#FFFFFF` text, 12px uppercase) above a 32px Gellix weight-700 (bold) headline in `#00001F`. Part 2: a 12px uppercase caption (letter-spacing 0.6px) in `#00001F` above one line of 16px body text in `#00001F`. Part 3: identical to Part 2 — a 12px uppercase caption above one line of 16px body text. All content left-aligned.
 8. Build a showcase card: vertical 3:4 container, no border-radius, full-bleed background photo (`object-fit: cover`). A text block pinned to the bottom holds a navy badge and a one-line subheading (32px/300, white), stacked with a 10px gap. The dark-navy gradient is the text block's own background only — not applied over the full image — padded 23px top, 30px left/right, 38px bottom, fading from `rgba(0,0,31,0.6)` at the bottom to transparent by the top of that block.
-9. Build the notched hero's content row: full viewport section, dark-navy radial-gradient background clipped to the notch silhouette (unchanged geometry). Inside it, two equal-width columns with a 64px gap: left column holds a single image/GIF (`object-fit: cover`, no border-radius); right column is left-aligned with an 11px gap between its three elements — a translucent white badge (`rgba(255,255,255,0.2)` fill, `#FFFFFF` text, same padding/shape as other badges), a 48px Gellix weight-700 (bold) headline in `#FFFFFF`, and one line of 16px body text in `#FFFFFF`. The "SCROLL" cue stays centered across the full section width, unrelated to the two-column row above it.
+9. Build the split hero: full viewport section, plain white (`#FFFFFF`) background — no gradient, no shape, no clip-path. Two-column row, vertically centered, 36px gap between columns, columns not equal — text column is 2/3 width (`flex: 2`), image column is 1/3 width (`flex: 1`). Left column: inset 64px from the left screen edge, left-aligned, a navy badge (flat `#00001F` fill, `#FFFFFF` text) with a 36px gap below it, then a 100px Gellix weight-700 (bold) headline in `#00001F` — no caption or description line. Right column: a single image/GIF, `object-fit: cover`, no border-radius, filling the full section height and running flush to the right screen edge with no inset. No scroll cue.
+10. Build a notch frame: wrap a single image (`object-fit: cover`) in a container clipped with `clip-path: polygon(100% 0%, 0% 40%, 0% 100%, 60% 100%, 100% 50%)` — top-left corner cut diagonally from the top-right corner down to 40% of the left edge; bottom-left corner stays square; bottom-right corner cut diagonally from 60% of the bottom edge up to 50% of the right edge. No border-radius, no border, no shadow. The frame has no fixed aspect ratio of its own — size it by whatever container it sits inside.
+11. Build a notch outline: an inline SVG polygon with `points="100,0 80,0 0,40 0,100 60,100 100,50"` (percentages of its own box, `preserveAspectRatio="none"`), `fill="none"`, stroked at 1.5px and 30% opacity (`opacity: 0.3`) with a linear gradient from `#003B50` (0%) to `#D9D9D9` (100%) via an SVG `<linearGradient>` — never a CSS `border` (gradients aren't valid border-colors) and never `clip-path` (that crops content, it doesn't stroke an outline). No fill, no border-radius, no drop shadow. This is a distinct shape from the Notch Frame above, not a variant of it. On a non-square container, add a small script (see `initNotchOutlines()` in `cognizant-moment-enhanced.js`) that measures the rendered pixel size on load/resize and rewrites `viewBox` + the polygon's `points` to that exact size — this corrects scaling distortion, but diagonal segments will still read slightly thinner than flat edges (inherent anti-aliasing, mitigated by the 1.5px width, never fully eliminable).
 
 ## Scale Philosophy
 
@@ -443,6 +494,10 @@ The type scale is intentionally clustered at two poles rather than progressing s
   --color-blue: #1777FC;
   --color-lavender: #D3BDFF;
   --color-white: #FFFFFF;
+
+  /\* Notch Outline — decorative-only, not part of the core palette above \*/
+  --notch-outline-gradient-start: #003B50;
+  --notch-outline-gradient-end: #D9D9D9;
 
   /\* Typography — Font Families \*/
   --font-gellix: 'Gellix', 'General Sans', 'Aeonik', 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -515,16 +570,25 @@ The type scale is intentionally clustered at two poles rather than progressing s
   --pagination-indicator-on-navy: #FFFFFF;
   --pagination-indicator-hover-opacity: 0.6;
 
-  /\* Notched Hero \*/
-  --hero-gradient: radial-gradient(ellipse at center, #0a0f3d 0%, #00001F 70%);
-  --hero-notch-depth: 85%;
-  --hero-notch-offset: 40%;
-  --hero-content-gap: 64px; /\* gap between the media column and the text column \*/
-  --hero-badge-translucent-bg: rgba(255, 255, 255, 0.2);
-  --hero-badge-translucent-text: #FFFFFF;
-  /\* --hero-description-max-width: 640px; and --hero-description-opacity: 0.7;
-     deprecated — tied to the old single centered stack; the two-column layout
-     is left-aligned at full opacity with no max-width clamp on the description \*/
+  /\* Split Hero — no dedicated tokens needed; reuses --page-margin-x (left inset),
+     --spacing-36 (column gap), --badge-navy-bg/text, and --text-display.
+     Columns are a 2:1 ratio (text:image), not equal-width.
+     Formerly "Notched Hero": --hero-gradient, --hero-content-gap,
+     --hero-badge-translucent-bg/text are all removed — the dark gradient and
+     translucent badge no longer exist. (The notch silhouette itself lives on
+     independently as the Notch Frame component below.) \*/
+
+  /\* Notch Frame — rectangle with top-left and bottom-right corners cut diagonally \*/
+  --notch-left-y: 40%; /\* left edge: where the top-left diagonal cut lands \*/
+  --notch-bottom-x: 60%; /\* bottom edge: where the bottom-right diagonal cut starts \*/
+  --notch-right-y: 50%; /\* right edge: where the bottom-right diagonal cut lands \*/
+
+  /\* Notch Outline — a separate 6-point shape, kept in its own tokens so it
+     never gets conflated with Notch Frame above \*/
+  --notch-outline-top-x: 80%;
+  --notch-outline-left-y: 40%;
+  --notch-outline-bottom-x: 60%;
+  --notch-outline-right-y: 50%;
 
   /\* Introduction — no static token here: --intro-split is set inline, per-instance,
      by JS measuring the actual image/headline overlap (see Introduction organism spec) \*/

@@ -184,6 +184,40 @@
           </div>
         </article>
       </div>
+
+      <h3 class="doc-sub">Notch Frame</h3>
+      <p class="doc-note">Crops any image to a rectangle with its top-left and bottom-right corners cut diagonally — top-left cut straight from the top-right corner down to 40% of the left edge; bottom-left stays square; bottom edge flat to 60% before cutting up to 50% of the right edge. No fixed aspect ratio of its own; sized here by its container.</p>
+      <div class="doc-row">
+        <div class="cme-notch-frame" style="width:280px;height:320px;">
+          <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='280' height='320'><rect width='280' height='320' fill='%235b4a6b'/></svg>" alt="Notch frame example" />
+        </div>
+        <div class="cme-notch-frame" style="width:400px;height:280px;">
+          <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='280'><rect width='400' height='280' fill='%233a4a6b'/></svg>" alt="Notch frame example, wide" />
+        </div>
+      </div>
+
+      <h3 class="doc-sub">Notch Outline</h3>
+      <p class="doc-note">A distinct shape from Notch Frame above — no fill, only a 1.5px gradient-stroked outline at 30% opacity (<code>#003B50</code> → <code>#D9D9D9</code>). Each instance needs its own SVG gradient <code>id</code> since ids must be unique per document.</p>
+      <div class="doc-row">
+        <svg class="cme-notch-outline" viewBox="0 0 100 100" preserveAspectRatio="none" style="width:280px;height:320px;">
+          <defs>
+            <linearGradient id="notch-outline-gradient-1" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#003B50" />
+              <stop offset="100%" stop-color="#D9D9D9" />
+            </linearGradient>
+          </defs>
+          <polygon points="100,0 80,0 0,40 0,100 60,100 100,50" stroke="url(#notch-outline-gradient-1)" />
+        </svg>
+        <svg class="cme-notch-outline" viewBox="0 0 100 100" preserveAspectRatio="none" style="width:400px;height:280px;">
+          <defs>
+            <linearGradient id="notch-outline-gradient-2" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#003B50" />
+              <stop offset="100%" stop-color="#D9D9D9" />
+            </linearGradient>
+          </defs>
+          <polygon points="100,0 80,0 0,40 0,100 60,100 100,50" stroke="url(#notch-outline-gradient-2)" />
+        </svg>
+      </div>
     </section>
 
     <!-- ============ ORGANISMS ============ -->
@@ -203,29 +237,18 @@
         </section>
       </div>
 
-      <h3 class="doc-sub">Notched Hero</h3>
-      <p class="doc-note">Section frame, notch silhouette/gradient, and scroll cue are unchanged. Content inside the notch is now a two-column row (64px gap): media on the left, a text stack (translucent badge, 48px headline, body description) on the right, 11px gap between the three text elements.</p>
+      <h3 class="doc-sub">Split Hero</h3>
+      <p class="doc-note">Plain white canvas — no gradient, no notch, no scroll cue (renamed from the earlier "Notched Hero"). Two columns in a 2:1 ratio with a 36px gap: text column (2/3 width, 64px inset from the edge) holds a navy badge, 36px gap, then a 100px display headline — no caption or description. Image column (1/3 width) fills the full section height and runs flush to the right screen edge.</p>
       <div class="doc-fullbleed">
-        <section class="cme-notched-hero" style="height:80vh;">
-          <div class="cme-notched-hero__shape"></div>
-          <div class="cme-notched-hero__content">
-            <div class="cme-notched-hero__row">
-              <div class="cme-notched-hero__media">
-                <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='500' height='500'><rect width='500' height='500' fill='%235b4a6b'/></svg>" alt="Hero media" />
-              </div>
-              <div class="cme-notched-hero__text">
-                <span class="cme-badge cme-badge--translucent">Introduction</span>
-                <h2 class="cme-notched-hero__headline">A single line of light</h2>
-                <p class="cme-notched-hero__description">Dark navy void, one message at a time — the interface steps back so the moment can speak.</p>
-              </div>
+        <section class="cme-split-hero" style="height:80vh;">
+          <div class="cme-split-hero__text">
+            <div class="cme-split-hero__inner">
+              <span class="cme-badge cme-badge--navy">Introduction</span>
+              <h2 class="cme-split-hero__headline">A single line of light</h2>
             </div>
-            <div class="cme-notched-hero__scroll">
-              <span>Scroll</span>
-              <svg width="16" height="56" viewBox="0 0 16 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <line x1="8" y1="0" x2="8" y2="40" stroke="currentColor" stroke-width="1"/>
-                <path d="M1 40L8 47L15 40" stroke="currentColor" stroke-width="1" fill="none"/>
-              </svg>
-            </div>
+          </div>
+          <div class="cme-split-hero__media">
+            <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='500' height='500'><rect width='500' height='500' fill='%235b4a6b'/></svg>" alt="Hero media" />
           </div>
         </section>
       </div>
