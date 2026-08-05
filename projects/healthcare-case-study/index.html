@@ -434,6 +434,7 @@ section,.card,.badge,.pager__dot,.impact__block{border-radius:var(--radius-none)
 /* #foundation vertically centers its image + copy against each other,
    instead of the default stretch-to-match-height used elsewhere. */
 #foundation .content-organism{align-items:center;}
+#challenge .content-organism{align-items:center;}
 .content-organism__image{flex:1 1 0; position:relative;overflow:hidden;background:#0a0f3d;min-height:70vh;}
 .content-organism__image img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
 .content-organism__ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
@@ -528,7 +529,7 @@ section,.card,.badge,.pager__dot,.impact__block{border-radius:var(--radius-none)
      running, since animation-timeline:view() can't progress against its
      transformed, non-scrolling wrapper): transition to the spread layout
      once the stack's .reveal element gets .is-visible. */
-  .io-mode .results__card{transition:transform 700ms var(--ease-out);}
+  .io-mode .results__card{transition:transform 2000ms var(--ease-out);}
   .io-mode .results__stack.is-visible .results__card:nth-child(1){transform:rotate(-18deg) translateX(-15vw);}
   .io-mode .results__stack.is-visible .results__card:nth-child(2){transform:rotate(0deg) translateX(0);}
   .io-mode .results__stack.is-visible .results__card:nth-child(3){transform:rotate(20deg) translateX(16vw) translateY(-18px);}
@@ -856,9 +857,8 @@ section,.card,.badge,.pager__dot,.impact__block{border-radius:var(--radius-none)
     </div>
     <div class="content-organism__body">
       <span class="badge badge--lavender">The challenge</span>
-      <h2 class="h-sm" style="margin-bottom:var(--spacing-38);">Turning complexity into a strategic advantage.</h2>
-      <p class="lede">The organisation operates across aged care, primary care, hospital care and virtual health services. The business faced mounting pressure from evolving regulations, fragmented technology landscapes, growing demand for AI-enabled experiences, and rising customer expectations.</p>
-      <p class="lede">The challenge was not improving individual products. It was creating the conditions for future innovation while supporting today's operational realities.</p>
+      <h2 class="h-sm" style="margin-bottom:var(--spacing-38);">Unifying data, enabling intelligent care, reducing administrative burdens.</h2>
+      <p class="lede">A unified health data platform draws every strand of a patient's history into one governed view, and applied AI reads it - so a clinician walks in already understanding the person in front of them. Validated shoulder to shoulder with the people who carry the load.</p>
     </div>
   </div>
 </section>
