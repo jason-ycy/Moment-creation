@@ -171,24 +171,30 @@ section,.card,.badge,.pager__dot,.impact__block{border-radius:var(--radius-none)
 .reveal > *{opacity:1;}
 
 @media (prefers-reduced-motion:no-preference){
-  /* Preferred path: scroll-linked CSS, no JS */
+  /* Preferred path: scroll-linked CSS, no JS. Guarded to html:not(.io-mode) —
+     a CSS animation on transform/opacity always beats a transition on the
+     same property, so left unguarded this would permanently freeze every
+     .reveal/.stagger element at its opacity:0 "from" state whenever
+     ScrollSmoother is active (its transform-based scroll never advances a
+     view() timeline) and the io-mode transition below could never win the
+     fight to reveal it — the exact bug behind the pop/sudden-appear symptom. */
   @supports (animation-timeline:view()){
-    .reveal{
+    html:not(.io-mode) .reveal{
       opacity:0;transform:translateY(22px);
       animation:rise-in linear both;
       animation-timeline:view();
       animation-range:entry 5% entry 45%;
     }
     /* stagger grouped children */
-    .stagger > *{
+    html:not(.io-mode) .stagger > *{
       opacity:0;transform:translateY(18px);
       animation:rise-in linear both;
       animation-timeline:view();
       animation-range:entry 5% cover 22%;
     }
-    .stagger > *:nth-child(2){animation-range:entry 9% cover 26%;}
-    .stagger > *:nth-child(3){animation-range:entry 13% cover 30%;}
-    .stagger > *:nth-child(4){animation-range:entry 17% cover 34%;}
+    html:not(.io-mode) .stagger > *:nth-child(2){animation-range:entry 9% cover 26%;}
+    html:not(.io-mode) .stagger > *:nth-child(3){animation-range:entry 13% cover 30%;}
+    html:not(.io-mode) .stagger > *:nth-child(4){animation-range:entry 17% cover 34%;}
   }
   /* Fallback path for browsers without animation-timeline (adds .io-mode) */
   .io-mode .reveal{opacity:0;transform:translateY(22px);
@@ -201,8 +207,36 @@ section,.card,.badge,.pager__dot,.impact__block{border-radius:var(--radius-none)
 }
 @keyframes rise-in{to{opacity:1;transform:none;}}
 
+/* ---------- Per-row reveal for the Impact metrics: each row scrolls up from
+   the bottom of the screen (a larger translateY than the default .reveal) and
+   its content lifts from dim to fully clear — driven individually per row via
+   its own view() timeline, so each slides in on its own as it enters. ---------- */
+.impact-row{opacity:1;} /* base state stays fully visible with no JS/support */
+@media (prefers-reduced-motion:no-preference){
+  @supports (animation-timeline:view()){
+    /* Guarded to html:not(.io-mode) — same reasoning as .results__card above:
+       a CSS animation on transform/opacity always beats a transition on the
+       same property, so left unguarded this would permanently freeze every
+       row at its dim/offset "from" state (ScrollSmoother's transform-based
+       scroll never advances a view() timeline) and the io-mode transition
+       below could never win the fight to reveal it. */
+    html:not(.io-mode) .impact-row{
+      opacity:.15;transform:translateY(90px);
+      animation:rise-dim linear both;
+      animation-timeline:view();
+      animation-range:entry 0% entry 60%;
+    }
+  }
+  .io-mode .impact-row{opacity:.15;transform:translateY(90px);
+    transition:opacity 800ms var(--ease-out),transform 800ms var(--ease-out);}
+  .io-mode .impact-row.is-visible{opacity:1;transform:none;}
+}
+@keyframes rise-dim{to{opacity:1;transform:none;}}
+
 /* Reduced motion: keep the fade that aids comprehension, drop movement */
 @media (prefers-reduced-motion:reduce){
+  .io-mode .impact-row{opacity:.15;transition:opacity 400ms ease;}
+  .io-mode .impact-row.is-visible{opacity:1;}
   .io-mode .reveal{opacity:0;transition:opacity 400ms ease;}
   .io-mode .reveal.is-visible{opacity:1;}
 }
@@ -482,8 +516,11 @@ section,.card,.badge,.pager__dot,.impact__block{border-radius:var(--radius-none)
    instead of the default stretch-to-match-height used elsewhere. */
 #foundation .content-organism{align-items:center;}
 #challenge .content-organism{align-items:center;}
+/* Challenge: even 50/50 split between the video and the content column,
+   overriding the default 1fr 1.5fr (image-minority) ratio used elsewhere. */
+#challenge .content-organism{grid-template-columns:1fr 1fr;}
 .content-organism__image{flex:1 1 0; position:relative;overflow:hidden;min-height:70vh;}
-.content-organism__image img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+.content-organism__image img,.content-organism__image video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
 /* Foundation image: oversized (10% top offset, 120% height) so the JS
    parallax drift below never exposes empty edges at top/bottom. */
 #foundation .content-organism__image img{top:-10%;height:120%;}
@@ -674,17 +711,42 @@ section,.card,.badge,.pager__dot,.impact__block{border-radius:var(--radius-none)
 .gallery__desc{max-width:100%;text-align: center; margin-bottom:var(--spacing-64);opacity:0.8;}
 .section--navy .card__text .badge{ } /* navy section keeps navy badge on photographic surface */
 
-/* ---------- Impact (white) — four stat blocks ---------- */
-.impact__head{width:100%; text-align: center; margin-bottom:var(--spacing-64);}
-.impact__grid{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--spacing-30);}
-@media (max-width:900px){.impact__grid{grid-template-columns:repeat(2,1fr);gap:var(--spacing-38);}}
-@media (max-width:520px){.impact__grid{grid-template-columns:1fr;}}
-.impact__block{padding-top:var(--spacing-30);border-top:1px solid rgba(0,0,31,0.18);}
-.impact__num{font-weight:700;font-size:var(--text-heading);line-height:1.02;letter-spacing:var(--tracking-heading);}
-.impact__num--sm{font-size:var(--text-heading-sm);letter-spacing:var(--tracking-heading-sm);}
-.impact__cap{margin-top:var(--spacing-20);font-size:var(--text-body);line-height:var(--leading-body);
-  letter-spacing:var(--tracking-body);opacity:0.72;max-width:34ch;}
-@media (max-width:760px){.impact__num{font-size:48px;letter-spacing:-1.18px;}}
+/* ---------- Impact (white) — headline + four horizontal metric rows ----------
+   Each row lays the big number and its caption out side-by-side (vertically
+   centred against each other), with an edge-to-edge hairline dividing every
+   row from the next — the number's fixed column keeps all four captions
+   starting at the same x-position down the list. */
+.impact__headline{max-width:26ch;margin-bottom:var(--spacing-64);}
+.impact-row{
+  position:relative;
+  display:grid;align-items:center;gap:var(--spacing-64);
+  grid-template-columns: 1fr 1fr;
+  padding-block:var(--spacing-108);
+}
+/* Divider between rows, plus one above the first row — each breaks out of
+   .section's inline padding to touch both viewport edges, regardless of
+   --page-margin-x. */
+.impact-row:not(:last-child)::after{
+  content:"";position:absolute;left:50%;bottom:0;width:100vw;height:1px;
+  transform:translateX(-50%);background:rgba(0,0,31,0.18);pointer-events:none;
+}
+.impact-row:first-child::before{
+  content:"";position:absolute;left:50%;top:0;width:100vw;height:1px;
+  transform:translateX(-50%);background:rgba(0,0,31,0.18);pointer-events:none;
+}
+.impact-row__num{
+  flex:0 0 auto;width:24vw;font-weight:700;color:var(--color-navy);
+  font-size:var(--text-heading);line-height:1.02;letter-spacing:var(--tracking-heading);
+}
+.impact-row__cap{
+  flex:1 1 0;max-width:44ch;text-align:left;color:var(--color-navy);
+  font-size:var(--text-body);line-height:var(--leading-body);letter-spacing:var(--tracking-body);opacity:0.72;
+}
+@media (max-width:760px){
+  .impact-row{flex-direction:column;align-items:flex-start;gap:var(--spacing-15);padding-block:var(--spacing-30);}
+  .impact-row__num{width:auto;font-size:48px;letter-spacing:-1.18px;}
+  .impact-row__cap{text-align:left;max-width:none;}
+}
 
 /* ---------- Closing statement + footer ---------- */
 .footer{padding:var(--spacing-63) var(--page-margin-x);background:var(--surface-navy);color:var(--color-white);
@@ -710,8 +772,6 @@ section,.card,.badge,.pager__dot,.impact__block{border-radius:var(--radius-none)
     <li><a class="nav__link" href="#research">Our research</a></li>
     <li><a class="nav__link" href="#landscape">The landscape</a></li>
     <li><a class="nav__link" href="#challenge">The challenge</a></li>
-    <li><a class="nav__link" href="#insight">The insight</a></li>
-    <li><a class="nav__link" href="#impact">Impact</a></li>
   </ul>
 </nav>
 
@@ -800,6 +860,11 @@ section,.card,.badge,.pager__dot,.impact__block{border-radius:var(--radius-none)
   <div class="quote__inner reveal">
     <span class="badge badge--navy">Our research</span>
     <p class="quote__mark" aria-hidden="true">&ldquo;</p>
+    <!-- No CSS hidden-state needed: SplitText's own line masks handle it
+         (see JS), and the plain heading is the accessible no-JS state. Only
+         transform (yPercent) is animated here — never opacity — so it layers
+         cleanly under the parent .quote__inner's own .reveal fade instead of
+         double-hiding on the same property. -->
     <h2 class="quote__headline">Staff surveyed using up to 10 disparate IT systems in a single shift</h2>
     <p class="quote__caption">Cognizant | ServiceNow: Every minute matters</p>
   </div>
@@ -904,126 +969,46 @@ section,.card,.badge,.pager__dot,.impact__block{border-radius:var(--radius-none)
 </section>
 
 <!-- ===================== SECTION 3 — THE CHALLENGE (Primary Content Section organism) ===================== -->
-<section class="section section--navy pad-y" id="challenge" data-nav="dark">
+<section class="section section--white pad-y" id="challenge" data-nav="light">
   <div class="content-organism reveal">
     <div class="content-organism__image">
-      <img src="assets/img/challenge.png" alt="" onerror="this.style.display='none'">
+      <video src="assets/vid/mock-ani.mp4" autoplay muted loop playsinline aria-hidden="true"></video>
     </div>
     <div class="content-organism__body">
       <span class="badge badge--lavender">The challenge</span>
-      <h2 class="h-sm" style="margin-bottom:var(--spacing-38);">Unifying data, enabling intelligent care, reducing administrative burdens.</h2>
+      <!-- No CSS hidden-state needed: SplitText's own line masks handle it
+           (see JS), and the plain heading is the accessible no-JS state.
+           Only transform (yPercent) is animated here — never opacity — so
+           it layers cleanly under the parent .content-organism's own
+           .reveal fade instead of double-hiding on the same property. -->
+      <h2 class="h-sm challenge-headline" style="margin-bottom:var(--spacing-38);">Unifying data, enabling intelligent care, reducing administrative burdens.</h2>
       <p class="lede">A unified health data platform draws every strand of a patient's history into one governed view, and applied AI reads it - so a clinician walks in already understanding the person in front of them. Validated shoulder to shoulder with the people who carry the load.</p>
     </div>
   </div>
 </section>
 
-<!-- ===================== SECTION 4 — THE INSIGHT (Typographic Hero organism) ===================== -->
-<!-- ===================== SECTION 5 — THE INSIGHT (navy) ===================== -->
-<section class="section section--navy pad-y" id="insight" data-nav="dark">
-  <div class="insight-head reveal">
-    <span class="badge badge--white">The shift</span>
-    <h2 class="h-sm">Moving the needle, horizon by horizon</h2>
-  </div>
-  <div class="insight-grid stagger reveal">
-    <article class="info-card">
-      <div class="info-card__part">
-        <span class="badge badge--navy">Horizon 1</span>
-        <h3 class="info-card__headline">Strengthening the <span class="kw">foundations</span></h3>
-      </div>
-      <div class="info-card__part">
-        <p class="info-card__label">Challenge</p>
-        <p class="info-card__body">Administrative burden</p>
-      </div>
-      <div class="info-card__part">
-        <p class="info-card__label">Shift</p>
-        <p class="info-card__body">Ensuring conformance, audit and clinical safety of healthcare products is compliant and fit for purpose in an increasingly regulated environment.</p>
-      </div>
-    </article>
-    <article class="info-card">
-      <div class="info-card__part">
-        <span class="badge badge--navy">Horizon 2</span>
-        <h3 class="info-card__headline">Empowering <span class="kw">care today</span></h3>
-      </div>
-      <div class="info-card__part">
-        <p class="info-card__label">Challenge</p>
-        <p class="info-card__body">Vulnerable individuals / major national crises</p>
-      </div>
-      <div class="info-card__part">
-        <p class="info-card__label">Shift</p>
-        <p class="info-card__body">Providing integrated care where relief matters most by increasing accessibility of digital health support.</p>
-      </div>
-    </article>
-    <article class="info-card">
-      <div class="info-card__part">
-        <span class="badge badge--navy">Horizon 3</span>
-        <h3 class="info-card__headline">Unified <span class="kw">intelligence</span></h3>
-      </div>
-      <div class="info-card__part">
-        <p class="info-card__label">Challenge</p>
-        <p class="info-card__body">Fragmented data</p>
-      </div>
-      <div class="info-card__part">
-        <p class="info-card__label">Shift</p>
-        <p class="info-card__body">Creating the data infrastructure and AI capabilities needed to unlock a more connected, intelligent healthcare ecosystem.</p>
-      </div>
-    </article>
-  </div>
-</section>
-
-<!-- ===================== SECTION 6 — GALLERY SHOWCASE (white) ===================== -->
-<section class="section section--white pad-y" data-nav="light">
-  <h2 class="h-md gallery__head reveal">Orchestrating <span class="kw">experiences</span> in healthcare to drive better outcomes</h2>
-  <p class="lede gallery__desc reveal">The organisation operates across aged care, primary care, hospital care and virtual health services. The business faced mounting pressure from evolving regulations, fragmented technology landscapes, growing demand for AI-enabled experiences, and rising customer expectations. The challenge was not improving individual products. It was creating the conditions for future innovation while supporting today's operational realities.</p>
-  <div class="card-grid stagger reveal">
-    <article class="card pressable">
-      <img class="card__img" src="assets/img/horizon1.png" alt="" onerror="this.style.display='none'">
-      
-      <div class="card__text">
-        <span class="badge badge--navy">Horizon 1</span>
-        <p class="card__sub">The Past</p>
-      </div>
-    </article>
-    <article class="card pressable">
-      <img class="card__img" src="assets/img/Horizon2.png" alt="" onerror="this.style.display='none'">
-      
-      <div class="card__text">
-        <span class="badge badge--navy">Horizon 2</span>
-        <p class="card__sub">The Present</p>
-      </div>
-    </article>
-    <article class="card pressable">
-      <img class="card__img" src="assets/img/horizon3.png" alt="" onerror="this.style.display='none'">
-      
-      <div class="card__text">
-        <span class="badge badge--navy">Horizon 3</span>
-        <p class="card__sub">The Future</p>
-      </div>
-    </article>
-  </div>
-</section>
-
-<!-- ===================== SECTION 7 — THE IMPACT (navy) ===================== -->
-<section class="section section--navy pad-y" id="impact" data-nav="dark">
-  <div class="impact__head reveal">
-    <span class="badge badge--lavender" style="margin-bottom:var(--spacing-30);">The impact</span>
-    <h2 class="h-sm">Numbers rarely tell the whole story. But these are worth pausing on.</h2>
-  </div>
-  <div class="impact__grid stagger reveal">
-    <div class="impact__block">
-      <p class="impact__num">$2.5M</p>
-      <p class="impact__cap">Estimated year one opportunity identified through the Snowflake proof of concept</p>
+<!-- ===================== SECTION 4 — THE IMPACT (white, horizontal metric rows) ===================== -->
+<section class="section section--white pad-y" id="impact" data-nav="light">
+  <!-- No .reveal class: this headline manages its own word-by-word,
+       blur-to-clear scroll reveal (see JS — GSAP SplitText), so the plain
+       heading below is simply the accessible no-JS fallback state. -->
+  <h2 class="h-md impact__headline">Numbers rarely tell the whole story. But these are worth <span class="kw">pausing on</span>.</h2>
+  <div class="impact-rows">
+    <div class="impact-row">
+      <p class="impact-row__num">$2.5M</p>
+      <p class="impact-row__cap">Estimated year one opportunity identified through the Snowflake proof of concept</p>
     </div>
-    <div class="impact__block">
-      <p class="impact__num">&lt;10s</p>
-      <p class="impact__cap">To generate clinical summaries using agentic AI orchestration</p>
+    <div class="impact-row">
+      <p class="impact-row__num">&lt;10s</p>
+      <p class="impact-row__cap">Estimated year one opportunity identified through the Snowflake proof of concept</p>
     </div>
-    <div class="impact__block">
-      <p class="impact__num impact__num--sm">Multiple products</p>
-      <p class="impact__cap">Data unified across the organisation's product ecosystem in a single proof of concept</p>
+    <div class="impact-row">
+      <p class="impact-row__num">Multiple<br>products</p>
+      <p class="impact-row__cap">Data unified across the organisation&rsquo;s product ecosystem in a single proof of concept</p>
     </div>
-    <div class="impact__block">
-      <p class="impact__num impact__num--sm">Directly validated</p>
-      <p class="impact__cap">Outputs confirmed directly with healthcare professionals, not assumed</p>
+    <div class="impact-row">
+      <p class="impact-row__num">Directly<br>validated</p>
+      <p class="impact-row__cap">Outputs confirmed directly with healthcare professionals, not assumed</p>
     </div>
   </div>
 </section>
@@ -1085,7 +1070,7 @@ section,.card,.badge,.pager__dot,.impact__block{border-radius:var(--radius-none)
   var supportsTimeline = (window.CSS && CSS.supports && CSS.supports('animation-timeline:view()')) && !smootherActive;
   if(!supportsTimeline){
     document.documentElement.classList.add('io-mode');
-    var reveals = document.querySelectorAll('.reveal, .stagger');
+    var reveals = document.querySelectorAll('.reveal, .stagger, .impact-row');
     if('IntersectionObserver' in window){
       // set stagger indices
       document.querySelectorAll('.stagger').forEach(function(g){
@@ -1391,6 +1376,98 @@ section,.card,.badge,.pager__dot,.impact__block{border-radius:var(--radius-none)
             stagger: 0.3,
             scrollTrigger: {
               trigger: foundationCaption,
+              start: 'top bottom',
+              end: 'top 30%',
+              scrub: true
+            }
+          });
+        }
+      });
+    }
+  }
+
+  /* ---- Impact headline: word-by-word blur-to-clear reveal, triggered
+     once as the headline scrolls into view (a single play-on-enter, not a
+     continuous scrub — matches "scroll to trigger", unlike the film
+     headline's pinned scrub-reveal above). Each word starts invisible and
+     blurred, then staggers up to full opacity/zero blur. autoSplit
+     re-splits responsively; onSplit() re-creates the tween each time and
+     SplitText syncs/reverts the old one. */
+  if(window.gsap && window.ScrollTrigger && window.SplitText){
+    gsap.registerPlugin(ScrollTrigger, SplitText);
+    var impactHeadline = document.querySelector('.impact__headline');
+    if(impactHeadline){
+      SplitText.create(impactHeadline, {
+        type: 'words',
+        autoSplit: true,
+        onSplit: function(self){
+          return gsap.from(self.words, {
+            opacity: 0,
+            filter: 'blur(16px)',
+            duration: 0.8,
+            stagger: 0.06,
+            ease: 'power1.out',
+            scrollTrigger: {
+              trigger: impactHeadline,
+              start: 'top 80%'
+            }
+          });
+        }
+      });
+    }
+  }
+
+  /* ---- Challenge headline: line-by-line reveal, triggered once as the
+     headline scrolls into view (masked lines slide up from below, same
+     masking technique as the Foundation caption above, but a single
+     play-on-enter here rather than a continuous scrub). autoSplit
+     re-splits into lines responsively, since line breaks change with
+     viewport width — onSplit() re-creates the tween each time and
+     SplitText syncs/reverts the old one. */
+  if(window.gsap && window.ScrollTrigger && window.SplitText){
+    gsap.registerPlugin(ScrollTrigger, SplitText);
+    var challengeHeadline = document.querySelector('.challenge-headline');
+    if(challengeHeadline){
+      SplitText.create(challengeHeadline, {
+        type: 'lines',
+        mask: 'lines',
+        autoSplit: true,
+        onSplit: function(self){
+          return gsap.from(self.lines, {
+            yPercent: 110,
+            duration: 1.5,
+            stagger: 0.12,
+            ease: 'power2.out',
+            scrollTrigger: {
+              trigger: challengeHeadline,
+              start: 'top 100%'
+            }
+          });
+        }
+      });
+    }
+  }
+
+  /* ---- Quote headline: line-by-line reveal, tied to scrub (continuous,
+     scroll-position-linked — same masking technique and scrub wiring as the
+     Foundation caption above, not a one-shot play-on-enter). autoSplit
+     re-splits into lines responsively; onSplit() re-creates the tween each
+     time and SplitText syncs/reverts the old one. */
+  if(window.gsap && window.ScrollTrigger && window.SplitText){
+    gsap.registerPlugin(ScrollTrigger, SplitText);
+    var quoteHeadline = document.querySelector('.quote__headline');
+    if(quoteHeadline){
+      SplitText.create(quoteHeadline, {
+        type: 'lines',
+        mask: 'lines',
+        autoSplit: true,
+        onSplit: function(self){
+          return gsap.fromTo(self.lines, { yPercent: 110 }, {
+            yPercent: 0,
+            ease: 'power1.out',
+            stagger: 0.3,
+            scrollTrigger: {
+              trigger: quoteHeadline,
               start: 'top bottom',
               end: 'top 30%',
               scrub: true
