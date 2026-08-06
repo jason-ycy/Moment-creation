@@ -44,7 +44,7 @@
 /* ---------- Tokens (verbatim from DESIGN.md Quick Start) ---------- */
 :root{
   /* Colors */
-  --color-navy:#00001F;
+  --color-navy:#00000f;
   --color-blue:#1777FC;
   --color-lavender:#D3BDFF;
   --color-white:#FFFFFF;
@@ -152,11 +152,10 @@ section,.card,.badge,.pager__dot,.impact__block{border-radius:var(--radius-none)
 .section{position:relative;z-index:2;padding-inline:var(--page-margin-x);}
 .section--navy{background:var(--surface-navy);color:var(--color-white);}
 .section--white{background:var(--surface-white);color:var(--color-navy);}
-/* #foundation drops its own background (body is already white behind it)
-   so the hero's notch outline — which deliberately bleeds past the hero's
-   bottom edge — stays visible through this section's top padding instead
-   of being painted over by an opaque background here. */
-#foundation{background:transparent;}
+/* Same hairline-seam guard as .film's own margin-top: overlaps the
+   section above by a couple of px so sub-pixel rounding at the join
+   never shows as a visible line. */
+#foundation{margin-top:-2px;}
 .pad-y{padding-block:var(--spacing-150);}
 @media (max-width:760px){
   .pad-y{padding-block:var(--spacing-108);}
@@ -244,42 +243,84 @@ section,.card,.badge,.pager__dot,.impact__block{border-radius:var(--radius-none)
 @media (max-width:900px){.nav__links{display:none;}}
 
 /* =====================================================================
-   HERO — Split Hero organism (plain white canvas, text 2/3 · image 1/3)
+   HERO — left-aligned badge + headline, no media (dark navy canvas)
    ===================================================================== */
 .hero{
-  position:relative;z-index:2;width:100%;height:100vh;height:100svh;
+  position:relative;z-index:2;width:100%;height:70vh;height:50svh;
   background:var(--surface-white);
-  display:flex;align-items:center;gap:var(--spacing-36);
+  display:flex;align-items:end;
+  padding-bottom: var(--spacing-64);
   /* nav is fixed (outside the ScrollSmoother wrapper) and reserves no flow
      space, so the hero already starts at the true top — under the nav. */
 }
-.hero__text{flex:2 1 0;min-width:0;}
-/* 64px left inset lives on this inner wrapper, not on the flex column
-   itself — padding on a flex-basis:0 item would add back as a size floor
-   before the 2:1 grow ratio is applied and skew the columns off-ratio. */
+.hero__text{flex:1 1 0;min-width:0;}
 .hero__text-inner{
   padding-left:var(--page-margin-x);
   display:flex;flex-direction:column;align-items:flex-start;gap:var(--spacing-36);
 }
 .hero__badges{display:flex;flex-wrap:wrap;gap:var(--spacing-11);}
 .hero__headline{
-  color:var(--color-navy);font-weight:700;font-size:var(--text-display);
+  color:var(--color-navy);font-weight:700;font-size:var(--text-heading);
   line-height:var(--leading-display);letter-spacing:var(--tracking-display);
 }
-.hero__media{
-  flex:1 1 0;position:relative;overflow:hidden;height:70vh;
-  /* Deliberately shorter than the section's full 100vh — centered within
-     the row (inherits .hero's align-items:center) rather than stretching
-     edge to edge top/bottom. */
-}
-.hero__media-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
 @media (max-width:900px){
-  .hero{flex-direction:column;align-items:stretch;height:auto;min-height:100vh;padding-top:var(--spacing-64);}
+  .hero{height:auto;min-height:70vh;padding-top:var(--spacing-64);}
   .hero__text-inner{padding-right:var(--page-margin-x);gap:var(--spacing-30);}
-  .hero__media{width:100%;flex:0 0 auto;aspect-ratio:16/10;}
 }
 @media (max-width:760px){
   .hero__headline{font-size:40px;letter-spacing:-1px;line-height:1.1;}
+}
+
+/* =====================================================================
+   FILM — pinned video reveal (dark navy canvas)
+   The video sits centred at 70% width; scrolling the section into view
+   grows it to a full-bleed, full-viewport-height frame. Once fully in
+   view the section pins, and the headline reveals word-by-word (GSAP
+   SplitText) scrubbed to scroll — then releases the pin. ----------- */
+.film{
+  position:relative;z-index:2;width:100%;height:100vh;height:100svh;
+  margin-top:-2px; /* overlaps the hero's bottom edge by a couple of px,
+    guarding against sub-pixel rounding leaving a hairline gap at the
+    seam between adjacent 100vh/svh sections. */
+  background:var(--surface-white);overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
+}
+.film__video-wrap{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:84vw;aspect-ratio:16/9;overflow:hidden;
+  /* JS grows width/height to 100vw/100vh as the section scrolls in;
+     this is the no-JS/before-load fallback frame. */
+}
+.film__video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+/* Lives inside .film__video-wrap (not .film itself) so it's clipped to —
+   and grows/shrinks exactly with — the video box. Sat as a sibling of
+   .film, its inset:0 would cover the whole (now pure-white) section,
+   painting a visible dark gradient over the plain white margins around
+   a not-yet-full-bleed video instead of just darkening the video's own
+   bottom edge for headline legibility. */
+.film__scrim{
+  position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(180deg,rgba(0,0,31,0) 30%,rgba(0,0,31,0.6) 100%);
+}
+.film__headline{
+  position:relative;z-index:2;max-width:25ch;text-align:center;
+  padding-inline:var(--page-margin-x);
+  color:var(--color-white);font-weight:700;font-size:var(--text-heading);
+  line-height:var(--leading-heading);letter-spacing:var(--tracking-heading);
+}
+/* Hidden by default — JS reveals it (as split words) only once SplitText
+   has actually mounted, so nothing flashes fully-visible before the
+   scrub takes over. If GSAP/SplitText fails to load, the JS below falls
+   back to un-hiding the plain sentence so the copy is never lost. */
+.film__headline{opacity:0;}
+/* Each split word starts invisible and heavily blurred; the scroll-scrub
+   below brings it up to full opacity and clears the blur, word by word. */
+.film__headline .word{opacity:0;filter:blur(16px);}
+@media (max-width:900px){
+  .film__video-wrap{width:82vw;}
+}
+@media (max-width:760px){
+  .film__headline{font-size:40px;letter-spacing:-1px;line-height:1.1;}
 }
 
 /* =====================================================================
@@ -296,6 +337,12 @@ section,.card,.badge,.pager__dot,.impact__block{border-radius:var(--radius-none)
 .lede{font-size:var(--text-body);line-height:var(--leading-body);
   letter-spacing:var(--tracking-body);max-width:80ch;}
 .lede + .lede{margin-top:var(--spacing-20);}
+/* Foundation caption: heading-sm sized, reveals line-by-line (see JS —
+   GSAP SplitText masks each line and slides it up from the bottom,
+   scrubbed to scroll). Re-splits responsively since line breaks change
+   with viewport width. No CSS hidden-state needed: SplitText's own line
+   masks handle it, and the plain heading is the accessible no-JS state. */
+.foundation-caption{max-width:50ch;}
 @media (max-width:760px){
   .h-sm{font-size:34px;letter-spacing:-0.6px;}
   .h-md{font-size:40px;letter-spacing:-0.8px;line-height:1.08;}
@@ -435,8 +482,11 @@ section,.card,.badge,.pager__dot,.impact__block{border-radius:var(--radius-none)
    instead of the default stretch-to-match-height used elsewhere. */
 #foundation .content-organism{align-items:center;}
 #challenge .content-organism{align-items:center;}
-.content-organism__image{flex:1 1 0; position:relative;overflow:hidden;background:#0a0f3d;min-height:70vh;}
+.content-organism__image{flex:1 1 0; position:relative;overflow:hidden;min-height:70vh;}
 .content-organism__image img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+/* Foundation image: oversized (10% top offset, 120% height) so the JS
+   parallax drift below never exposes empty edges at top/bottom. */
+#foundation .content-organism__image img{top:-10%;height:120%;}
 .content-organism__ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
   color:rgba(255,255,255,0.28);font-size:var(--text-caption);letter-spacing:var(--tracking-caption);
   text-transform:uppercase;}
@@ -456,17 +506,17 @@ section,.card,.badge,.pager__dot,.impact__block{border-radius:var(--radius-none)
    One instance, living in the hero: inset from the left/right screen edges
    (not full-bleed), and taller than the hero itself so it bleeds slightly
    into the section below rather than stopping exactly at the hero's edge.
-   For that bleed to actually show (rather than being covered by the next
-   section's own opaque background), the section it bleeds into must drop
-   its background — see #foundation override below. */
+   The bleed itself is now covered by the opaque .film section directly
+   beneath the hero — kept purely as a decorative flourish on the hero
+   itself, not relied on to show through into anything below it. */
 .notch-outline{
   transform: rotate(-8deg);
   position:absolute;top:-60px;left:var(--spacing-172);right:var(--spacing-108);
   bottom:calc(-1 * var(--spacing-150)); /* 150px bleed past the hero's bottom edge */
-  pointer-events:none;z-index:0;
+  pointer-events:none;z-index:-1;
 }
 .notch-outline polygon{
-  fill:none;stroke-width:1.5;opacity:0.1;
+  fill:none;stroke-width:1.5;opacity:0.3;
   /* preserveAspectRatio="none" on the element scales the static 0-100
      viewBox to fill the container as a no-JS fallback; the inline script
      rewrites viewBox/points to the real pixel size on load/resize, which
@@ -672,39 +722,43 @@ section,.card,.badge,.pager__dot,.impact__block{border-radius:var(--radius-none)
 
 <!-- ===================== HERO (Notched Hero) ===================== -->
 <header class="hero" id="top" data-nav="light">
-  <svg class="notch-outline" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-    <defs>
-      <linearGradient id="notch-outline-gradient-hero" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stop-color="#003B50"/>
-        <stop offset="100%" stop-color="#D9D9D9"/>
-      </linearGradient>
-    </defs>
-    <polygon points="100,0 80,0 0,40 0,100 60,100 100,50" stroke="url(#notch-outline-gradient-hero)"/>
-  </svg>
   <div class="hero__text">
     <div class="hero__text-inner">
       <div class="hero__badges">
         <span class="badge badge--navy">Case study</span>
         <span class="badge badge--navy">Digital health transformation</span>
       </div>
-      <h1 class="hero__headline">Leading <span class="kw">healthcare</span> solutions provider</h1>
+      <h1 class="hero__headline">Leading healthcare solutions provider</h1>
     </div>
-  </div>
-  <div class="hero__media">
-    <img class="hero__media-img" src="assets/img/hero-img.png" alt="" onerror="this.style.display='none'">
   </div>
 </header>
 
+<!-- ===================== FILM (pinned video reveal + scrub headline) ===================== -->
+<section class="film" id="film" data-nav="dark">
+  <div class="film__video-wrap">
+    <video class="film__video" src="assets/vid/healthcare.mov" autoplay muted loop playsinline aria-hidden="true"></video>
+    <div class="film__scrim" aria-hidden="true"></div>
+  </div>
+  <h2 class="film__headline">We built the foundations of connected healthcare with our partner</h2>
+</section>
+
 <!-- ===================== SECTION — BUILDING THE FOUNDATIONS (white, notch-framed image) ===================== -->
 <section class="section section--white pad-y" id="foundation" data-nav="light">
-  <div class="content-organism reveal">
+  <!-- No .reveal class here (unlike other content-organism blocks): the
+       image and caption already have their own bespoke scroll-synced
+       motion (parallax, line-split scrub — see CSS/JS). Layering the
+       generic IntersectionObserver-driven .reveal fade on top of those
+       double-hides them — the wrapper sits at opacity:0 until its own
+       (separately timed) threshold fires, by which point the scrub
+       effects have already progressed against the real scroll position,
+       so they "pop" to a partially-revealed state the instant the
+       wrapper's fade finally triggers instead of appearing gradually. -->
+  <div class="content-organism">
     <div class="content-organism__image notch-frame">
       <img src="assets/img/foundation.png" alt="" onerror="this.style.display='none'">
     </div>
     <div class="content-organism__body">
-      <span class="badge badge--navy">Digital health transformation</span>
-      <h2 class="h-md" style="margin-bottom:var(--spacing-38);">Building the foundations of connected <span class="kw">healthcare</span></h2>
-      <p class="lede">A partnership that connected health customers, data, systems and workflows, removing friction and powering digital transformation to achieve better patient outcomes in aged care through product, AI, innovation, data, compliance, and new ways of working.</p>
+      <h3 class="h-sm foundation-caption">We connected health customers, data, systems, and workflows, removing friction and accelerating digital transformation to deliver better patient outcomes in aged care through product innovation, AI, data, compliance, and new ways of working.</h3>
     </div>
   </div>
 </section>
@@ -993,6 +1047,7 @@ section,.card,.badge,.pager__dot,.impact__block{border-radius:var(--radius-none)
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollSmoother.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/SplitText.min.js"></script>
 <script>
 (function(){
   "use strict";
@@ -1017,26 +1072,6 @@ section,.card,.badge,.pager__dot,.impact__block{border-radius:var(--radius-none)
       ignoreMobileResize: true
     });
     smootherActive = true;
-  }
-
-  /* ---- Hero media parallax: the image drifts opposite the scroll
-     direction inside its clipped shape as you scroll through the hero,
-     settling exactly back to centre once you've scrolled past it. ---- */
-  if(window.gsap && window.ScrollTrigger && !prefersReducedMotion){
-    gsap.registerPlugin(ScrollTrigger);
-    gsap.fromTo('.hero__media-img',
-      { yPercent: -10 },
-      {
-        yPercent: 10,
-        ease: 'none',
-        scrollTrigger: {
-          trigger: '.hero',
-          start: 'top top',
-          end: 'bottom top',
-          scrub: true
-        }
-      }
-    );
   }
 
   /* ---- Scroll-reveal fallback: only when animation-timeline is unsupported —
@@ -1224,6 +1259,171 @@ section,.card,.badge,.pager__dot,.impact__block{border-radius:var(--radius-none)
     }
   }
 
+  /* ---- Film: video grows from a centred 70vw box to a full-bleed,
+     full-viewport-height frame as the section scrolls into view (tied to
+     its natural entrance — top of section travelling from the bottom of
+     the viewport to the top), then pins and scrub-reveals the headline
+     word by word (GSAP SplitText) before releasing the pin so scroll
+     continues normally. ---- */
+  if(window.gsap && window.ScrollTrigger && window.SplitText){
+    gsap.registerPlugin(ScrollTrigger, SplitText);
+
+    var filmSection = document.getElementById('film');
+    var filmVideoWrap = document.querySelector('.film__video-wrap');
+    var filmHeadline = document.querySelector('.film__headline');
+
+    if(filmSection && filmVideoWrap && filmHeadline){
+      /* Phase 1 — grow: no pin yet, just a plain scrub tied to the
+         section's own entrance scroll distance (always exactly one
+         viewport height, regardless of the section's own height). */
+      gsap.to(filmVideoWrap, {
+        width: '100vw',
+        height: '100vh',
+        ease: 'none',
+        scrollTrigger: {
+          trigger: filmSection,
+          start: 'top bottom',
+          end: 'top top',
+          scrub: true
+        }
+      });
+
+      /* Phase 2 — pin + reveal: split the headline into words, hide each
+         one (invisible + heavily blurred), then scrub every word up to
+         full opacity/zero blur across one extra viewport of scroll once
+         the section's top reaches the top of the viewport. No word is
+         visible until the scrub actually reaches it. The pin releases
+         automatically once that scroll range is passed. */
+      var filmSplit = SplitText.create(filmHeadline, { type: 'words' });
+      gsap.set(filmHeadline, { opacity: 1 }); // un-hide the container now that its words are individually hidden
+      gsap.set(filmSplit.words, { opacity: 0, filter: 'blur(16px)' });
+      gsap.to(filmSplit.words, {
+        opacity: 1,
+        filter: 'blur(0px)',
+        duration: 1.8,
+        stagger: 0.6,
+        ease: 'none',
+        scrollTrigger: {
+          id: 'filmPin',
+          trigger: filmSection,
+          start: 'top top',
+          end: '+=100%',
+          pin: true,
+          scrub: true,
+          invalidateOnRefresh: true
+        }
+      });
+
+      /* Phase 3 — shrink back: mirrors Phase 1 in reverse, picking up
+         exactly where the pin above releases and running for one more
+         viewport height of scroll (the section's own height, now
+         scrolling away normally), so the video is back to its original
+         boxed size exactly as the section finishes scrolling out.
+         Explicit fromTo (rather than .to()) because a scrub tween reads
+         its "from" value the moment it's created — at page load, before
+         Phase 1 has ever run — so it would otherwise capture the small
+         *original* size as "from" instead of the full-bleed size this
+         phase actually starts at. Start/end are functions (re-read on
+         every refresh) rather than a "top top+=100%" string, since that
+         offset syntax shifts the *viewport* reference, not the scroll
+         position — it doesn't chain onto Phase 2's end the way "+=100%"
+         chains onto a trigger's own start. */
+      gsap.fromTo(filmVideoWrap, {
+        width: '100vw',
+        height: '100vh'
+      }, {
+        width: '84vw',
+        height: '47.25vw',
+        ease: 'none',
+        immediateRender: false, // fromTo() defaults this to true, which force-
+          // applies the "from" (full-bleed) size onto the video-wrap the
+          // instant this tween is created — at page load, overwriting
+          // Phase 1's correct small starting size before any scrolling has
+          // happened. false leaves the element alone until this phase's own
+          // scrollTrigger actually reaches it.
+        scrollTrigger: {
+          trigger: filmSection,
+          start: function(){ return ScrollTrigger.getById('filmPin').end; },
+          end: function(){ return ScrollTrigger.getById('filmPin').end + window.innerHeight; },
+          scrub: true,
+          invalidateOnRefresh: true
+        }
+      });
+
+      /* Phase 2's pin:true wraps filmSection in a new pin-spacer div the
+         instant it's created — which changes filmSection's document
+         offset out from under Phase 1 (created just above it, against
+         the pre-wrap DOM). Phase 1 already rendered once synchronously
+         at creation using that now-stale offset, which is what causes
+         the video to flash full-bleed for a frame on load before
+         snapping back to its correct (small) size on the first scroll/
+         refresh. Refreshing once, immediately after all three film
+         triggers exist, re-measures against the final wrapped DOM right
+         away instead of waiting on a later resize/fonts refresh. */
+      ScrollTrigger.refresh();
+    }
+  } else {
+    /* GSAP/SplitText unavailable — un-hide the plain sentence rather than
+       leaving it invisible forever. */
+    var filmHeadlineFallback = document.querySelector('.film__headline');
+    if(filmHeadlineFallback) filmHeadlineFallback.style.opacity = '1';
+  }
+
+  /* ---- Foundation caption: line-by-line reveal, scrubbed to the
+     caption's own entrance scroll — each line is masked and slides up
+     from the bottom of its own line box, settling before it's fully
+     scrolled in (finishes once its top reaches the vertical middle of
+     the viewport). autoSplit re-splits into lines responsively, since
+     line breaks change with viewport width — onSplit() re-creates the
+     scrubbed tween each time and SplitText syncs/reverts the old one. */
+  if(window.gsap && window.ScrollTrigger && window.SplitText){
+    gsap.registerPlugin(ScrollTrigger, SplitText);
+    var foundationCaption = document.querySelector('.foundation-caption');
+    if(foundationCaption){
+      SplitText.create(foundationCaption, {
+        type: 'lines',
+        mask: 'lines',
+        autoSplit: true,
+        onSplit: function(self){
+          return gsap.fromTo(self.lines, { yPercent: 110 }, {
+            yPercent: 0,
+            ease: 'power1.out',
+            stagger: 0.3,
+            scrollTrigger: {
+              trigger: foundationCaption,
+              start: 'top bottom',
+              end: 'top 30%',
+              scrub: true
+            }
+          });
+        }
+      });
+    }
+  }
+
+  /* ---- Foundation image: parallax drift, scrubbed to its own scroll
+     entry/exit — same technique as the landscape's per-image parallax
+     above (oversized image in CSS + a yPercent drift here so it never
+     exposes empty edges). ---- */
+  if(window.gsap && window.ScrollTrigger){
+    gsap.registerPlugin(ScrollTrigger);
+    var foundationImg = document.querySelector('#foundation .content-organism__image img');
+    var foundationFrame = document.querySelector('#foundation .content-organism__image');
+    if(foundationImg && foundationFrame){
+      gsap.fromTo(foundationImg, { yPercent: -8 }, {
+        yPercent: 8,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: foundationFrame,
+          start: 'top bottom',
+          end: 'bottom top',
+          scrub: true,
+          invalidateOnRefresh: true
+        }
+      });
+    }
+  }
+
   /* ---- Insight carousel ---- */
   var track = document.getElementById('track');
   var slides = track ? track.children.length : 0;
@@ -1295,6 +1495,23 @@ section,.card,.badge,.pager__dot,.impact__block{border-radius:var(--radius-none)
     if(document.fonts && document.fonts.ready){ document.fonts.ready.then(sizeAllNotchOutlines); }
     window.addEventListener('load', sizeAllNotchOutlines);
   }
+
+  /* ---- Content image fade-in: photographic images (foundation, cards,
+     landscape, carousel, etc.) otherwise pop in abruptly the instant
+     their (often large) file finishes downloading — especially
+     noticeable when you've already scrolled a section into view before
+     the image is done loading. Fades each one in on its own 'load'
+     event instead. Skips images already loaded from cache (no flash to
+     fix) and leaves nav/footer logos alone. */
+  var contentImgs = Array.prototype.filter.call(document.querySelectorAll('img'), function(img){
+    return !img.closest('.nav') && !img.closest('.footer');
+  });
+  contentImgs.forEach(function(img){
+    if(img.complete && img.naturalWidth) return; // already loaded — nothing to fade
+    img.style.opacity = '0';
+    img.style.transition = 'opacity 500ms ' + (getComputedStyle(document.documentElement).getPropertyValue('--ease-out') || 'ease');
+    img.addEventListener('load', function(){ img.style.opacity = '1'; });
+  });
 })();
 </script>
 </body>
