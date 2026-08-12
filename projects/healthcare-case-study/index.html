@@ -521,6 +521,36 @@ section,.card,.badge,.pager__dot,.impact__block{border-radius:var(--radius-none)
 #challenge .content-organism{grid-template-columns:1fr 1fr;}
 .content-organism__image{flex:1 1 0; position:relative;overflow:hidden;min-height:70vh;}
 .content-organism__image img,.content-organism__image video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+/* Challenge: this column no longer fills via object-fit:cover (that rule
+   above is for photographic images) — .challenge-visual is a fixed-
+   aspect composition of its own, sized to sit centered within the
+   column instead of filling it edge-to-edge. */
+#challenge .content-organism__image{
+  min-height:0;overflow:visible;display:flex;align-items:center;justify-content:center;
+}
+.challenge-visual{
+  position:relative;width:100%;max-width:520px;aspect-ratio:1005/1022;margin:0 auto;
+}
+/* #challenge-prefixed for specificity — otherwise the generic
+   .content-organism__image img rule (position:absolute;inset:0;
+   width/height:100%) wins the cascade and every image here collapses
+   to fill the whole box, ignoring these per-element rects entirely. */
+#challenge .challenge-visual__photo{
+  position:absolute;left:20%;top:8%;width:61%;height:90%;
+  object-fit:cover;border-radius:4px;
+}
+#challenge .challenge-visual__callout{position:absolute;width:28.4%;height:auto;filter:drop-shadow(0 8px 20px rgba(0,0,15,.12));}
+/* #challenge-prefixed again — a lone #id has lower specificity than
+   "#challenge .challenge-visual__callout" above, so the width overrides
+   here would otherwise lose and every callout would render at 28.4%. */
+#challenge #cvClinical{left:65.4%;top:7.4%;}
+#challenge #cvLatest{left:3%;top:18.1%;}
+#challenge #cvFood{left:73.6%;top:33.8%;width:24.9%;}
+#challenge #cvWound{left:8%;top:78.9%;width:29.1%;}
+#challenge #cvHospital{left:63.5%;top:90.1%;width:28.9%;}
+@media (max-width:600px){
+  .challenge-visual__callout{transform:scale(.82);}
+}
 /* Foundation image: oversized (10% top offset, 120% height) so the JS
    parallax drift below never exposes empty edges at top/bottom. */
 #foundation .content-organism__image img{top:-10%;height:120%;}
@@ -710,6 +740,85 @@ section,.card,.badge,.pager__dot,.impact__block{border-radius:var(--radius-none)
 .gallery__head{width:100%; text-align: center; margin-bottom:var(--spacing-19);}
 .gallery__desc{max-width:100%;text-align: center; margin-bottom:var(--spacing-64);opacity:0.8;}
 .section--navy .card__text .badge{ } /* navy section keeps navy badge on photographic surface */
+
+/* =====================================================================
+   AI DEMO — "See it in the product": three real product screenshots
+   (resident list → patient record → the Progress Notes card pulled out
+   for proof), collaged with a slight overlap. Each one slides in from a
+   side on scroll (see JS — a single one-shot GSAP ScrollTrigger, not a
+   scrub/pin), and the Notes card specifically animates out from the
+   exact rect it occupies inside the patient-record screenshot, so the
+   "where did this come from" connection reads visually, not just by
+   proximity. No outer device frame — the screenshots (real PNGs, with
+   their own baked-in rounded corners/alpha) are the artefact. Percentages
+   below are of the collage box (fixed design aspect-ratio), not of each
+   other, so all three stay in proportion at any width. */
+.ai-demo__intro{max-width:56ch;margin:0 auto var(--spacing-64);text-align:center;}
+.ai-demo__intro .badge{margin-bottom:var(--spacing-20);}
+.ai-demo__intro .lede{margin:0 auto;}
+
+.ai-demo__collage{
+  position:relative;width:min(94vw,1100px);margin:0 auto;
+  aspect-ratio:1100/1100;
+}
+
+.ai-demo__window{position:absolute;box-shadow:0 30px 70px -20px rgba(0,0,15,.28);border-radius:8px;}
+.ai-demo__window img{width:100%;display:block;border-radius:8px;}
+
+/* Record sits lower than before (in absolute terms, same spot — the box
+   just grew taller) so the Notes card below has real distance to travel;
+   a short hop reads as a jump-cut, a longer one reads as a pull-out. */
+#aiWinList{left:0%;top:0%;width:56.4%;z-index:1;}
+#aiWinRecord{left:41.8%;top:23.636%;width:61.8%;z-index:2;}
+#aiWinNotes{left:3.6%;top:61.818%;width:41.8%;z-index:3;}
+
+/* Callout on the Notes card itself as it pops up — a clean solid blue
+   outline around the card. The record screenshot underneath it stays a
+   plain, untouched screenshot; the connection back to it is drawn by
+   .ai-demo__link below rather than anything baked into that image. */
+.ai-demo__window.ai-demo__window--outlined{
+  outline:2px solid var(--color-blue);outline-offset:2px;border-radius:8px;
+}
+
+/* Elbow line from the "Summarised Progress Notes" panel inside the record
+   screenshot down to the scrubber dot on the pulled-out card. Positioned
+   in JS (not fixed %) because its endpoint is the dot, which itself moves
+   with the card's animated left/top — a static path would drift out of
+   sync the moment either window's rendered size changes. */
+.ai-demo__link{
+  position:absolute;inset:0;width:100%;height:100%;
+  overflow:visible;pointer-events:none;z-index:4;opacity:0;
+}
+.ai-demo__link path{fill:none;stroke:var(--color-blue);stroke-width:2;}
+.ai-demo__link circle{fill:var(--color-blue);}
+
+/* The scrubber dot — a real, separately-animated element (not baked into
+   the screenshot) so it can pulse. Sits right where this same dot was
+   removed from the source image. A plain solid-fill circle, not the
+   circle.png halo asset — that halo's own semi-transparent ring showed up
+   as a visible lighter outline against the blue bar regardless of what
+   was underneath it (confirmed by compositing it over flat colour swatches
+   with no seam nearby), so it's not fixable by patching the background;
+   a hard-edged solid dot has no semi-transparent pixels to show a ring at
+   all. aspect-ratio keeps it a true circle regardless of the parent
+   figure's own proportions. */
+.ai-demo__circle{
+  position:absolute;left:35.6%;top:54%;width:3.5%;aspect-ratio:1/1;
+  background:var(--color-blue);border-radius:50%;
+  pointer-events:none;opacity:0;
+}
+.ai-demo__circle.is-pulsing{ animation:aiCirclePulse 1.8s ease-in-out infinite; }
+@keyframes aiCirclePulse{
+  0%,100%{ transform:scale(1); }
+  50%{ transform:scale(1.22); }
+}
+
+@media (max-width:900px){
+  .ai-demo__collage{
+    aspect-ratio:auto;display:flex;flex-direction:column;gap:var(--spacing-30);
+  }
+  .ai-demo__window{position:static !important;width:100% !important;left:auto !important;top:auto !important;opacity:1 !important;transform:none !important;}
+}
 
 /* ---------- Impact (white) — headline + four horizontal metric rows ----------
    Each row lays the big number and its caption out side-by-side (vertically
@@ -972,7 +1081,14 @@ section,.card,.badge,.pager__dot,.impact__block{border-radius:var(--radius-none)
 <section class="section section--white pad-y" id="challenge" data-nav="light">
   <div class="content-organism reveal">
     <div class="content-organism__image">
-      <video src="assets/vid/mock-ani.mp4" autoplay muted loop playsinline aria-hidden="true"></video>
+      <div class="challenge-visual">
+        <img class="challenge-visual__photo" src="assets/img/challenge-family-photo.png" alt="Three generations of a family embracing and laughing together">
+        <img class="challenge-visual__callout" id="cvClinical" src="assets/svg/pullout-quote-1.svg" alt="Clinical Care Changes">
+        <img class="challenge-visual__callout" id="cvLatest" src="assets/svg/pullout-quote-2.svg" alt="What are the latest changes with Mary?">
+        <img class="challenge-visual__callout" id="cvFood" src="assets/svg/pullout-quote-3.svg" alt="How has Mary's food intake been in the last 3 days?">
+        <img class="challenge-visual__callout" id="cvWound" src="assets/svg/pullout-quote-4.svg" alt="New wound identified">
+        <img class="challenge-visual__callout" id="cvHospital" src="assets/svg/pullout-quote-5.svg" alt="Hospital visit recorded">
+      </div>
     </div>
     <div class="content-organism__body">
       <span class="badge badge--lavender">The challenge</span>
@@ -984,6 +1100,34 @@ section,.card,.badge,.pager__dot,.impact__block{border-radius:var(--radius-none)
       <h2 class="h-sm challenge-headline" style="margin-bottom:var(--spacing-38);">Unifying data, enabling intelligent care, reducing administrative burdens.</h2>
       <p class="lede">A unified health data platform draws every strand of a patient's history into one governed view, and applied AI reads it - so a clinician walks in already understanding the person in front of them. Validated shoulder to shoulder with the people who carry the load.</p>
     </div>
+  </div>
+</section>
+
+<!-- ===================== SECTION 3.5 — SEE IT IN THE PRODUCT (scroll-revealed screenshot collage) ===================== -->
+<section class="section section--white pad-y ai-demo" id="ai-demo" data-nav="light">
+  <div class="ai-demo__intro reveal">
+    <span class="badge badge--lavender">See it in the product</span>
+    <p class="lede">Scroll to watch the platform find the note that matters — and show exactly where it came from.</p>
+  </div>
+
+  <div class="ai-demo__collage" id="aiCollage">
+    <figure class="ai-demo__window" id="aiWinList">
+      <img src="assets/img/aged-care-patient-list.png" alt="Aged Care Clinical Manager — resident list, with an overdue alert on Mary Jane's row">
+    </figure>
+
+    <figure class="ai-demo__window" id="aiWinRecord">
+      <img src="assets/img/aged-care-patient-window.png" alt="Mary Jane's resident record, with the AI-generated summary and progress notes">
+    </figure>
+
+    <figure class="ai-demo__window" id="aiWinNotes">
+      <img src="assets/img/summarised-progress-notes-pullout.png" alt="Summarised Progress Notes pulled out, showing the exact source: an Accident/Incident report by Dr Anna Jones">
+      <div class="ai-demo__circle" id="aiCircle"></div>
+    </figure>
+
+    <svg class="ai-demo__link" id="aiLink" aria-hidden="true">
+      <path id="aiLinkPath"></path>
+      <circle id="aiLinkDot" r="4"></circle>
+    </svg>
   </div>
 </section>
 
@@ -1498,6 +1642,102 @@ section,.card,.badge,.pager__dot,.impact__block{border-radius:var(--radius-none)
           invalidateOnRefresh: true
         }
       });
+    }
+  }
+
+  /* ---- AI demo collage: one-shot entrance. List/Record slide in from the
+     sides (aiWinRecord stays a plain, untouched screenshot — no overlay);
+     the Notes card then animates out from the exact rect it occupies
+     inside that screenshot (measured the same way the earlier interactive
+     prototype measured it), picking up a blue outline as it pops up. No
+     pin, no scrub — a plain forward timeline triggered once on scroll-in
+     (toggleActions 'play none none none'), far more robust than scrubbing
+     for a one-time reveal like this. ---- */
+  var aiCollage = document.getElementById('aiCollage');
+  var aiWinList = document.getElementById('aiWinList');
+  var aiWinRecord = document.getElementById('aiWinRecord');
+  var aiWinNotes = document.getElementById('aiWinNotes');
+  var aiCircle = document.getElementById('aiCircle');
+  var aiLink = document.getElementById('aiLink');
+  var aiLinkPath = document.getElementById('aiLinkPath');
+  var aiLinkDot = document.getElementById('aiLinkDot');
+  var aiRecordImg = aiWinRecord ? aiWinRecord.querySelector('img') : null;
+
+  /* Both ends sit on the windows' own outer edges, not on their content —
+     the line starts where the record screenshot's bottom edge is (x lined
+     up with the "Summarised Progress Notes" mini-panel it's leaving from)
+     and stops right at the pulled-out card's right border. It deliberately
+     does NOT reach in to touch the scrubber dot: the dot is its own
+     independent marker, positioned separately by .ai-demo__circle, and the
+     two should read as related but not fused into one shape. Measured
+     fresh via getBoundingClientRect (not hardcoded) since the card's
+     rect is animated and both windows are responsive; re-measured on
+     resize. */
+  function positionAiLink(){
+    if(!aiCollage || !aiRecordImg || !aiCircle || !aiLink || !aiWinNotes) return;
+    var collageRect = aiCollage.getBoundingClientRect();
+    var imgRect = aiRecordImg.getBoundingClientRect();
+    var notesRect = aiWinNotes.getBoundingClientRect();
+    var circleRect = aiCircle.getBoundingClientRect();
+    /* getBoundingClientRect() gives the card's border box, not its visible
+       outline (outline is a paint effect that doesn't affect layout rects) —
+       add outline-width + outline-offset so the line lands on the outline's
+       actual outer edge instead of stopping short of it. */
+    var notesStyle = getComputedStyle(aiWinNotes);
+    var outlineExtra = (parseFloat(notesStyle.outlineWidth) || 0) + (parseFloat(notesStyle.outlineOffset) || 0);
+    var startX = imgRect.left + imgRect.width * 0.7203 - collageRect.left;
+    var startY = imgRect.bottom - collageRect.top;
+    var endX = notesRect.right - collageRect.left + outlineExtra;
+    var endY = circleRect.top + circleRect.height / 2 - collageRect.top;
+    aiLink.setAttribute('viewBox', '0 0 ' + collageRect.width + ' ' + collageRect.height);
+    aiLinkPath.setAttribute('d', 'M ' + startX + ' ' + startY + ' V ' + endY + ' H ' + endX);
+    aiLinkDot.setAttribute('cx', startX);
+    aiLinkDot.setAttribute('cy', startY);
+  }
+
+  if(window.gsap && window.ScrollTrigger && !prefersReducedMotion){
+    gsap.registerPlugin(ScrollTrigger);
+
+    if(aiCollage && aiWinList && aiWinRecord && aiWinNotes){
+      gsap.set(aiWinList, { opacity: 0, x: -60 });
+      gsap.set(aiWinRecord, { opacity: 0, x: 60 });
+      /* Starting rect matches where this same card visually sits inside
+         aiWinRecord's screenshot (50.283%/71.450%/43.671% of THAT image,
+         converted here into the collage's own coordinate space). */
+      gsap.set(aiWinNotes, { opacity: 0, left: '72.88%', top: '49.469%', width: '26.99%' });
+      gsap.set(aiCircle, { opacity: 0 });
+      gsap.set(aiLink, { opacity: 0 });
+
+      gsap.timeline({
+        scrollTrigger: { trigger: aiCollage, start: 'top 80%', toggleActions: 'play none none none' }
+      })
+      .to(aiWinList, { opacity: 1, x: 0, duration: .8, ease: 'power2.out' }, 0)
+      .to(aiWinRecord, { opacity: 1, x: 0, duration: .8, ease: 'power2.out' }, .2)
+      .to(aiWinNotes, {
+          left: '3.6%', top: '61.818%', width: '41.8%', opacity: 1, duration: 1.2, ease: 'power2.inOut',
+          onStart: function(){ aiWinNotes.classList.add('ai-demo__window--outlined'); }
+        }, 1.4)
+      .to(aiCircle, {
+          opacity: 1, duration: .3,
+          onComplete: function(){ aiCircle.classList.add('is-pulsing'); }
+        }, 2.65)
+      .to(aiLink, { opacity: 1, duration: .3, onStart: positionAiLink }, 2.65);
+
+      window.addEventListener('resize', positionAiLink);
+    }
+  } else {
+    /* Reduced motion / no GSAP: the three windows are already visible at
+       their final CSS positions (nothing hides them by default) — only
+       the scrubber dot and link ship hidden, so just un-hide and position
+       them rather than leaving them inert forever. */
+    if(aiCircle){
+      aiCircle.style.opacity = '1';
+      aiCircle.classList.add('is-pulsing');
+    }
+    if(aiLink){
+      aiLink.style.opacity = '1';
+      positionAiLink();
+      window.addEventListener('resize', positionAiLink);
     }
   }
 
