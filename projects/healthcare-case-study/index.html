@@ -800,7 +800,12 @@ section,.card,.badge,.pager__dot,.impact__block{border-radius:var(--radius-none)
    just plain card background there) removes the possibility of any such
    artifact for good. Sized by width % with aspect-ratio doing the rest,
    same convention as every other overlay in this collage. */
-.ai-demo__skeleton{ position:absolute;left:3.8%;width:92.6%;display:block; }
+/* Prefixed with .ai-demo__window for specificity — otherwise the generic
+   ".ai-demo__window img{width:100%}" rule above (one extra type selector,
+   so it wins on specificity regardless of source order) overrides this
+   width and the bars render full-width, overflowing past the card's
+   right edge. */
+.ai-demo__window .ai-demo__skeleton{ position:absolute;left:3.8%;width:92.6%;display:block; }
 .ai-demo__skeleton--blue{ top:47.6%;aspect-ratio:454/56; }
 .ai-demo__skeleton--white{ top:66.67%;aspect-ratio:454/77; }
 
