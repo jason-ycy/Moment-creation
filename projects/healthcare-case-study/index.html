@@ -794,19 +794,19 @@ section,.card,.badge,.pager__dot,.impact__block{border-radius:var(--radius-none)
 
 /* The scrubber dot — a real, separately-animated element (not baked into
    the screenshot) so it can pulse. Sits right where this same dot was
-   removed from the source image. A plain solid-fill circle, not the
-   circle.png halo asset — that halo's own semi-transparent ring showed up
-   as a visible lighter outline against the blue bar regardless of what
-   was underneath it (confirmed by compositing it over flat colour swatches
-   with no seam nearby), so it's not fixable by patching the background;
-   a hard-edged solid dot has no semi-transparent pixels to show a ring at
-   all. aspect-ratio keeps it a true circle regardless of the parent
-   figure's own proportions. */
+   removed from the source image. Uses scrubber-dot.svg — the actual
+   design-source vector (two flat-filled circles + a proper drop-shadow
+   filter) rather than circle.png, which was a rasterised copy of that
+   same asset whose anti-aliased halo edge showed up as a visible ring/
+   artifact against the blue bar regardless of background. Vector fills
+   have no such soft alpha fringe, so it composites cleanly. aspect-ratio
+   keeps it a true circle regardless of the parent figure's own
+   proportions. */
 .ai-demo__circle{
-  position:absolute;left:35.6%;top:54%;width:3.5%;aspect-ratio:1/1;
-  background:var(--color-blue);border-radius:50%;
+  position:absolute;left:34.9%;top:53.1%;width:4.95%;aspect-ratio:1/1;
   pointer-events:none;opacity:0;
 }
+.ai-demo__circle img{width:100%;height:100%;display:block;}
 .ai-demo__circle.is-pulsing{ animation:aiCirclePulse 1.8s ease-in-out infinite; }
 @keyframes aiCirclePulse{
   0%,100%{ transform:scale(1); }
@@ -1121,7 +1121,7 @@ section,.card,.badge,.pager__dot,.impact__block{border-radius:var(--radius-none)
 
     <figure class="ai-demo__window" id="aiWinNotes">
       <img src="assets/img/summarised-progress-notes-pullout.png" alt="Summarised Progress Notes pulled out, showing the exact source: an Accident/Incident report by Dr Anna Jones">
-      <div class="ai-demo__circle" id="aiCircle"></div>
+      <div class="ai-demo__circle" id="aiCircle"><img src="assets/svg/scrubber-dot.svg" alt=""></div>
     </figure>
 
     <svg class="ai-demo__link" id="aiLink" aria-hidden="true">
