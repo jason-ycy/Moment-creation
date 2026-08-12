@@ -792,6 +792,18 @@ section,.card,.badge,.pager__dot,.impact__block{border-radius:var(--radius-none)
 .ai-demo__link path{fill:none;stroke:var(--color-blue);stroke-width:2;}
 .ai-demo__link circle{fill:var(--color-blue);}
 
+/* The skeleton bars/lines themselves are also real vector elements now
+   (skeleton-bars-blue.svg / -white.svg — the design-source assets), not
+   baked into the screenshot either. That raster area had accumulated a
+   leftover hole from a much-earlier edit that no amount of patching
+   fully caught; removing the bars from the raster entirely (it's now
+   just plain card background there) removes the possibility of any such
+   artifact for good. Sized by width % with aspect-ratio doing the rest,
+   same convention as every other overlay in this collage. */
+.ai-demo__skeleton{ position:absolute;left:3.8%;width:92.6%;display:block; }
+.ai-demo__skeleton--blue{ top:47.6%;aspect-ratio:454/56; }
+.ai-demo__skeleton--white{ top:66.67%;aspect-ratio:454/77; }
+
 /* The "Accident / Incident report" callout — a real DOM card, not baked
    into the screenshot. The previous approach flattened this card into
    the same PNG as the skeleton bars, which meant the live scrubber dot
@@ -800,8 +812,7 @@ section,.card,.badge,.pager__dot,.impact__block{border-radius:var(--radius-none)
    rounds of image patching) showed up as a visible artifact. A live
    card has no seam to get wrong: its corner is just a CSS box, and the
    dot below aligns to that same box exactly, every time, in every
-   browser. The source image now only has plain skeleton bars/lines in
-   this area (see summarised-progress-notes-pullout.png). */
+   browser. */
 .ai-demo__popup{
   position:absolute;left:37.38%;top:56.2%;width:54%;
   background:#BCD8F4;border:2px solid var(--color-blue);border-radius:8px;
@@ -1148,6 +1159,8 @@ section,.card,.badge,.pager__dot,.impact__block{border-radius:var(--radius-none)
 
     <figure class="ai-demo__window" id="aiWinNotes">
       <img src="assets/img/summarised-progress-notes-pullout.png" alt="Summarised Progress Notes pulled out, showing the exact source: an Accident/Incident report by Dr Anna Jones">
+      <img class="ai-demo__skeleton ai-demo__skeleton--blue" src="assets/svg/skeleton-bars-blue.svg" alt="">
+      <img class="ai-demo__skeleton ai-demo__skeleton--white" src="assets/svg/skeleton-bars-white.svg" alt="">
       <div class="ai-demo__popup" id="aiPopup">
         <p class="ai-demo__popup-title">Accident / Incident report</p>
         <p class="ai-demo__popup-meta">Created by Dr Anna Jones, 01 Aug 2026</p>
