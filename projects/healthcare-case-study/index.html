@@ -792,19 +792,46 @@ section,.card,.badge,.pager__dot,.impact__block{border-radius:var(--radius-none)
 .ai-demo__link path{fill:none;stroke:var(--color-blue);stroke-width:2;}
 .ai-demo__link circle{fill:var(--color-blue);}
 
+/* The "Accident / Incident report" callout — a real DOM card, not baked
+   into the screenshot. The previous approach flattened this card into
+   the same PNG as the skeleton bars, which meant the live scrubber dot
+   had to land on an exact pixel seam between "baked bar" and "baked
+   card" — any mismatch there (and there were a few, across several
+   rounds of image patching) showed up as a visible artifact. A live
+   card has no seam to get wrong: its corner is just a CSS box, and the
+   dot below aligns to that same box exactly, every time, in every
+   browser. The source image now only has plain skeleton bars/lines in
+   this area (see summarised-progress-notes-pullout.png). */
+.ai-demo__popup{
+  position:absolute;left:37.38%;top:56.2%;width:54%;
+  background:#BCD8F4;border:2px solid var(--color-blue);border-radius:8px;
+  padding:14px 16px;box-shadow:0 12px 24px -8px rgba(0,0,15,.25);
+}
+.ai-demo__popup-title{
+  margin:0 0 6px;font-family:var(--font-gellix);font-weight:700;
+  font-size:clamp(11px,1.35vw,15px);color:var(--color-navy);line-height:1.25;
+}
+.ai-demo__popup-meta{
+  margin:0 0 10px;font-family:var(--font-gellix);font-weight:400;
+  font-size:clamp(9px,1.05vw,12px);color:#5B6472;line-height:1.3;
+}
+.ai-demo__popup-bar{
+  display:block;height:clamp(5px,0.9vw,10px);border-radius:6px;
+  background:var(--color-white);margin-top:8px;
+}
+
 /* The scrubber dot — a real, separately-animated element (not baked into
-   the screenshot) so it can pulse. Sits right where this same dot was
-   removed from the source image. Uses scrubber-dot.svg — the actual
+   the screenshot) so it can pulse. Centered exactly on .ai-demo__popup's
+   top-left corner (same left/top basis, offset by half the dot's own
+   size) so the two can never drift apart. Uses scrubber-dot.svg — the
    design-source vector (two flat-filled circles + a proper drop-shadow
-   filter) rather than circle.png, which was a rasterised copy of that
-   same asset whose anti-aliased halo edge showed up as a visible ring/
-   artifact against the blue bar regardless of background. Vector fills
-   have no such soft alpha fringe, so it composites cleanly. aspect-ratio
-   keeps it a true circle regardless of the parent figure's own
-   proportions. */
+   filter) rather than circle.png, a rasterised copy whose anti-aliased
+   halo edge showed up as a visible ring regardless of background.
+   aspect-ratio keeps it a true circle regardless of the parent figure's
+   own proportions. */
 .ai-demo__circle{
   position:absolute;left:34.9%;top:53.1%;width:4.95%;aspect-ratio:1/1;
-  pointer-events:none;opacity:0;
+  pointer-events:none;opacity:0;z-index:1;
 }
 .ai-demo__circle img{width:100%;height:100%;display:block;}
 .ai-demo__circle.is-pulsing{ animation:aiCirclePulse 1.8s ease-in-out infinite; }
@@ -1121,6 +1148,12 @@ section,.card,.badge,.pager__dot,.impact__block{border-radius:var(--radius-none)
 
     <figure class="ai-demo__window" id="aiWinNotes">
       <img src="assets/img/summarised-progress-notes-pullout.png" alt="Summarised Progress Notes pulled out, showing the exact source: an Accident/Incident report by Dr Anna Jones">
+      <div class="ai-demo__popup" id="aiPopup">
+        <p class="ai-demo__popup-title">Accident / Incident report</p>
+        <p class="ai-demo__popup-meta">Created by Dr Anna Jones, 01 Aug 2026</p>
+        <span class="ai-demo__popup-bar" style="width:100%"></span>
+        <span class="ai-demo__popup-bar" style="width:62%"></span>
+      </div>
       <div class="ai-demo__circle" id="aiCircle"><img src="assets/svg/scrubber-dot.svg" alt=""></div>
     </figure>
 
