@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Impact — Version 2 (scroll prototype) — Cognizant Moment</title>
+
+<!-- ============================================================
+     Cognizant Moment — Impact section, Version 2 (draft prototype)
+     A scroll-driven reworking of the "Impact" section, grounded in
+     the CognizantMomentEnhanced brand DESIGN.md tokens (fonts +
+     colours + type scale are reused verbatim from the healthcare
+     case study, which took them straight from DESIGN.md's Quick
+     Start block — this brand ships fonts + logos only, no base CSS).
+
+     Scene sequence (all scrubbed to scroll inside one pinned stage):
+       Version 2 - start        → line draws down, dots trickle down
+                                   to a final dot, heading types out
+                                   (faint→navy), then the paragraph
+                                   fades / bumps up.
+       (transition)             → start scene slides up + fades out.
+       Version 2 - impacts slide → intro paragraph in first, then each
+                                   impact row slides in from the right,
+                                   one at a time, settling before the
+                                   next begins.
+       Version 2 - all impacts  → final resting state (all four rows).
+     ============================================================ -->
+
+<style>
+/* ---------- Fonts (Gellix, local — never from a CDN) ---------- */
+@font-face{
+  font-family:'Gellix';font-style:normal;font-weight:300;font-display:swap;
+  src:url('../../DesignLibrary/CognizantMomentEnhanced/brand/fonts/Gellix-Light_R.woff2') format('woff2');
+}
+@font-face{
+  font-family:'Gellix';font-style:normal;font-weight:400;font-display:swap;
+  src:url('../../DesignLibrary/CognizantMomentEnhanced/brand/fonts/Gellix-Regular_R.woff2') format('woff2');
+}
+@font-face{
+  font-family:'Gellix';font-style:normal;font-weight:600;font-display:swap;
+  src:url('../../DesignLibrary/CognizantMomentEnhanced/brand/fonts/Gellix-SemiBold_R.woff2') format('woff2');
+}
+/* Display weight is specced at 700; nearest supplied file is SemiBold —
+   map 700 to it so we render true SemiBold rather than faux-bold. */
+@font-face{
+  font-family:'Gellix';font-style:normal;font-weight:700;font-display:swap;
+  src:url('../../DesignLibrary/CognizantMomentEnhanced/brand/fonts/Gellix-SemiBold_R.woff2') format('woff2');
+}
+
+/* ---------- Tokens (verbatim from DESIGN.md Quick Start) ---------- */
+:root{
+  --color-navy:#00000f;
+  --color-blue:#1777FC;
+  --color-lavender:#D3BDFF;
+  --color-white:#FFFFFF;
+  --surface-navy:#00001F;   /* dark surface for Scene C + the tail (from DESIGN.md) */
+
+  --font-gellix:'Gellix','General Sans','Aeonik','Inter',ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+
+  /* Type scale */
+  --text-caption:12px;      --tracking-caption:0.6px;
+  --text-body:16px;         --leading-body:1.43;
+  --tracking-heading:-1.25px;
+  --font-weight-display:700;
+
+  /* Spacing */
+  --page-margin-x:64px;
+
+  /* Derived surface tints for this page */
+  --ink-faint:rgba(0,0,15,0.14);      /* untyped heading + hairlines */
+  --ink-muted:rgba(0,0,20,0.56);      /* body copy */
+  --ink-cap:rgba(0,0,20,0.62);        /* metric captions */
+  --divider:rgba(0,0,20,0.13);
+
+  /* Motion (Emil defaults — brand defines no easing tokens) */
+  --ease-out:cubic-bezier(0.23,1,0.32,1);
+}
+
+/* ---------- Reset / base ---------- */
+*{margin:0;padding:0;box-sizing:border-box;}
+html{-webkit-text-size-adjust:100%;}
+body{
+  font-family:var(--font-gellix);
+  background:#FBFCFF;                 /* clean near-white; blooms live on the scenes */
+  color:var(--color-navy);
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+  overflow-x:hidden;
+}
+
+/* ---------- Persistent case-study eyebrow (all frames carry it) ---------- */
+.topbar{
+  position:fixed;top:0;left:0;right:0;z-index:20;
+  display:flex;align-items:center;
+  padding:26px var(--page-margin-x);
+  pointer-events:none;
+}
+.eyebrow{
+  font-size:var(--text-caption);
+  letter-spacing:var(--tracking-caption);
+  text-transform:uppercase;
+  font-weight:600;
+  color:var(--ink-muted);
+}
+
+/* ============================================================
+   THE PINNED STAGE
+   ============================================================ */
+.stage{position:relative;}
+.stage.is-animated{height:100vh;overflow:hidden;}
+.stage.is-animated .scene{position:absolute;inset:0;}
+
+.scene{
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  padding:0 var(--page-margin-x);
+}
+
+/* ---------- Shared A↔B gradient field ----------
+   ONE continuous element (200vh tall) with a single blue bloom at its
+   mid-right. It scrolls up in lockstep with the A→B slide, so the bloom
+   reads as bottom-right in Scene A and top-right in Scene B — a true
+   mirror reflection with NO seam, because there's no panel boundary to
+   crack: it's a single gradient the whole way through. */
+.ab-field{
+  position:absolute;top:0;left:0;width:100%;height:200vh;
+  z-index:0;pointer-events:none;
+  background:radial-gradient(58% 31% at 100% 50%, rgba(23,119,252,0.24) 0%, rgba(23,119,252,0) 68%);
+}
+
+/* ---------- Scene A — "Version 2 - start" ---------- */
+.sceneA{align-items:center;text-align:center;}
+
+/* The line + falling dots rail. Anchored to the top of the screen,
+   drawing down to just above the heading. */
+.rail-wrap{
+  position:absolute;
+  top:0;left:50%;transform:translateX(-50%);
+  width:22px;height:46vh;
+  display:flex;justify-content:center;
+  pointer-events:none;
+}
+/* Dotted line (round dots tiled down its length) — drawn top→bottom by a
+   clip-path reveal in JS, so the dashes stay crisp (no scaleY distortion). */
+.rail{
+  width:3px;height:100%;
+  background-image:radial-gradient(circle, #D8E9FB 0 1.4px, transparent 1.7px);
+  background-size:3px 11px;
+  background-repeat:repeat-y;
+  background-position:top center;
+}
+.dot{
+  position:absolute;left:50%;
+  width:11px;height:11px;margin-left:-5.5px;
+  border-radius:50%;
+  background:#D8E9FB;
+}
+.dot--1{top:34%;}
+.dot--2{top:52%;}
+.dot--3{top:70%;}
+.dot--4{top:85%;}
+/* Final, larger resting dot at the terminus (where the heading begins).
+   Keeps the blue disc styling; a continuous CSS pulse (box-shadow only, so
+   it never fights GSAP's transform on this element) gives it life. */
+.dot--final{
+  top:100%;width:20px;height:20px;margin-left:-10px;margin-top:-10px;
+  background:#D8E9FB;
+  box-shadow:0 0 0 1px rgba(23,119,252,0.18);   /* faint edge so the pale disc reads on white */
+}
+/* Emphasised pulse: an expanding ring on a pseudo-element (scale only — it
+   composes cleanly with GSAP's translate on the dot). A second slower ring
+   keeps the "hotspot" alive and prominent. */
+.dot--final::before,
+.dot--final::after{
+  content:"";position:absolute;inset:0;border-radius:50%;
+  border:2px solid #D8E9FB;
+  animation:dotPulseRing 2.0s var(--ease-out) infinite;
+}
+.dot--final::after{animation-delay:1.0s;}
+@keyframes dotPulseRing{
+  0%   {transform:scale(0.7);opacity:0.95;}
+  100% {transform:scale(3.6);opacity:0;}
+}
+@media (prefers-reduced-motion:reduce){
+  .dot--final::before,.dot--final::after{animation:none;}
+  .dot--final{box-shadow:0 0 0 6px rgba(216,233,251,0.5);}
+}
+
+.sceneA__body{position:relative;max-width:1100px;margin:0 auto;}
+
+.headingA{
+  font-weight:var(--font-weight-display);
+  font-size:48px;
+  line-height:56px;
+  letter-spacing:var(--tracking-heading);
+  color:var(--color-navy);
+  max-width:min(940px,88vw);
+  margin:0 auto;
+}
+/* While animating, the heading starts as faint "unset type" that the
+   scroll fills in navy, matching the Figma "start" frame snapshot. */
+.stage.is-animated .headingA{color:var(--ink-faint);}
+.stage.is-animated .headingA .char{color:var(--ink-faint);}
+
+.paraA{
+  margin:clamp(22px,3.4vh,38px) auto 0;
+  max-width:min(660px,86vw);
+  font-size:clamp(15px,1.55vw,18px);
+  line-height:1.55;
+  color:var(--ink-muted);
+}
+
+/* ---------- Scene B — "impacts slide in" → "all impacts" ---------- */
+/* Top-aligned with generous clearance below the fixed eyebrow; content
+   spreads the full browser width (page margins only), matching the frame. */
+.sceneB{
+  align-items:flex-start;
+  justify-content:flex-start;
+  padding-top:clamp(72px,9vh,124px);
+  /* No own background — the shared .ab-field behind provides the bloom. */
+}
+.sceneB__inner{width:100%;max-width:none;margin:0;}
+
+.introB{
+  max-width:min(660px,90vw);
+  font-size:clamp(15px,1.5vw,17px);
+  line-height:1.62;
+  color:var(--ink-muted);
+  margin-bottom:clamp(22px,3.4vh,48px);
+}
+.introB strong{color:var(--color-navy);font-weight:600;}
+
+.impact-list{position:relative;}
+.impact-item{
+  position:relative;
+  padding:clamp(12px,2.3vh,36px) 0;
+  overflow:hidden;            /* keep the slide-in tucked off the right edge */
+}
+/* Divider rules are their OWN elements so they can draw in from the right
+   alongside their row — nothing shows by default in the animated view
+   (JS starts them at scaleX:0). In the static fallback they read full. */
+.impact-rule{
+  position:absolute;left:0;right:0;top:0;height:1px;
+  background:var(--divider);
+  transform-origin:right center;
+}
+.impact-rule--end{top:auto;bottom:0;}
+.impact-item__inner{
+  display:flex;
+  align-items:baseline;
+  gap:clamp(24px,4vw,80px);
+}
+.impact-item__num{
+  flex:0 0 auto;
+  width:clamp(160px,26vw,340px);
+  font-weight:var(--font-weight-display);
+  font-size:clamp(36px,5.2vw,70px);
+  line-height:1.02;
+  letter-spacing:var(--tracking-heading);
+  color:var(--color-navy);
+}
+.impact-item__cap{
+  flex:1 1 auto;
+  max-width:56ch;
+  font-size:clamp(15px,1.45vw,18px);
+  line-height:1.5;
+  color:var(--ink-cap);
+}
+
+/* ---------- Scene C — "When the data connects, the time comes back" ----------
+   The whole navy scene pushes up from the bottom; inside, a centred column:
+   headline → 4 cards → typing lede. */
+.sceneC{
+  background:var(--surface-navy);
+  align-items:center;justify-content:center;text-align:center;
+}
+.sceneC__inner{
+  width:100%;max-width:1120px;margin:0 auto;
+  display:flex;flex-direction:column;align-items:center;
+  gap:clamp(30px,6vh,76px);
+}
+.sceneC__headline{
+  font-weight:var(--font-weight-display);
+  font-size:48px;
+  line-height:56px;
+  letter-spacing:var(--tracking-heading);
+}
+.hl-line{display:block;}
+.hl-line--1{color:var(--color-white);}
+.hl-line--2{color:var(--color-blue);margin-top:clamp(8px,1.6vh,20px);}
+
+/* ---------- Scene C callout cards ----------
+   Final state = a centred single row, side by side (readable). The cards
+   start stacked at centre and FAN OUT into this row on scroll (JS). */
+.callouts{
+  position:relative;   /* offset parent for the cards, so the fan maths centre correctly */
+  width:100%;
+  display:flex;justify-content:center;gap:clamp(14px,1.4vw,26px);
+  align-items:stretch;
+}
+.callout{
+  flex:1 1 0;min-width:0;max-width:250px;
+  background:var(--color-white);
+  border-radius:14px;
+  padding:clamp(15px,1.3vw,20px);
+  box-shadow:0 24px 50px -22px rgba(0,0,25,0.7);
+  text-align:left;
+  display:flex;flex-direction:column;gap:clamp(18px,2.6vh,30px);
+  will-change:transform;
+}
+.callout__icon{width:20px;height:20px;color:var(--color-navy);opacity:0.72;}
+.callout__icon svg{width:100%;height:100%;display:block;}
+.callout__text{font-size:clamp(12px,0.92vw,14px);line-height:1.42;color:var(--ink-cap);}
+.callout__text strong{color:var(--color-navy);font-weight:600;}
+
+/* Typing lede — white by default (accessible / no-JS); in the animated path
+   JS sets the characters faint and fills them to white on scroll, exactly
+   like the opening "Together, we built the foundations…" heading. */
+.sceneC__lede{
+  max-width:min(760px,88vw);
+  font-weight:var(--font-weight-display);
+  font-size:40px;
+  line-height:1.3;
+  letter-spacing:var(--tracking-heading);
+  color:var(--color-white);
+}
+
+@media (max-width:820px){
+  .callouts{flex-wrap:wrap;}
+  .callout{flex:1 1 44%;}
+}
+
+/* ---------- Tail scroll room so the pin has somewhere to release ----------
+   Navy, so it continues seamlessly out of Scene C's dark panel. */
+.after{
+  min-height:52vh;
+  display:flex;align-items:center;justify-content:center;
+  padding:0 var(--page-margin-x);
+  background:var(--surface-navy);
+}
+.after__note{
+  font-size:var(--text-caption);
+  letter-spacing:var(--tracking-caption);
+  text-transform:uppercase;
+  color:rgba(255,255,255,0.32);
+}
+
+/* ---------- Reduced motion / no-JS: everything readable & static ---------- */
+@media (prefers-reduced-motion:reduce){
+  .rail{background:rgba(23,119,252,0.32);}
+}
+
+@media (max-width:720px){
+  :root{--page-margin-x:24px;}
+  .impact-item__inner{flex-direction:column;gap:8px;align-items:flex-start;}
+  .impact-item__num{width:auto;}
+}
+</style>
+</head>
+<body>
+
+<!-- ===================== THE STAGE (pinned, scrubbed) ===================== -->
+<div class="stage" id="stage">
+
+  <!-- One continuous gradient field shared by Scene A + Scene B (scrolls up
+       in lockstep with the A→B slide — no seam). -->
+  <div class="ab-field" id="abField" aria-hidden="true"></div>
+
+  <!-- Scene A — Version 2 - start -->
+  <section class="scene sceneA" id="sceneA" aria-label="Together, we built the foundations">
+    <div class="rail-wrap" id="railWrap" aria-hidden="true">
+      <span class="rail" id="rail"></span>
+      <span class="dot dot--1"></span>
+      <span class="dot dot--2"></span>
+      <span class="dot dot--3"></span>
+      <span class="dot dot--4"></span>
+      <span class="dot dot--final"></span>
+    </div>
+    <div class="sceneA__body">
+      <h2 class="headingA" id="headingA">Together, we built the foundations <br>for a connected, data-driven future</h2>
+      <p class="paraA" id="paraA">Our partnership set out to enhance the healthcare worker experience through better data utilisation and timelier care intervention to drive better patient outcomes.</p>
+    </div>
+  </section>
+
+  <!-- Scene B — impacts slide in → all impacts -->
+  <section class="scene sceneB" id="sceneB" aria-label="The impact">
+    <div class="sceneB__inner">
+      <p class="introB" id="introB">Starting at the core of the problem — we architected a secure, single data platform which allowed us to innovate and test at scale. <strong>The results showed clear growth opportunities for AI-generated clinical summaries</strong> to support wider business initiatives and customer value.</p>
+
+      <div class="impact-list">
+        <div class="impact-item">
+          <span class="impact-rule" aria-hidden="true"></span>
+          <div class="impact-item__inner">
+            <p class="impact-item__num">$2.5m</p>
+            <p class="impact-item__cap">Estimated year one opportunity identified through the Snowflake proof of concept</p>
+          </div>
+        </div>
+        <div class="impact-item">
+          <span class="impact-rule" aria-hidden="true"></span>
+          <div class="impact-item__inner">
+            <p class="impact-item__num">&lt;10s</p>
+            <p class="impact-item__cap">To generate clinical summaries using agentic AI orchestration</p>
+          </div>
+        </div>
+        <div class="impact-item">
+          <span class="impact-rule" aria-hidden="true"></span>
+          <div class="impact-item__inner">
+            <p class="impact-item__num">Multiple products</p>
+            <p class="impact-item__cap">Data unified across the organisation&rsquo;s product ecosystem in a single proof of concept</p>
+          </div>
+        </div>
+        <div class="impact-item">
+          <span class="impact-rule" aria-hidden="true"></span>
+          <div class="impact-item__inner">
+            <p class="impact-item__num">2 hours saved</p>
+            <p class="impact-item__cap">on daily documentation review, problems caught earlier before they escalate, and time given back to healthcare workers</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Scene C — the navy "When the data connects, the time comes back" frame:
+       headline (top), 4 callout cards (fan out from centre on scroll), and a
+       typing lede below. The whole navy scene pushes up from the bottom. -->
+  <section class="scene sceneC" id="sceneC" aria-label="When the data connects, the time comes back">
+    <div class="sceneC__inner">
+      <h2 class="sceneC__headline">
+        <span class="hl-line hl-line--1">When the data connects,</span>
+        <span class="hl-line hl-line--2">the time comes back</span>
+      </h2>
+      <div class="callouts" id="callouts">
+        <article class="callout">
+          <span class="callout__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg></span>
+          <p class="callout__text"><strong>Family contacted.</strong> Daughter expressed concern regarding pain management</p>
+        </article>
+        <article class="callout">
+          <span class="callout__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h13a2 2 0 0 1 2 2z"/></svg></span>
+          <p class="callout__text"><strong>Appetite reduced.</strong> Diet changed to soft diet</p>
+        </article>
+        <article class="callout">
+          <span class="callout__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M12 11v5M9.5 13.5h5"/></svg></span>
+          <p class="callout__text"><strong>Minor fall incident</strong> on 4 August; no injury, but fall risk increased</p>
+        </article>
+        <article class="callout">
+          <span class="callout__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="8" rx="4"/><path d="M12 8v8"/></svg></span>
+          <p class="callout__text"><strong>Medication updates</strong> in the last 72 hours</p>
+        </article>
+      </div>
+      <p class="sceneC__lede" id="sceneCLede">But it&rsquo;s more than a time saver, <br>it&rsquo;s a shift in how care gets delivered.</p>
+    </div>
+  </section>
+
+</div>
+
+<section class="after" aria-hidden="true"></section>
+
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/SplitText.min.js"></script>
+<script>
+(function(){
+  "use strict";
+
+  /* ---- Size the line/dots rail so its terminus (the final dot) lands just
+     above the heading, whatever the viewport — matching the Figma frame,
+     where the dots stop right where the heading begins. Runs in every mode
+     (it's pure layout), so the static fallback is composed correctly too. */
+  var railWrapEl = document.getElementById('railWrap');
+  var sceneAEl   = document.getElementById('sceneA');
+  var headingEl  = document.getElementById('headingA');
+  function sizeRail(){
+    if(!railWrapEl || !sceneAEl || !headingEl) return;
+    var top = headingEl.getBoundingClientRect().top - sceneAEl.getBoundingClientRect().top;
+    railWrapEl.style.height = Math.max(140, top - 26) + 'px';
+  }
+  sizeRail();
+  window.addEventListener('resize', sizeRail);
+  if(document.fonts && document.fonts.ready){ document.fonts.ready.then(sizeRail); }
+
+  var prefersReducedMotion = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+  /* ?static in the URL renders the flattened, normal-flow layout — handy
+     for reviewing the plain design (and for tooling that can't drive a
+     pinned scroll). Same code path as reduced-motion / no-JS. */
+  var forceStatic = /(?:\?|&)static\b/.test(location.search);
+  var canAnimate = window.gsap && window.ScrollTrigger && window.SplitText && !prefersReducedMotion && !forceStatic;
+
+  /* No-JS / reduced-motion / ?static / lib-failure: the base CSS already
+     renders everything static and readable (heading navy, paragraph shown,
+     all four impact rows in place). Nothing to do. */
+  if(!canAnimate) return;
+
+  gsap.registerPlugin(ScrollTrigger, SplitText);
+
+  var stage    = document.getElementById('stage');
+  var sceneA   = document.getElementById('sceneA');
+  var sceneB   = document.getElementById('sceneB');
+  var rail     = document.getElementById('rail');
+  var railWrap = document.getElementById('railWrap');
+  var dots     = gsap.utils.toArray('#railWrap .dot');
+  var headingA = document.getElementById('headingA');
+  var paraA    = document.getElementById('paraA');
+  var introB   = document.getElementById('introB');
+  var rows     = gsap.utils.toArray('#sceneB .impact-item__inner');
+  var rules    = gsap.utils.toArray('#sceneB .impact-item > .impact-rule');
+  var abField  = document.getElementById('abField');
+  var sceneC   = document.getElementById('sceneC');
+  var callouts = document.getElementById('callouts');
+  var cards    = gsap.utils.toArray('#callouts .callout');
+  var lede     = document.getElementById('sceneCLede');
+
+  /* Switch to the animated (pinned, layered) layout, then split the
+     heading into characters for the typewriter fill. Chars inherit the
+     faint "is-animated" colour from CSS. */
+  stage.classList.add('is-animated');
+  /* 'words,chars' keeps each word as an inline-block unit, so the heading
+     wraps on word boundaries only — no word is ever split across two lines.
+     We still animate the individual chars for the typewriter colour fill. */
+  var split = SplitText.create(headingA, { type: 'words,chars' });
+  var chars = split.chars;
+
+  /* ---- Initial (progress 0) states — the "from" of every step ---- */
+  sizeRail(); // re-measure after the char split, so dot offsets are accurate
+  gsap.set(rail,           { clipPath: 'inset(0 0 100% 0)' }); // hidden; reveals top→bottom
+  gsap.set(dots,           { y: function(i, el){ return -el.offsetTop; }, opacity: 0 });
+  /* Heading is ON SCREEN from the start in its faint "disabled" state
+     (chars inherit --ink-faint from CSS); scroll only fills it navy. */
+  gsap.set(paraA,          { opacity: 0, y: 26 });
+  /* Scene B waits fully below the fold; it slides UP into place as Scene A
+     slides out the top — a scroll-through handoff. No scale (a sub-100%
+     scale left a shrinking seam between the two scenes' gradients). */
+  gsap.set(sceneB,         { yPercent: 100, opacity: 0 });
+  gsap.set(rows,           { xPercent: 72, opacity: 0 });
+  gsap.set(rules, { scaleX: 0, transformOrigin: 'right center' });
+  /* Shared gradient field starts at the top (its bloom sits low-right = Scene
+     A's bottom-right). It slides up one viewport during the A→B handoff. */
+  gsap.set(abField,  { yPercent: 0 });
+
+  /* ---- Scene C ---- The whole navy scene (background + headline + cards +
+     lede) waits fully below the fold and pushes up from the bottom. */
+  gsap.set(sceneC, { yPercent: 100 });
+
+  /* Callout cards START stacked at the centre (fanned closed), then fan OUT
+     on scroll into their resting flex row — two to the left, two to the
+     right. STACK holds each card's centre-converged offset + a closed-fan
+     tilt; the row is simply {x:0,rotation:0}. Measured via offsetLeft so it's
+     transform-safe, and recomputed whenever layout settles. */
+  var STACK_ANGLE = [-10, -4, 4, 10];
+  var stack = [];
+  function computeStack(){
+    if(!callouts || !cards.length) return;
+    var mid = callouts.clientWidth / 2;
+    stack = cards.map(function(card, i){
+      var cardMid = card.offsetLeft + card.offsetWidth / 2;
+      return { x: mid - cardMid, rot: STACK_ANGLE[i] || 0 };   // full converge → centre stack
+    });
+  }
+  function setStack(){
+    cards.forEach(function(card, i){ gsap.set(card, { x: stack[i].x, rotation: stack[i].rot, transformOrigin: '50% 130%' }); });
+  }
+  computeStack();
+  setStack();
+  var cardsFannedOut = false;   // once true (post fan-out), refresh keeps them in the row
+  ScrollTrigger.addEventListener('refreshInit', function(){ computeStack(); if(!cardsFannedOut) setStack(); });
+
+  /* Lede types out exactly like the opening heading: split into chars, set
+     them faint, then fill to white on scroll. */
+  var ledeSplit = SplitText.create(lede, { type: 'words,chars' });
+  var ledeChars = ledeSplit.chars;
+  gsap.set(ledeChars, { color: 'rgba(255,255,255,0.14)' });   // very faint "untyped" state → strong fill contrast
+
+  /* ---- The master timeline (all pacing lives here; scroll scrubs it) ----
+     Gaps ("+=") are the "brief pauses" the brief asks for; each impact row
+     is placed only after the previous one has fully settled. */
+  var tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+
+  /* Helper: bring one impact row in from the right AND draw its divider
+     rule out from the right in the same beat. Deliberately unhurried. */
+  function slideRow(i, rule, gap){
+    tl.to(rows[i], { xPercent: 0, opacity: 1, duration: 1.5, ease: 'power3.out' }, "+=" + gap)
+      .to(rule,    { scaleX: 1, duration: 1.5, ease: 'power3.out' }, "<");
+  }
+
+  tl
+    /* 1 + 2 — the dotted line draws down from the top of the screen while the
+       dots trickle down it, timed to land together. */
+    .to(rail, { clipPath: 'inset(0 0 0% 0)', duration: 1.4, ease: 'power1.inOut' }, 0)
+    .to(dots, { y: 0, opacity: 1, duration: 1.0,
+                stagger: { each: 0.14 }, ease: 'power1.out' }, 0.1)
+
+    /* 3 — pause, then the always-visible faint heading TYPES itself navy,
+       char by char. The paragraph is untouched until this fill completes. */
+    .to(chars, { color: '#00000f', ease: 'none', duration: 0.5,
+                 stagger: { each: 0.03 } }, "+=0.5")
+
+    /* 4 — paragraph fades + bumps up into view */
+    .to(paraA, { opacity: 1, y: 0, duration: 0.9 }, "+=0.2")
+
+    /* 5 — long hold, then a slow scroll-through handoff: Scene A slides
+       straight up and out the TOP without fading (stays fully in view as it
+       leaves), while Scene B grows + fades UP from the bottom in lockstep.
+       Deliberately unhurried — this is the transition that felt too fast. */
+    .to(sceneA,  { yPercent: -100, ease: 'power1.inOut', duration: 3.2 }, "+=2.2")
+    .to(sceneB,  { yPercent: 0, opacity: 1, ease: 'power1.inOut', duration: 3.2 }, "<")
+    /* The shared gradient field scrolls up one viewport in lockstep, so its
+       single bloom travels bottom-right → top-right with no seam. */
+    .to(abField, { yPercent: -50, ease: 'power1.inOut', duration: 3.2 }, "<");
+
+    /* 6 — beat to let Scene B (intro paragraph) settle, THEN the rows.
+       Each impact row slides in from the right, its divider drawing with it,
+       one at a time — the next never starts before the previous lands. */
+    slideRow(0, rules[0], 1.1);
+    slideRow(1, rules[1], 1.0);
+    slideRow(2, rules[2], 1.0);
+    slideRow(3, rules[3], 1.0);
+
+    /* 7 — a short beat (not a dead stop), then the whole final section plays
+       as ONE continuous, overlapping move — no start/stop between elements:
+         • the navy Scene C pushes up from the bottom, shoving the impacts out;
+         • the cards fan out from the centre WHILE the navy is still rising, so
+           the navy reaching the top and the cards reaching the row land at the
+           same moment — the final state opens all at once;
+         • the lede begins typing just BEFORE the cards finish, so the fan
+           flows straight into the type with no gap. */
+    tl.to(sceneB, { yPercent: -100, ease: 'power1.inOut', duration: 3.4 }, "+=0.25")
+      .to(sceneC, { yPercent: 0,   ease: 'power1.inOut', duration: 3.4 }, "<")
+      /* fan starts 0.6s into the navy rise and finishes WITH it (both land
+         together → the final state opens all at once) */
+      .to(cards, {
+          x: 0, rotation: 0, ease: 'power2.out', duration: 2.8,
+          stagger: { each: 0.06, from: 'center' },
+          onStart: function(){ cardsFannedOut = true; },
+          onReverseComplete: function(){ cardsFannedOut = false; }
+        }, "<0.6")
+      /* once the cards have fully fanned out, the lede TYPES itself in — a
+         very faint → full-white fill, char by char, slow and deliberate so
+         the animation reads clearly (same technique as the opening heading). */
+      .to(ledeChars, { color: '#FFFFFF', ease: 'none', duration: 0.5,
+                       stagger: { each: 0.035 } }, ">");
+
+    /* 8 — brief settle before releasing the pin */
+    tl.to({}, { duration: 0.8 });
+
+  /* ---- Pin the stage and scrub the timeline across the scroll range.
+     Total scroll distance scales with the timeline's own length so the
+     pacing above translates 1:1 to how far you scroll. ---- */
+  ScrollTrigger.create({
+    trigger: stage,
+    start: 'top top',
+    end: function(){ return "+=" + Math.round(tl.duration() * 300); },
+    pin: true,
+    scrub: 1,
+    animation: tl,
+    invalidateOnRefresh: true
+  });
+
+  /* Re-measure after fonts load (glyph metrics shift the char split and
+     the dots' offsetTop origin). */
+  if(document.fonts && document.fonts.ready){
+    document.fonts.ready.then(function(){ ScrollTrigger.refresh(); });
+  }
+})();
+</script>
+</body>
+</html>
