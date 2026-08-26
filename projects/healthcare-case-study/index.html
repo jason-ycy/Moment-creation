@@ -93,6 +93,9 @@
   --surface-navy:#00001F;
   --surface-white:#FFFFFF;
 
+  /* Section 2 dot system (matches the supplied Dots N.svg / Blue dot.svg) */
+  --found2-pale:#D8E9FB;
+
   /* Pagination */
   --pagination-indicator-on-white:#00001F;
   --pagination-indicator-on-navy:#FFFFFF;
@@ -156,6 +159,15 @@ section,.card,.badge,.pager__dot,.impact__block{border-radius:var(--radius-none)
    section above by a couple of px so sub-pixel rounding at the join
    never shows as a visible line. */
 #foundation{margin-top:-2px;}
+/* Scoped override, not a change to .pad-y itself (that'd affect every
+   section's rhythm): #foundation's own bottom padding + #research's
+   own top padding combine into ~300px of dead space between the
+   funnel's tail circle and Research's own heading — far more than the
+   circle's own closeness to the *pinned viewport's* bottom edge (see
+   positionFound2Lines) can fix on its own, since that's a different
+   gap entirely (inside the pin vs. between the two sections). */
+#foundation{padding-bottom:var(--spacing-64);}
+#research{padding-top:var(--spacing-64);}
 .pad-y{padding-block:var(--spacing-150);}
 @media (max-width:760px){
   .pad-y{padding-block:var(--spacing-108);}
@@ -371,12 +383,6 @@ section,.card,.badge,.pager__dot,.impact__block{border-radius:var(--radius-none)
 .lede{font-size:var(--text-body);line-height:var(--leading-body);
   letter-spacing:var(--tracking-body);max-width:80ch;}
 .lede + .lede{margin-top:var(--spacing-20);}
-/* Foundation caption: heading-sm sized, reveals line-by-line (see JS —
-   GSAP SplitText masks each line and slides it up from the bottom,
-   scrubbed to scroll). Re-splits responsively since line breaks change
-   with viewport width. No CSS hidden-state needed: SplitText's own line
-   masks handle it, and the plain heading is the accessible no-JS state. */
-.foundation-caption{max-width:50ch;}
 @media (max-width:760px){
   .h-sm{font-size:34px;letter-spacing:-0.6px;}
   .h-md{font-size:40px;letter-spacing:-0.8px;line-height:1.08;}
@@ -512,9 +518,6 @@ section,.card,.badge,.pager__dot,.impact__block{border-radius:var(--radius-none)
 /* ---------- The Challenge: two-column prose block ---------- */
 /* ---------- Primary Content Section organism (image + labeled content, 3-col grid) ---------- */
 .content-organism{display:grid;grid-template-columns:1fr 1.5fr;gap:var(--spacing-108);align-items:stretch;}
-/* #foundation vertically centers its image + copy against each other,
-   instead of the default stretch-to-match-height used elsewhere. */
-#foundation .content-organism{align-items:center;}
 #challenge .content-organism{align-items:center;}
 /* Challenge: even 50/50 split between the video and the content column,
    overriding the default 1fr 1.5fr (image-minority) ratio used elsewhere. */
@@ -551,9 +554,6 @@ section,.card,.badge,.pager__dot,.impact__block{border-radius:var(--radius-none)
 @media (max-width:600px){
   .challenge-visual__callout{transform:scale(.82);}
 }
-/* Foundation image: oversized (10% top offset, 120% height) so the JS
-   parallax drift below never exposes empty edges at top/bottom. */
-#foundation .content-organism__image img{top:-10%;height:120%;}
 .content-organism__ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
   color:rgba(255,255,255,0.28);font-size:var(--text-caption);letter-spacing:var(--tracking-caption);
   text-transform:uppercase;}
@@ -562,6 +562,183 @@ section,.card,.badge,.pager__dot,.impact__block{border-radius:var(--radius-none)
 @media (max-width:900px){
   .content-organism{grid-template-columns:1fr;gap:var(--spacing-38);}
   .content-organism__image{min-height:260px;}
+}
+
+/* =====================================================================
+   SECTION 2 — "Building the foundation" (2.1 stat rail, 2.2/2.3 funnel)
+   The four dot circles themselves are never drawn here — see #dot-layer
+   further down. Every .dot-anchor below is a measurement point only.
+   ===================================================================== */
+.found2-a,.found2-b{min-height:100vh;display:flex;align-items:center;padding-block:var(--spacing-64);}
+/* .found2-b's content (lede + stage + blocks) is shorter than a full
+   viewport, especially once a row/block's copy is short — align-items:
+   center split the leftover space evenly above *and* below, which read
+   as a big, uneven gap up top (worse once the lede fades out but keeps
+   reserving its own height). flex-start puts all of that leftover
+   space at the bottom instead, leaving a small, consistent top gap. */
+.found2-b{align-items:flex-start;}
+.found2-a__inner{width:100%;max-width:1400px;margin:0 auto;
+  display:grid;grid-template-columns:1fr 1fr;gap:var(--spacing-108);align-items:start;}
+.found2-a__headline{max-width:46ch;}
+
+.found2-a__rail{display:flex;flex-direction:column;gap:var(--spacing-30);}
+.found2-row{display:flex;align-items:center;justify-content:flex-end;gap:var(--spacing-20);}
+.found2-row__text{
+  text-align:right;padding:6px var(--spacing-11);max-width:44ch;
+  font-weight:400;line-height:var(--leading-subheading);
+  color:var(--surface-navy);opacity:0.25;background:transparent;
+  /* Unselected is 30% smaller than the selected size below — calc() off
+     the same base (--text-subheading, 32px) so the two states can never
+     drift out of that 0.7 ratio. */
+  font-size:calc(var(--text-subheading) * 0.7);
+  /* font-size deliberately NOT transitioned — it changes instantly with
+     .is-active so the JS-driven rail realignment below (alignActiveRow)
+     can measure the row's final size synchronously, in the same tick,
+     rather than racing a size transition it can't see the end value of. */
+  transition:opacity 300ms var(--ease-out),background-color 300ms var(--ease-out),
+    font-weight 300ms var(--ease-out);
+}
+.found2-row.is-active .found2-row__text{
+  opacity:1;font-weight:700;background:var(--found2-pale);
+  font-size:var(--text-subheading);
+}
+/* Reserves the rail's fixed dot column; the visible dot is drawn by
+   #dot-layer, positioned over this slot's .dot-anchor. */
+.found2-row__dot{position:relative;width:20px;height:20px;flex:none;}
+.dot-anchor{position:absolute;left:50%;top:50%;width:1px;height:1px;}
+
+@media (max-width:900px){
+  .found2-a__inner{grid-template-columns:1fr;gap:var(--spacing-38);}
+  .found2-a,.found2-b{min-height:0;}
+  .found2-row{justify-content:space-between;}
+  .found2-row__text{text-align:left;}
+}
+
+/* ---- 2.2 / 2.3: funnel panel ---- */
+.found2-b__inner{width:100%;max-width:1100px;margin:0 auto;text-align:center;position:relative;}
+.found2-b__lede{margin:0 auto;text-align:center;color:var(--surface-navy);
+  font-size:var(--text-subheading);line-height:var(--leading-subheading);
+  letter-spacing:var(--tracking-subheading);font-weight:400;max-width:70ch;}
+.found2-b__lede strong{font-weight:700;}
+
+.found2-b__stage{position:relative;margin-top:var(--spacing-38);}
+.found2-b__markers{
+  position:relative;z-index:2;display:flex;justify-content:space-between;align-items:center;
+  width:min(760px,88%);height:20px;margin:0 auto;
+}
+/* 1x1, not 20x20: with justify-content:space-between, a *sized* item's
+   half-width shifts its centre away from the exact 0/33.3/66.7/100%
+   fractions — visible as the dot and its dotted line not quite lining
+   up. A near-zero-size anchor removes that offset, so its centre lands
+   exactly on those fractions — the same ones the funnel lines are drawn
+   from (see .found2-b__lines below) — for both the visible dot
+   (#dot-layer, positioned from this anchor) and the lines. */
+.found2-b__markers .dot-anchor{position:relative;left:auto;top:auto;width:1px;height:1px;flex:none;}
+
+/* Built entirely from live rects (JS — positionFound2Lines): the 4 lines
+   from the markers, converging at a single point above the block copy,
+   plus a tail extending down toward #research with a circle at its tip.
+   Sized taller than .found2-b__stage on purpose (height is set in px by
+   JS, reaching near the bottom of the pinned viewport) — nothing here
+   clips it. The waterfall draw-in (clip-path, driven by scroll) and the
+   held-static rest of its life both happen via JS on this element. */
+.found2-b__lines{
+  position:absolute;left:50%;top:10px;transform:translateX(-50%);
+  width:min(760px,88%);overflow:visible;pointer-events:none;z-index:1;
+}
+/* stroke-linejoin:round keeps the angular bend in the outer two lines
+   (a real kink, matching the supplied artwork — not a smooth curve)
+   from looking sharp/pointy at the joint. */
+.found2-line{fill:none;stroke:url(#found2LineGradient);stroke-width:2;stroke-dasharray:4 4;stroke-linejoin:round;}
+.found2-line__end{fill:url(#found2LineGradient);}
+
+/* margin-top trimmed from 64 to 38 (reclaimed by .found2-b__stage
+   above too) to make room for padding-bottom — guaranteed breathing
+   room below the quote, rather than leaving it to whatever flex slack
+   happens to be left over (which shrinks to ~nothing on shorter
+   viewports, reading as "too close to the edge"). */
+.found2-b__blocks{position:relative;z-index:2;margin-top:var(--spacing-38);padding-bottom:var(--spacing-38);min-height:340px;}
+.found2-block{
+  display:grid;grid-template-columns:1fr 1fr;gap:var(--spacing-64);align-items:center;
+  text-align:left;opacity:0;position:absolute;inset:0;width:100%;pointer-events:none;
+}
+.found2-block.is-active{position:relative;opacity:1;pointer-events:auto;}
+/* z-index:2 (grid items respect z-index without needing position:relative)
+   keeps the text column painting above the media column, which comes
+   later in the DOM. */
+.found2-block__text{position:relative;z-index:2;}
+/* H5-equivalent — one step down from .h-sm (48px/H3): this page's scale
+   only has caption/body/subheading/heading-sm/heading/heading-lg, so
+   --text-subheading (32px) is the next size down in "the library". */
+.found2-block__heading{
+  font-weight:700;font-size:var(--text-subheading);
+  line-height:var(--leading-subheading);letter-spacing:var(--tracking-subheading);
+  color:var(--surface-navy);
+}
+/* Media column: image, then the quote sits below it in plain flow —
+   not overlapping the photo (that overlap technique didn't read well;
+   this matches the simpler stacked reference instead). */
+/* Capped (not just aspect-ratio'd to the column) — the column can be
+   ~500px+ wide, and stacking image + quote at that size made the whole
+   block taller than a typical viewport while pinned, silently cutting
+   off whatever fell below the fold (including the funnel's own tail).
+   400px is as big as this can go while still keeping the full block —
+   heading, image, quote — inside one screen at common laptop heights;
+   bumped up from 340px now that the quote sits below rather than
+   overlapping it, so there's a bit more headroom to spend on size. */
+.found2-block__img{position:relative;aspect-ratio:1/1;width:min(100%, 360px);margin:0 auto;}
+.found2-block__img img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;}
+.found2-quote{
+  margin-top:var(--spacing-27);
+  display:flex;flex-direction:column;align-items:flex-start;
+}
+.found2-quote__mark{
+  color:var(--color-blue);font-weight:700;line-height:0.6;
+  font-size:calc(var(--text-heading-sm) * 1.2); /* 20% bigger, per the original mockup */
+  margin-bottom:var(--spacing-10);
+}
+.found2-quote__text{font-weight:400;color:var(--surface-navy);}
+
+@media (max-width:900px){
+  .found2-b__markers{width:100%;}
+  .found2-b__lines{display:none;}
+  .found2-b__blocks{margin-top:var(--spacing-38);min-height:0;}
+  .found2-block{grid-template-columns:1fr;position:relative;opacity:1;pointer-events:auto;margin-bottom:var(--spacing-64);}
+  .found2-block:not(.is-active){display:none;}
+}
+
+/* Reduced motion / no pin support: drop the choreography, show a plain
+   static stacked layout instead (both blocks visible, in document order). */
+@media (prefers-reduced-motion:reduce){
+  .found2-a,.found2-b{min-height:0;display:block;}
+  .found2-b__blocks{min-height:0;}
+  .found2-block{position:relative;opacity:1;pointer-events:auto;}
+  .found2-block + .found2-block{margin-top:var(--spacing-64);}
+  .found2-b__lines{display:none;}
+}
+
+/* =====================================================================
+   FLOATING DOT HANDOFF — one fixed overlay shared by both panels above.
+   Never animate top/left/width/height here — transform + opacity only
+   (see JS ticker); background/border-color transitions are the only
+   exception, and they're cheap (compositor-safe, no layout impact).
+   ===================================================================== */
+/* Hidden by default — visible:hidden avoids even a first-paint flash at
+   (0,0) before the JS below (visST) reveals it exactly across Section
+   A/B's own active range. */
+#dot-layer{position:fixed;inset:0;z-index:5;pointer-events:none;visibility:hidden;}
+@media (max-width:900px){#dot-layer{display:none;}} /* 2.1/2.2/2.3 fall back to a plain stacked layout below 900px — see .found2-* rules */
+.dot{
+  position:absolute;top:0;left:0;width:12px;height:12px;border-radius:50%;
+  margin:-6px 0 0 -6px; /* centres the circle on the transform's translate point */
+  color:var(--found2-pale);background:currentColor;will-change:transform;
+  transition:color 260ms var(--ease-out);
+}
+.dot--selected{color:var(--color-blue);}
+.dot-ring{
+  position:absolute;left:50%;top:50%;width:24px;height:24px;margin:-12px 0 0 -12px;
+  border-radius:50%;border:1px solid currentColor;
+  opacity:0;transform:scale(0.85);
 }
 
 /* ---------- Notch Frame component (top-left + bottom-right corners cut diagonally) ---------- */
@@ -983,23 +1160,124 @@ section,.card,.badge,.pager__dot,.impact__block{border-radius:var(--radius-none)
   <h2 class="film__headline">We built the foundations of connected healthcare with our partner</h2>
 </section>
 
-<!-- ===================== SECTION — BUILDING THE FOUNDATIONS (white, notch-framed image) ===================== -->
-<section class="section section--white pad-y" id="foundation" data-nav="light">
-  <!-- No .reveal class here (unlike other content-organism blocks): the
-       image and caption already have their own bespoke scroll-synced
-       motion (parallax, line-split scrub — see CSS/JS). Layering the
-       generic IntersectionObserver-driven .reveal fade on top of those
-       double-hides them — the wrapper sits at opacity:0 until its own
-       (separately timed) threshold fires, by which point the scrub
-       effects have already progressed against the real scroll position,
-       so they "pop" to a partially-revealed state the instant the
-       wrapper's fade finally triggers instead of appearing gradually. -->
-  <div class="content-organism">
-    <div class="content-organism__image notch-frame">
-      <img src="assets/img/foundation.png" alt="" onerror="this.style.display='none'">
+<!-- ===================== SECTION 2 — BUILDING THE FOUNDATION ==========
+     2.1 (Section A): stat rail — pins while the right-hand rows cross-fade
+     through 4 states as the user scrolls; left headline stays put.
+     2.2/2.3 (Section B): funnel panel — pins while dotted lines draw in
+     and the two proof-point blocks cross-fade. The four dots that live in
+     Section A's rail are NOT drawn here or in Section B's markers — both
+     only hold zero-size [data-dot-from]/[data-dot-to] measurement anchors.
+     The actual dot circles are rendered once, by the fixed #dot-layer
+     overlay (after #smooth-wrapper), so the same element can sit docked,
+     mid-flight, or re-docked without ever being duplicated. ===================== -->
+<section class="section section--white pad-y found2" id="foundation" data-nav="light">
+
+  <div class="found2-a" id="found2A">
+    <div class="found2-a__inner">
+      <h3 class="h-sm found2-a__headline">This digital health solutions provider sits on one of <span class="kw">Australia&rsquo;s largest health data footprints.</span></h3>
+      <div class="found2-a__rail" id="found2Rail">
+        <div class="found2-row is-active" data-row="0">
+          <p class="found2-row__text">20+ digital products</p>
+          <span class="found2-row__dot"><span class="dot-anchor" data-dot-from="0" aria-hidden="true"></span></span>
+        </div>
+        <div class="found2-row" data-row="1">
+          <p class="found2-row__text">16m population records</p>
+          <span class="found2-row__dot"><span class="dot-anchor" data-dot-from="1" aria-hidden="true"></span></span>
+        </div>
+        <div class="found2-row" data-row="2">
+          <p class="found2-row__text">100m clinical billing and hospital claim transactions</p>
+          <span class="found2-row__dot"><span class="dot-anchor" data-dot-from="2" aria-hidden="true"></span></span>
+        </div>
+        <div class="found2-row" data-row="3">
+          <p class="found2-row__text">60k+ residential aged care beds</p>
+          <span class="found2-row__dot"><span class="dot-anchor" data-dot-from="3" aria-hidden="true"></span></span>
+        </div>
+      </div>
     </div>
-    <div class="content-organism__body">
-      <h3 class="h-sm foundation-caption">We connected health customers, data, systems, and workflows, removing friction and accelerating digital transformation to deliver better patient outcomes in aged care through product innovation, AI, data, compliance, and new ways of working.</h3>
+  </div>
+
+  <div class="found2-b" id="found2B">
+    <div class="found2-b__inner">
+      <p class="lede found2-b__lede">However, underlying clinical records, billing claims and resident data <em class="kw">historically</em> <strong>operated in isolated tech stacks without a unified, cross-platform data layer.</strong></p>
+
+      <div class="found2-b__stage">
+        <div class="found2-b__markers" id="found2Markers" aria-hidden="true">
+          <span class="dot-anchor" data-dot-to="0"></span>
+          <span class="dot-anchor" data-dot-to="1"></span>
+          <span class="dot-anchor" data-dot-to="2"></span>
+          <span class="dot-anchor" data-dot-to="3"></span>
+        </div>
+
+        <!-- Background layer: built from live anchor/panel rects (JS —
+             positionFound2Lines), not a static image, so the waterfall
+             draw-in (clip-path on #found2LinesDraw) and the extended tail
+             + end circle reaching toward #research can be scroll-driven. -->
+        <svg class="found2-b__lines" id="found2Lines" aria-hidden="true" focusable="false">
+          <defs>
+            <!-- y1/y2 set by JS (positionFound2Lines) to the SVG's own
+                 pixel height, so the gradient always runs from the dots
+                 (pale) down to the end circle (full brand blue) exactly,
+                 regardless of viewport size. -->
+            <linearGradient id="found2LineGradient" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#D8E9FB"></stop>
+              <stop offset="1" stop-color="#1777FC"></stop>
+            </linearGradient>
+            <!-- Reveals the tail from its top down as found2TailMaskRect's
+                 height (0-1) grows — objectBoundingBox units map that 0-1
+                 range to the tail group's own live bounding box, so this
+                 works regardless of viewport size without any JS-computed
+                 pixel coordinates here. A separate mechanism from the main
+                 funnel body's clip-path above: the tail keeps drawing on
+                 its own, much longer timeline (see bST's onUpdate) so it
+                 can still be growing right up to the "end" frame instead
+                 of finishing early with the rest of the funnel. -->
+            <mask id="found2TailMask" maskContentUnits="objectBoundingBox">
+              <rect id="found2TailMaskRect" x="0" y="0" width="1" height="0" fill="white"></rect>
+            </mask>
+          </defs>
+          <g id="found2LinesDraw">
+            <path class="found2-line" data-line="0"></path>
+            <path class="found2-line" data-line="1"></path>
+            <path class="found2-line" data-line="2"></path>
+            <path class="found2-line" data-line="3"></path>
+          </g>
+          <g id="found2TailGroup" mask="url(#found2TailMask)">
+            <path class="found2-line found2-line--tail" data-line="tail"></path>
+            <circle class="found2-line__end" id="found2LineEnd" r="6"></circle>
+          </g>
+        </svg>
+
+        <div class="found2-b__blocks">
+          <div class="found2-block is-active" data-block="0">
+            <div class="found2-block__text">
+              <p class="found2-block__heading">This data siloing creates <strong class="kw">critical barriers</strong> for how data is used and care gets delivered.</p>
+            </div>
+            <div class="found2-block__media">
+              <div class="found2-block__img">
+                <img src="assets/img/Mask group.png" alt="" onerror="this.style.display='none'">
+              </div>
+              <blockquote class="found2-quote">
+                <span class="found2-quote__mark" aria-hidden="true">&ldquo;</span>
+                <p class="found2-quote__text">We&rsquo;re drowning in data, but can&rsquo;t extract insights</p>
+              </blockquote>
+            </div>
+          </div>
+          <div class="found2-block" data-block="1">
+            <div class="found2-block__text">
+              <p class="found2-block__heading">&hellip;and for Healthcare workers, <strong>this limits</strong> their ability to make connected insights for proactive care, and this administrative burden <strong class="kw">pulls them away from the heart of their work</strong></p>
+            </div>
+          <div class="found2-block__media">
+            <div class="found2-block__img">
+              <img src="assets/img/Mask group-1.png" alt="" onerror="this.style.display='none'">
+            </div>
+            <blockquote class="found2-quote">
+              <span class="found2-quote__mark" aria-hidden="true">&ldquo;</span>
+              <p class="found2-quote__text">Healthcare workers are racing between residents, managing clinical tasks while documenting clinical notes&hellip; <strong>20% of a shift can be lost to paperwork.</strong></p>
+            </blockquote>
+          </div>
+        </div>
+      </div>
+      </div>
     </div>
   </div>
 </section>
@@ -1249,6 +1527,18 @@ section,.card,.badge,.pager__dot,.impact__block{border-radius:var(--radius-none)
 </div>
 </div>
 <!-- /#smooth-content, /#smooth-wrapper -->
+
+<!-- ===================== FLOATING DOT HANDOFF overlay =====================
+     Direct child of body (sibling of #smooth-wrapper, like #nav) so it's
+     never subject to ScrollSmoother's content transform. Lives outside
+     both #foundation panels so it's never clipped by their overflow —
+     see JS for the anchor-measurement + flight logic. ===================== -->
+<div id="dot-layer" aria-hidden="true">
+  <div class="dot" data-dot="0"><span class="dot-ring"></span></div>
+  <div class="dot" data-dot="1"><span class="dot-ring"></span></div>
+  <div class="dot" data-dot="2"><span class="dot-ring"></span></div>
+  <div class="dot" data-dot="3"><span class="dot-ring"></span></div>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
@@ -1575,38 +1865,6 @@ section,.card,.badge,.pager__dot,.impact__block{border-radius:var(--radius-none)
     if(filmHeadlineFallback) filmHeadlineFallback.style.opacity = '1';
   }
 
-  /* ---- Foundation caption: line-by-line reveal, scrubbed to the
-     caption's own entrance scroll — each line is masked and slides up
-     from the bottom of its own line box, settling before it's fully
-     scrolled in (finishes once its top reaches the vertical middle of
-     the viewport). autoSplit re-splits into lines responsively, since
-     line breaks change with viewport width — onSplit() re-creates the
-     scrubbed tween each time and SplitText syncs/reverts the old one. */
-  if(window.gsap && window.ScrollTrigger && window.SplitText){
-    gsap.registerPlugin(ScrollTrigger, SplitText);
-    var foundationCaption = document.querySelector('.foundation-caption');
-    if(foundationCaption){
-      SplitText.create(foundationCaption, {
-        type: 'lines',
-        mask: 'lines',
-        autoSplit: true,
-        onSplit: function(self){
-          return gsap.fromTo(self.lines, { yPercent: 110 }, {
-            yPercent: 0,
-            ease: 'power1.out',
-            stagger: 0.3,
-            scrollTrigger: {
-              trigger: foundationCaption,
-              start: 'top bottom',
-              end: 'top 30%',
-              scrub: true
-            }
-          });
-        }
-      });
-    }
-  }
-
   /* ---- Impact headline: word-by-word blur-to-clear reveal, triggered
      once as the headline scrolls into view (a single play-on-enter, not a
      continuous scrub — matches "scroll to trigger", unlike the film
@@ -1699,28 +1957,473 @@ section,.card,.badge,.pager__dot,.impact__block{border-radius:var(--radius-none)
     }
   }
 
-  /* ---- Foundation image: parallax drift, scrubbed to its own scroll
-     entry/exit — same technique as the landscape's per-image parallax
-     above (oversized image in CSS + a yPercent drift here so it never
-     exposes empty edges). ---- */
-  if(window.gsap && window.ScrollTrigger){
-    gsap.registerPlugin(ScrollTrigger);
-    var foundationImg = document.querySelector('#foundation .content-organism__image img');
-    var foundationFrame = document.querySelector('#foundation .content-organism__image');
-    if(foundationImg && foundationFrame){
-      gsap.fromTo(foundationImg, { yPercent: -8 }, {
-        yPercent: 8,
-        ease: 'none',
-        scrollTrigger: {
-          trigger: foundationFrame,
-          start: 'top bottom',
-          end: 'bottom top',
-          scrub: true,
-          invalidateOnRefresh: true
-        }
+  /* ---- Section 2 ("Building the foundation"): 2.1 stat rail (#found2A),
+     2.2/2.3 funnel panel (#found2B), and the floating dot handoff between
+     them. All tunable numbers (pin lengths, progress checkpoints, bezier/
+     wobble magnitudes, the lerp factor) are named constants below so this
+     can be retimed without touching the logic. ---- */
+  (function(){
+    var sectionA = document.getElementById('found2A');
+    var sectionB = document.getElementById('found2B');
+    var rows = gsap.utils.toArray('#found2Rail .found2-row');
+    var blocks = gsap.utils.toArray('#found2B .found2-block');
+    var linesSvg = document.getElementById('found2Lines');
+    var markersWrap = document.getElementById('found2Markers');
+    var fanLines = linesSvg ? gsap.utils.toArray(linesSvg.querySelectorAll('.found2-line:not(.found2-line--tail)')) : [];
+    var tailPath = linesSvg ? linesSvg.querySelector('.found2-line--tail') : null;
+    var tailMaskRect = linesSvg ? linesSvg.querySelector('#found2TailMaskRect') : null;
+    var lineEnd = linesSvg ? linesSvg.querySelector('.found2-line__end') : null;
+    var lede = document.querySelector('.found2-b__lede');
+    var dotLayer = document.getElementById('dot-layer');
+    if(!sectionA || !sectionB || !dotLayer) return;
+
+    function byDataIndex(attr){
+      return function(a, b){ return (+a.getAttribute(attr)) - (+b.getAttribute(attr)); };
+    }
+    var dotEls = gsap.utils.toArray(dotLayer.querySelectorAll('.dot')).sort(byDataIndex('data-dot'));
+    var ringEls = dotEls.map(function(d){ return d.querySelector('.dot-ring'); });
+    var fromEls = gsap.utils.toArray(document.querySelectorAll('[data-dot-from]')).sort(byDataIndex('data-dot-from'));
+    var toEls = gsap.utils.toArray(document.querySelectorAll('[data-dot-to]')).sort(byDataIndex('data-dot-to'));
+    if(dotEls.length !== 4 || fromEls.length !== 4 || toEls.length !== 4){
+      console.warn('[dot-handoff] expected exactly 4 of each .dot / [data-dot-from] / [data-dot-to], found',
+        dotEls.length, fromEls.length, toEls.length);
+    }
+
+    function clamp01(v){ return v < 0 ? 0 : (v > 1 ? 1 : v); }
+
+    /* Dot i is paired rail-row i -> marker i (top-to-bottom rail order
+       mirrors left-to-right marker order — the simplest non-crossing
+       pairing, and matches the stagger below: row 0 is the first row
+       scrolled past, so its dot is also the first to detach).
+
+       NOTE — this deliberately does NOT cache "document space" (rect +
+       scrollY) the way a plain, unpinned pair of anchors would: both
+       #found2A and #found2B are themselves pinned (start: 'top top'),
+       so their own on-screen rect.top is either 0 (while pinned) or
+       varies with scroll (before/after their pin window) — "rect.top +
+       scrollY" would grow without bound the longer you stay inside a
+       pin, since the element stops moving but scrollY keeps climbing.
+       Subtracting each anchor's OWN pinned ancestor's rect.top cancels
+       that scroll/pin-dependent term out entirely, leaving the anchor's
+       stable offset *within* its section — a pure layout property that
+       never changes, pinned or not. Combined with each section's known
+       pinned position (top:0), that's what the ticker below needs. */
+    var fromPos = [], toPos = [];
+    function measureAnchors(){
+      var aRect = sectionA.getBoundingClientRect();
+      var bRect = sectionB.getBoundingClientRect();
+      fromEls.forEach(function(el, i){
+        var r = el.getBoundingClientRect();
+        fromPos[i] = { x: r.left + r.width / 2, y: (r.top - aRect.top) + r.height / 2 };
+      });
+      toEls.forEach(function(el, i){
+        var r = el.getBoundingClientRect();
+        toPos[i] = { x: r.left + r.width / 2, y: (r.top - bRect.top) + r.height / 2 };
       });
     }
-  }
+
+    /* Builds the funnel's 'd' attributes from live rects. Each line is a
+       sequence of dead-straight segments (no smooth curve — matches the
+       supplied Funnel lines.svg's own angular M...L...L...L shape):
+         - outer two lines (0, 3): a straight drop, then ONE long
+           straight diagonal into the merge point, then straight down
+           again. OUTER_BEND_FRACTION governs how much of the drop to
+           the merge point is the initial straight segment vs. the
+           diagonal — 0.4 gives a proper vertical run before the angle
+           starts, while still leaving the diagonal as the dominant,
+           "funnel-angled" majority of the shape. The merge point itself
+           sits low (anchored to the image's own vertical centre, not
+           right above the block copy) for a taller, more dramatic
+           funnel.
+         - inner two lines (1, 2): straight down only, stopping exactly
+           where they cross the *outer* diagonal on their own side (1
+           against line 0's diagonal, 2 against line 3's) — computed
+           geometrically, not an arbitrary fraction, so the inner line's
+           bottom always lands ON the angled line rather than floating
+           past or short of it regardless of the funnel's proportions.
+       Then a tail continues from the merge straight down to a circle
+       positioned right at the pinned panel's own bottom edge, closing
+       the gap into #research once Section B's pin releases. Only ever
+       needs redoing on resize/refresh (see remeasureFound2) — nothing
+       here is scroll-position-dependent itself; the *reveal* of it is
+       handled separately, by the clip-path scrub in bST's onUpdate. */
+    // 0.75: most of the drop to the merge is a long straight run (the
+    // funnel's actual visible "height"), with only a short diagonal
+    // right at the end. Converging at the image's own TOP (rather than
+    // its centre) sounded right for "runs behind the image" in theory,
+    // but in practice the gap between the markers and the image's top
+    // is tiny (~58px measured) — nowhere near tall enough to read as a
+    // funnel at all, regardless of this fraction. The image's centre
+    // sits much further down (~240px), giving the straight run genuine
+    // height; the line is explicitly fine running behind the heading
+    // text on its way there too, which it naturally will since the
+    // heading sits roughly at the same vertical band.
+    var OUTER_BEND_FRACTION = 0.75;
+    var CONVERGE_IMAGE_FRACTION = 0.5;
+    var TAIL_BOTTOM_MARGIN = 8; // px above the pinned viewport's own bottom edge — as close as breathing room allows
+    function positionFound2Lines(){
+      if(!linesSvg || !markersWrap || !blocks.length) return;
+      var svgRect = linesSvg.getBoundingClientRect();
+      if(svgRect.width === 0) return;
+      var markerEls = gsap.utils.toArray(markersWrap.querySelectorAll('.dot-anchor'));
+      var imgEl = blocks[0].querySelector('.found2-block__img');
+      var imgRect = imgEl.getBoundingClientRect();
+      var panelRect = sectionB.getBoundingClientRect();
+
+      var targetX = svgRect.width / 2;
+      var convergeY = (imgRect.top + imgRect.height * CONVERGE_IMAGE_FRACTION) - svgRect.top;
+      // Not a bare "min(panelRect.bottom, window.innerHeight) - svgRect.top":
+      // that mixes an absolute viewport constant with rects that, at the
+      // moment this first runs (page load, before the user has scrolled
+      // Section B into its pinned range), are still in natural/unpinned
+      // document flow — thousands of px down the page — producing a
+      // wildly wrong (negative) result. panelRect.top and svgRect.top
+      // move together regardless of pin state (both descendants of the
+      // same structure), so their difference is scroll-independent —
+      // the same trick measureAnchors() uses above. panelHeight itself
+      // (a difference of two rects on the *same* element) is likewise
+      // pin-state-invariant — it's just the content's intrinsic height
+      // — so clamping it against window.innerHeight is always valid,
+      // regardless of whether the panel happens to be pinned at the
+      // moment this runs. That clamp is what catches a panel that's
+      // still slightly taller than a shorter viewport, keeping the
+      // tail's circle from landing below the fold for the whole pin.
+      var panelHeight = Math.min(panelRect.bottom - panelRect.top, window.innerHeight);
+      var tailEndY = (panelRect.top - svgRect.top) + panelHeight - TAIL_BOTTOM_MARGIN;
+      var totalHeight = Math.max(convergeY, tailEndY) + 20;
+
+      linesSvg.setAttribute('viewBox', '0 0 ' + svgRect.width + ' ' + totalHeight);
+      linesSvg.setAttribute('width', svgRect.width);
+      linesSvg.setAttribute('height', totalHeight);
+      var gradient = linesSvg.querySelector('#found2LineGradient');
+      if(gradient) gradient.setAttribute('y2', totalHeight);
+
+      var positions = markerEls.map(function(m){
+        var r = m.getBoundingClientRect();
+        return { x: r.left + r.width / 2 - svgRect.left, y: r.top + r.height / 2 - svgRect.top };
+      });
+      // All 4 markers share the same y (one row), so a single bendY applies to both outer lines.
+      var bendY = positions[0].y + (convergeY - positions[0].y) * OUTER_BEND_FRACTION;
+
+      // Where the diagonal from (x0,bendY) to (targetX,convergeY) crosses a given x.
+      function yOnDiagonal(x0, innerX){
+        var t = (innerX - x0) / (targetX - x0);
+        return bendY + t * (convergeY - bendY);
+      }
+
+      [0, 3].forEach(function(i){
+        var p = positions[i];
+        if(fanLines[i]) fanLines[i].setAttribute('d',
+          'M ' + p.x + ' ' + p.y + ' L ' + p.x + ' ' + bendY + ' L ' + targetX + ' ' + convergeY);
+      });
+      [1, 2].forEach(function(i){
+        var p = positions[i];
+        var outerX = i === 1 ? positions[0].x : positions[3].x;
+        var stopY = yOnDiagonal(outerX, p.x);
+        if(fanLines[i]) fanLines[i].setAttribute('d', 'M ' + p.x + ' ' + p.y + ' L ' + p.x + ' ' + stopY);
+      });
+      // Separate path (own mask/reveal timing, see bST's onUpdate) — the
+      // single merged line from the funnel's convergence down to the
+      // circle near Research.
+      if(tailPath) tailPath.setAttribute('d', 'M ' + targetX + ' ' + convergeY + ' L ' + targetX + ' ' + tailEndY);
+      if(lineEnd){ lineEnd.setAttribute('cx', targetX); lineEnd.setAttribute('cy', tailEndY); }
+    }
+
+    function remeasureFound2(){ measureAnchors(); positionFound2Lines(); }
+
+    var railEl = document.getElementById('found2Rail');
+    var railHeadlineEl = document.querySelector('.found2-a__headline');
+
+    /* Slides the whole rail so whichever row is active lands vertically
+       centred on the left-hand headline — not just row 0 (the static
+       top-align only ever got that one right). y:0 first, so the
+       measurement is against the rail's *natural* position rather than
+       whatever translateY a previous call already left it at.
+       onComplete re-measures the floating dots' rail anchors: they're
+       cached once (measureAnchors) for performance, and this transform
+       is the one thing that can move them out from under that cache —
+       but only on this discrete, infrequent row-change event, never in
+       the dots' own per-frame loop. */
+    function alignActiveRow(instant){
+      if(!railEl || !railHeadlineEl || !rows[activeRow]) return;
+      gsap.set(railEl, { y: 0 });
+      var headRect = railHeadlineEl.getBoundingClientRect();
+      var rowRect = rows[activeRow].getBoundingClientRect();
+      var targetY = (headRect.top + headRect.height / 2) - (rowRect.top + rowRect.height / 2);
+      if(instant){
+        gsap.set(railEl, { y: targetY });
+        measureAnchors();
+      } else {
+        // onUpdate (not just onComplete): the dot ticker renders from a
+        // *cached* anchor position (measureAnchors), for performance —
+        // it never calls getBoundingClientRect() itself. Refreshing that
+        // cache only at the tween's end left the docked dot frozen while
+        // the rail visibly slid out from under it, then snapping into
+        // place — exactly the "not smoothly scrolling" jump. Refreshing
+        // every tick of this short (0.45s), infrequent (3x total) tween
+        // keeps the dot tracking the row as it moves, without putting a
+        // rect read in the dots' own continuously-running frame loop.
+        gsap.to(railEl, { y: targetY, duration: 0.45, ease: 'power2.out', overwrite: true, onUpdate: measureAnchors });
+      }
+    }
+
+    var activeRow = 0;
+    function setActiveRow(i){
+      if(i === activeRow && rows[i] && rows[i].classList.contains('is-active')) return;
+      activeRow = i;
+      rows.forEach(function(r, idx){ r.classList.toggle('is-active', idx === i); });
+      alignActiveRow();
+    }
+    function setActiveBlock(i){
+      blocks.forEach(function(b, idx){ b.classList.toggle('is-active', idx === i); });
+    }
+
+    if(!window.gsap || !window.ScrollTrigger){
+      dotLayer.style.display = 'none';
+      return;
+    }
+    gsap.registerPlugin(ScrollTrigger);
+
+    /* ---- Reduced motion: no pin, no ticker, no bezier/wobble — each dot
+       snaps straight to its section-A anchor while A is in view, or its
+       section-B anchor once B has taken over. Exposed on window so a
+       future manual motion toggle can call it directly. Reads live rects
+       directly (not the pin-relative measureAnchors() cache above) since
+       neither section is pinned under reduced motion — plain rects are
+       already correct, and this only ever runs from an occasional
+       scroll/resize handler, never a per-frame loop. ---- */
+    function snapDotsReduced(){
+      if(window.innerWidth <= 900) return; // mobile layout hides #dot-layer entirely (CSS)
+      dotLayer.style.visibility = 'visible'; // CSS default is hidden (see #dot-layer)
+      var useB = sectionB.getBoundingClientRect().top <= window.innerHeight / 2;
+      var anchors = useB ? toEls : fromEls;
+      dotEls.forEach(function(dot, i){
+        var r = anchors[i] && anchors[i].getBoundingClientRect();
+        if(!r) return;
+        gsap.set(dot, { x: r.left + r.width / 2, y: r.top + r.height / 2 });
+        dot.classList.remove('dot--selected');
+        var ring = ringEls[i];
+        if(ring){ ring.style.opacity = useB ? 1 : 0; ring.style.transform = 'scale(1)'; }
+      });
+    }
+    window.__found2SnapDots = snapDotsReduced;
+
+    var prefersReducedMotion = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+    if(prefersReducedMotion){
+      snapDotsReduced();
+      window.addEventListener('scroll', snapDotsReduced, { passive: true });
+      window.addEventListener('resize', snapDotsReduced);
+      if(document.fonts && document.fonts.ready) document.fonts.ready.then(snapDotsReduced);
+      return;
+    }
+
+    gsap.matchMedia().add('(min-width: 901px)', function(){
+      /* ---- 2.1: Section A pins for 3 extra viewport heights (4 equal
+         dwell zones, one per stat row) while the right rail cross-fades
+         active/inactive; the left headline never moves. ---- */
+      var aST = ScrollTrigger.create({
+        trigger: sectionA,
+        start: 'top top',
+        end: function(){ return '+=' + (window.innerHeight * 3); },
+        pin: true,
+        scrub: true,
+        invalidateOnRefresh: true,
+        onUpdate: function(self){
+          setActiveRow(Math.min(rows.length - 1, Math.floor(self.progress * rows.length)));
+        }
+      });
+
+      /* ---- 2.2 / 2.3: Section B pins for 3.2 extra viewport heights.
+         Named checkpoints along its 0-1 progress:
+           0         dots resting in a line, nothing drawn yet
+           0.05-0.35 the funnel body draws in top-to-bottom (a
+                     "waterfall" — clip-path wipe, not a fade) through
+                     the merge; once drawn it's held static for the rest
+                     of the scroll, including through block 0 and the
+                     swap to block 1
+           0.1-0.92  the tail (merge -> circle, toward #research) draws
+                     in on its own, much slower timeline — deliberately
+                     independent of the funnel body above, so it's still
+                     visibly growing right up near the "end" frame
+                     instead of finishing early with the rest
+           0.2-0.42  block 0 (critical barriers) scrolls up into its
+                     resting position (translateY + fade, not just a
+                     fade) as "However, underlying..." — not a sticky/
+                     pinned heading — fades out over the same window,
+                     handing off to the block copy rather than lingering
+           0.75-0.88 block 0 -> block 1 (healthcare workers): block 1
+                     gets the same scroll-up-to-rest entrance */
+      var WATERFALL_START = 0.05, WATERFALL_DONE = 0.35;
+      var TAIL_DRAW_START = 0.1, TAIL_DRAW_DONE = 0.92;
+      var BLOCK0_START = 0.2, BLOCK0_DONE = 0.42;
+      var SWAP_START = 0.75, SWAP_DONE = 0.88;
+      var BLOCK_ENTER_TRANSLATE = 48; // px travelled while scrolling up into its resting position
+
+      var bST = ScrollTrigger.create({
+        trigger: sectionB,
+        start: 'top top',
+        end: function(){ return '+=' + (window.innerHeight * 3.2); },
+        pin: true,
+        scrub: true,
+        invalidateOnRefresh: true,
+        onUpdate: function(self){
+          var p = self.progress;
+          var drawAmount = clamp01((p - WATERFALL_START) / (WATERFALL_DONE - WATERFALL_START));
+          if(linesSvg) linesSvg.style.clipPath = 'inset(0 0 ' + (100 - drawAmount * 100) + '% 0)';
+
+          var tailDrawAmount = clamp01((p - TAIL_DRAW_START) / (TAIL_DRAW_DONE - TAIL_DRAW_START));
+          if(tailMaskRect) tailMaskRect.setAttribute('height', tailDrawAmount);
+
+          var enter0 = clamp01((p - BLOCK0_START) / (BLOCK0_DONE - BLOCK0_START));
+          var enter1 = clamp01((p - SWAP_START) / (SWAP_DONE - SWAP_START));
+          if(blocks[0]) gsap.set(blocks[0], { opacity: enter0 * (1 - enter1), y: (1 - enter0) * BLOCK_ENTER_TRANSLATE });
+          if(blocks[1]) gsap.set(blocks[1], { opacity: enter1, y: (1 - enter1) * BLOCK_ENTER_TRANSLATE });
+          setActiveBlock(enter1 >= 0.5 ? 1 : 0);
+          if(lede) lede.style.opacity = 1 - enter0;
+        }
+      });
+
+      /* ---- Dot-layer visibility: on (visible) for exactly the span the
+         dots are ever meaningfully on-screen — from the moment Section A
+         starts pinning (2.1 begins) through to the moment Section B's
+         pin fully releases — off everywhere else, including the whole
+         hero/film run-up. Reads aST's/bST's own resolved start/end for
+         the same reason the driver below does: an IntersectionObserver
+         here raced with the pin transitions and could flash a dot into
+         view over the film section before Section A ever arrived, since
+         its callback fires async on the browser's own schedule rather
+         than in lockstep with ScrollTrigger's scroll updates. */
+      dotLayer.style.visibility = 'hidden';
+      var visST = ScrollTrigger.create({
+        start: function(){ return aST.start; },
+        end: function(){ return bST.end; },
+        onToggle: function(self){ dotLayer.style.visibility = self.isActive ? 'visible' : 'hidden'; }
+      });
+
+      /* ---- Floating dot handoff: one scroll-scrubbed progress value
+         (no tween — this script positions every dot itself), smoothed
+         through a lerp, then split into 4 staggered local windows so the
+         dots don't move in lockstep. ---- */
+      var STAGGER_START_STEP = 0.08;   // each dot's flight starts this much later than the last
+      var STAGGER_END_BASE = 0.72;     // dot 0 finishes its flight at this fraction of the driver's progress
+      var STAGGER_END_STEP = 0.09;     // each dot's flight finishes this much later than dot 0
+      var LERP_FACTOR = 0.12;          // how quickly the rendered position chases the scroll target (the "float")
+      /* Bow magnitude (px) + fan-out sign per dot, longest hop bows the
+         most: row 0 (top rail row) -> marker 0 (leftmost) is the longest
+         diagonal, row 3 (bottom row) -> marker 3 (rightmost, nearest the
+         rail) is the shortest. */
+      var BOW_MAGNITUDE = [150, -110, 90, -60];
+      var WOBBLE_AMPLITUDE = [7, 5, 6, 4];   // px, mid-flight-only jitter
+      var WOBBLE_SPEED = [1.7, 2.2, 1.9, 2.4]; // radians/sec
+      var WOBBLE_PHASE = [0, 1.4, 2.8, 4.2];   // radians, so dots don't wobble in sync
+      var RING_ARRIVE_START = 0.85;    // local-t fraction where the arrival ring starts appearing
+
+      function dotWindow(i){
+        return {
+          start: i * STAGGER_START_STEP,
+          end: Math.min(1, STAGGER_END_BASE + i * STAGGER_END_STEP)
+        };
+      }
+
+      var rendered = 0, targetProgress = 0;
+      var easeFn = gsap.parseEase('power2.inOut');
+
+      function tick(time){
+        rendered += (targetProgress - rendered) * LERP_FACTOR;
+        // fromPos/toPos are already viewport-relative (see measureAnchors) —
+        // no scrollX/scrollY term here, unlike a plain unpinned-anchor pair.
+        for(var i = 0; i < dotEls.length; i++){
+          var p0 = fromPos[i], p1 = toPos[i];
+          if(!p0 || !p1) continue;
+          var win = dotWindow(i);
+          var t = clamp01((rendered - win.start) / (win.end - win.start));
+          var eased = easeFn(t);
+
+          var mx = (p0.x + p1.x) / 2, my = (p0.y + p1.y) / 2;
+          var dx = p1.x - p0.x, dy = p1.y - p0.y;
+          var len = Math.sqrt(dx * dx + dy * dy) || 1;
+          var nx = -dy / len, ny = dx / len; // unit perpendicular to the P0->P1 chord
+          var mag = BOW_MAGNITUDE[i] || 0;
+          var cx = mx + nx * mag, cy = my + ny * mag;
+
+          var inv = 1 - eased;
+          var x = inv * inv * p0.x + 2 * inv * eased * cx + eased * eased * p1.x;
+          var y = inv * inv * p0.y + 2 * inv * eased * cy + eased * eased * p1.y;
+
+          var wobbleEnvelope = Math.sin(Math.PI * t); // 0 at both docked ends, peaks mid-flight
+          var wobble = Math.sin(time * WOBBLE_SPEED[i] + WOBBLE_PHASE[i]) * WOBBLE_AMPLITUDE[i] * wobbleEnvelope;
+          x += wobble; y += wobble * 0.6;
+
+          gsap.set(dotEls[i], { x: x, y: y });
+
+          var selected = t <= 0.001 && activeRow === i;
+          dotEls[i].classList.toggle('dot--selected', selected);
+
+          var arriveT = clamp01((t - RING_ARRIVE_START) / (1 - RING_ARRIVE_START));
+          var smooth = arriveT * arriveT * (3 - 2 * arriveT); // smoothstep
+          var ring = ringEls[i];
+          if(ring){
+            ring.style.opacity = smooth;
+            ring.style.transform = 'scale(' + (0.85 + smooth * 0.15) + ')';
+          }
+        }
+      }
+      gsap.ticker.add(tick);
+
+      /* Deliberately NOT `trigger: sectionA, start: 'center center'` — once
+         an element is already pinned by another ScrollTrigger (aST above),
+         GSAP measures any *other* trigger on that same element against the
+         pin's own cached geometry rather than its natural layout, which
+         collapsed this range to a few dozen px in testing. Reading aST's/
+         bST's own resolved start/end sidesteps that entirely and expresses
+         the intent directly: the dots only start detaching once the last
+         row ("60k+ residential aged care beds") has finished its own
+         dwell and Section A's pin is about to release — i.e. at aST.end —
+         and finish right as Section B's pin takes over. No `trigger`
+         needed — plain numbers are treated as absolute scroll positions. */
+      var driverST = ScrollTrigger.create({
+        start: function(){ return aST.end; },
+        end: function(){ return bST.start; },
+        onUpdate: function(self){ targetProgress = self.progress; },
+        onRefresh: function(self){ targetProgress = self.progress; rendered = self.progress; }
+      });
+
+      ScrollTrigger.addEventListener('refresh', remeasureFound2);
+      remeasureFound2();
+      ScrollTrigger.refresh();
+      // ScrollTrigger.refresh() itself measures against a transiently
+      // un-pinned layout partway through — the 'refresh' listener above
+      // can fire mid-process and cache wrong rects for anything already
+      // scrolled into a pinned state (observed: a stale/negative tail
+      // position until a second refresh). Once more, after refresh has
+      // fully settled, guarantees the final geometry is correct.
+      remeasureFound2();
+      alignActiveRow(true); // row 0 starts marked active in the static markup, so setActiveRow's own guard skips it — align it once, instantly, here
+
+      return function(){
+        gsap.ticker.remove(tick);
+        ScrollTrigger.removeEventListener('refresh', remeasureFound2);
+        [aST, bST, visST, driverST].forEach(function(st){ if(st) st.kill(); });
+        gsap.set(dotEls, { clearProps: 'transform' });
+        if(railEl) gsap.set(railEl, { clearProps: 'transform' });
+      };
+    });
+
+    var resizeSettle;
+    window.addEventListener('resize', function(){
+      clearTimeout(resizeSettle);
+      resizeSettle = setTimeout(function(){
+        ScrollTrigger.refresh();
+        if(window.innerWidth > 900) alignActiveRow(true);
+      }, 300);
+    });
+    if(document.fonts && document.fonts.ready){
+      document.fonts.ready.then(function(){
+        ScrollTrigger.refresh();
+        if(window.innerWidth > 900) alignActiveRow(true);
+      });
+    }
+  })();
 
   /* ---- AI demo collage: one-shot entrance. List/Record slide in from the
      sides (aiWinRecord stays a plain, untouched screenshot — no overlay);
