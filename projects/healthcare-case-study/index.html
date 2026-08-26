@@ -1170,9 +1170,10 @@ section,.card,.badge,.pager__dot,.impact__block{border-radius:var(--radius-none)
    --divider, added to :root above) and layout rules are new.
 
    Now three pieces rather than one continuous pinned stage:
-     Stage A (pinned)      → heading is already revealed (solid navy) the
-                              moment it scrolls in, then blurs/fades out
-                              word by word as the scrub continues.
+     Stage A (NOT pinned)  → plain scroll-through heading; its lines mask
+                              and slide up from below once, the moment it
+                              scrolls into view (same technique as the
+                              Challenge headline further down the page).
      Partnership lede      → NOT pinned — plain scroll-through content;
                               its words scrub from pale grey to navy as
                               it passes through the viewport.
@@ -1195,26 +1196,6 @@ section,.card,.badge,.pager__dot,.impact__block{border-radius:var(--radius-none)
    reads as a hard colour break. */
 .impacts-v2-wrap{background:linear-gradient(180deg,#FFFFFF 0,#FBFCFF 400px);}
 
-/* .stage/.scene/.is-animated below are Stage A's own pin-and-crossfade
-   mechanics ONLY now — Scene B and Scene C used to share this system too
-   (absolutely stacked, sliding via yPercent), but that's what caused the
-   overlap bug reported: Scene B's content ran taller than the fixed
-   100vh box a .scene is forced into (inset:0, so the crossfade's yPercent
-   maths lines up), and the overflow spilled out past its own bottom edge
-   into Scene C's area below it. Scene B and Scene C are now independent,
-   normal-flow sections (see their own rules further down) — neither uses
-   .scene/.stage any more. */
-.stage{position:relative;}
-.stage.is-animated{height:100vh;overflow:hidden;}
-.stage.is-animated .scene{position:absolute;inset:0;}
-
-.scene{
-  min-height:100vh;
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-  padding:0 var(--page-margin-x);
-}
 
 /* ---------- Gradient backdrop, shared across Stage A → Partnership lede
    → Business Impact ----------
@@ -1237,14 +1218,18 @@ section,.card,.badge,.pager__dot,.impact__block{border-radius:var(--radius-none)
 }
 
 /* ---------- Scene A — heading only ---------- */
-.sceneA{align-items:center;text-align:center;}
+.sceneA{
+  min-height:100vh;
+  display:flex;flex-direction:column;justify-content:center;align-items:center;
+  padding:0 var(--page-margin-x);
+  text-align:center;
+}
 
 .sceneA__body{position:relative;max-width:1100px;margin:0 auto;}
 
-/* Already revealed (solid navy) the moment it scrolls in — no incoming
-   fill animation. JS then scrubs each split word from this same navy up
-   to blurred/transparent as the pin's scroll range continues, i.e. an
-   "unreveal" rather than a reveal. */
+/* Masked lines slide up from below once, the moment the heading scrolls
+   into view (see JS — GSAP SplitText, same technique as the Challenge
+   headline further down) — a plain one-shot reveal, not a scrub. */
 .headingA{
   font-weight:var(--font-weight-display);
   font-size:var(--text-heading);
@@ -1286,10 +1271,10 @@ section,.card,.badge,.pager__dot,.impact__block{border-radius:var(--radius-none)
 }
 
 /* ---------- Business Impact (Scene B) — "impacts slide in" ----------
-   A plain, NON-PINNED section — normal scroll flow, not the .scene/.stage
-   pinned-crossfade system used elsewhere on this page. Top-aligned with
-   generous clearance; content spreads the full browser width (page
-   margins only, via its own padding rather than inheriting .scene's). */
+   A plain, NON-PINNED section — normal scroll flow, like Stage A and the
+   Partnership lede above it. Top-aligned with generous clearance;
+   content spreads the full browser width (its own page-margin padding,
+   independent of the other two sections'). */
 .sceneB{
   position:relative;
   min-height:100vh;
@@ -1616,11 +1601,11 @@ section,.card,.badge,.pager__dot,.impact__block{border-radius:var(--radius-none)
 </section>
 
 <!-- ===================== SECTION — IMPACTS v2 (team build, ported from projects/impacts-v2/) =====================
-     Stage A (heading only, pinned — already revealed the moment it scrolls
-     in, then blurs/fades out as the scrub continues) → the Partnership
-     lede (a plain, non-pinned section, its words scrubbing from pale grey
-     to navy as it passes through) → Business Impact (a plain, NON-PINNED
-     section — each impact row slides in from the right on its own, as it
+     Stage A (heading only, NOT pinned — its lines mask and slide up from
+     below once as it scrolls into view) → the Partnership lede (a plain,
+     non-pinned section, its words scrubbing from pale grey to navy as it
+     passes through) → Business Impact (a plain, NON-PINNED section —
+     each impact row slides in from the right on its own, as it
      individually scrolls into view, not on a shared pinned timeline) →
      Scene C (grows from a smaller boxed navy card to full-bleed as it
      scrolls in — no pin yet — then pins once fully grown so the callout
@@ -1639,15 +1624,14 @@ section,.card,.badge,.pager__dot,.impact__block{border-radius:var(--radius-none)
   <div class="ab-field-wrap">
     <div class="ab-field" id="abField" aria-hidden="true"></div>
 
-    <!-- Stage A — heading only. Pinned just long enough to scrub the
-         already-visible heading out to blurred/transparent. -->
-    <div class="stage" id="stageA">
-      <section class="scene sceneA" id="sceneA" aria-label="Together, we built the foundations" data-nav="light">
-        <div class="sceneA__body">
-          <h2 class="headingA" id="headingA">Together, we built the foundations <br>for a connected, data-driven future</h2>
-        </div>
-      </section>
-    </div>
+    <!-- Stage A — heading only. NOT pinned; a plain scroll-through
+         section like the Partnership lede below it. Its lines mask and
+         slide up from below once, the moment it scrolls into view. -->
+    <section class="sceneA" id="sceneA" aria-label="Together, we built the foundations" data-nav="light">
+      <div class="sceneA__body">
+        <h2 class="headingA" id="headingA">Together, we built the foundations <br>for a connected, data-driven future</h2>
+      </div>
+    </section>
 
     <!-- Partnership lede — NOT pinned; scrolls through like any normal
          section. Its words scrub from pale grey to navy as the section
@@ -2569,30 +2553,30 @@ section,.card,.badge,.pager__dot,.impact__block{border-radius:var(--radius-none)
   }
 
   /* =====================================================================
-     STAGE A — heading only. Already fully visible (solid navy) the
-     instant it scrolls in; a short pinned scrub then blurs/fades each
-     word out — an "unreveal" rather than a reveal, run in reverse of the
-     usual blur-in technique used elsewhere on this page (e.g. the Impact
-     headline below). ===================================================== */
-  var stageA   = document.getElementById('stageA');
+     STAGE A — heading only. NOT pinned; a plain scroll-through section.
+     Its lines mask and slide up from below once as it scrolls into view
+     — a one-shot reveal-on-enter, same technique as the Challenge
+     headline further down (autoSplit re-splits into lines responsively,
+     since line breaks change with viewport width — onSplit() re-creates
+     the tween each time and SplitText syncs/reverts the old one).
+     ===================================================================== */
   var headingA = document.getElementById('headingA');
-  if(stageA && headingA){
-    stageA.classList.add('is-animated');
-    var headingSplit = SplitText.create(headingA, { type: 'words' });
-    gsap.set(headingSplit.words, { opacity: 1, filter: 'blur(0px)' }); // already revealed
-    gsap.to(headingSplit.words, {
-      opacity: 0,
-      filter: 'blur(16px)',
-      duration: 1,
-      stagger: 0.05,
-      ease: 'none',
-      scrollTrigger: {
-        trigger: stageA,
-        start: 'top top',
-        end: '+=100%',
-        pin: true,
-        scrub: true,
-        invalidateOnRefresh: true
+  if(headingA){
+    SplitText.create(headingA, {
+      type: 'lines',
+      mask: 'lines',
+      autoSplit: true,
+      onSplit: function(self){
+        return gsap.from(self.lines, {
+          yPercent: 110,
+          duration: 1.5,
+          stagger: 0.12,
+          ease: 'power2.out',
+          scrollTrigger: {
+            trigger: headingA,
+            start: 'top 100%'
+          }
+        });
       }
     });
   }
@@ -2614,18 +2598,15 @@ section,.card,.badge,.pager__dot,.impact__block{border-radius:var(--radius-none)
      tried too and was worse the other way: the last word's tween landed
      exactly as the text disappeared off the top of the viewport, so the
      reveal never looked like it actually finished. Ending at 'bottom 15%'
-     instead completes the reveal while the last line is still on-screen. */
+     instead completes the reveal while the last line is still on-screen.
+     The word tween itself only fills the first 60% of that scrub range —
+     a trailing filler tween pads the timeline out to 100% — so every
+     word is already navy by 60% scroll progress rather than right at the
+     very end of the range. */
   var partnershipText = document.getElementById('partnershipLedeText');
   if(partnershipText){
     var partnershipSplit = SplitText.create(partnershipText, { type: 'words' });
-    gsap.fromTo(partnershipSplit.words, {
-      color: 'rgba(0,0,15,0.25)'
-    }, {
-      color: '#00000f', /* var(--color-navy) — GSAP can't read a CSS
-        custom property directly here, so the literal is repeated. */
-      duration: 0.3,
-      stagger: 0.22,
-      ease: 'none',
+    var partnershipTl = gsap.timeline({
       scrollTrigger: {
         trigger: partnershipText,
         start: 'top 85%',
@@ -2633,6 +2614,18 @@ section,.card,.badge,.pager__dot,.impact__block{border-radius:var(--radius-none)
         scrub: true
       }
     });
+    partnershipTl.fromTo(partnershipSplit.words, {
+      color: 'rgba(0,0,15,0.25)'
+    }, {
+      color: '#00000f', /* var(--color-navy) — GSAP can't read a CSS
+        custom property directly here, so the literal is repeated. */
+      duration: 0.3,
+      stagger: 0.22,
+      ease: 'none'
+    });
+    // Filler tween — no visual effect, just extends the timeline so the
+    // reveal above (currently 100% of it) becomes 60% of a longer whole.
+    partnershipTl.to({}, { duration: partnershipTl.duration() * (0.40 / 0.60) });
   }
 
   /* =====================================================================
