@@ -101,6 +101,11 @@
   /* Motion (Emil defaults — brand defines no easing tokens) */
   --ease-out:cubic-bezier(0.23,1,0.32,1);
   --ease-in-out:cubic-bezier(0.77,0,0.175,1);
+
+  /* Derived surface tints for the Impacts v2 section only */
+  --ink-muted:rgba(0,0,20,0.56);      /* body copy */
+  --ink-cap:rgba(0,0,20,0.62);        /* metric captions */
+  --divider:rgba(0,0,20,0.13);
 }
 
 /* ---------- Reset / base ---------- */
@@ -152,10 +157,6 @@ section,.card,.badge,.pager__dot,.impact__block{border-radius:var(--radius-none)
 .section{position:relative;z-index:2;padding-inline:var(--page-margin-x);}
 .section--navy{background:var(--surface-navy);color:var(--color-white);}
 .section--white{background:var(--surface-white);color:var(--color-navy);}
-/* Same hairline-seam guard as .film's own margin-top: overlaps the
-   section above by a couple of px so sub-pixel rounding at the join
-   never shows as a visible line. */
-#foundation{margin-top:-2px;}
 .pad-y{padding-block:var(--spacing-150);}
 @media (max-width:760px){
   .pad-y{padding-block:var(--spacing-108);}
@@ -207,38 +208,32 @@ section,.card,.badge,.pager__dot,.impact__block{border-radius:var(--radius-none)
 }
 @keyframes rise-in{to{opacity:1;transform:none;}}
 
-/* ---------- Per-row reveal for the Impact metrics: each row scrolls up from
-   the bottom of the screen (a larger translateY than the default .reveal) and
-   its content lifts from dim to fully clear — driven individually per row via
-   its own view() timeline, so each slides in on its own as it enters. ---------- */
-.impact-row{opacity:1;} /* base state stays fully visible with no JS/support */
+/* ---------- Blur reveal: content starts fully opaque but blurred (not
+   hidden via opacity like .reveal) and sharpens to fully clear as it
+   scrolls in — no movement, filter only. Used where an already-present-
+   but-unfocused start reads better than .reveal's fully-hidden one
+   (e.g. Barriers). ---------- */
+.blur-reveal{opacity:1;filter:blur(0);} /* base state stays fully visible/clear with no JS/support */
 @media (prefers-reduced-motion:no-preference){
   @supports (animation-timeline:view()){
-    /* Guarded to html:not(.io-mode) — same reasoning as .results__card above:
-       a CSS animation on transform/opacity always beats a transition on the
-       same property, so left unguarded this would permanently freeze every
-       row at its dim/offset "from" state (ScrollSmoother's transform-based
-       scroll never advances a view() timeline) and the io-mode transition
-       below could never win the fight to reveal it. */
-    html:not(.io-mode) .impact-row{
-      opacity:.15;transform:translateY(90px);
-      animation:rise-dim linear both;
+    html:not(.io-mode) .blur-reveal{
+      filter:blur(16px);
+      animation:blur-to-clear linear both;
       animation-timeline:view();
-      animation-range:entry 0% entry 60%;
+      animation-range:entry 0% entry 50%;
     }
   }
-  .io-mode .impact-row{opacity:.15;transform:translateY(90px);
-    transition:opacity 800ms var(--ease-out),transform 800ms var(--ease-out);}
-  .io-mode .impact-row.is-visible{opacity:1;transform:none;}
+  .io-mode .blur-reveal{filter:blur(16px);transition:filter 700ms var(--ease-out);}
+  .io-mode .blur-reveal.is-visible{filter:blur(0);}
 }
-@keyframes rise-dim{to{opacity:1;transform:none;}}
+@keyframes blur-to-clear{to{filter:blur(0);}}
 
 /* Reduced motion: keep the fade that aids comprehension, drop movement */
 @media (prefers-reduced-motion:reduce){
-  .io-mode .impact-row{opacity:.15;transition:opacity 400ms ease;}
-  .io-mode .impact-row.is-visible{opacity:1;}
   .io-mode .reveal{opacity:0;transition:opacity 400ms ease;}
   .io-mode .reveal.is-visible{opacity:1;}
+  .io-mode .blur-reveal{filter:blur(16px);transition:filter 400ms ease;}
+  .io-mode .blur-reveal.is-visible{filter:blur(0);}
 }
 
 /* Pressable feedback */
@@ -336,25 +331,202 @@ section,.card,.badge,.pager__dot,.impact__block{border-radius:var(--radius-none)
   position:absolute;inset:0;pointer-events:none;
   background:linear-gradient(180deg,rgba(0,0,31,0) 30%,rgba(0,0,31,0.6) 100%);
 }
-.film__headline{
-  position:relative;z-index:2;max-width:25ch;text-align:center;
-  padding-inline:var(--page-margin-x);
-  color:var(--color-white);font-weight:700;font-size:var(--text-heading);
-  line-height:var(--leading-heading);letter-spacing:var(--tracking-heading);
+/* .film__card sits centred on top of the video — a plain white card
+   (12px corners) housing the AI Summary Loop product demo below. Its
+   own content is a fixed 487x784 "stage" (see .asl-stage) that a JS
+   resize handler scales to fit whatever width this card renders at, so
+   the card itself just needs the right aspect ratio.
+   No scroll-scrub reveal — it just blurs in from blur(16px)/translateY
+   to sharp/settled once, via a plain (non-scrubbed) ScrollTrigger toggle
+   in the JS below. */
+.film__card{
+  position:relative;z-index:2;
+  width:min(320px,82vw);aspect-ratio:487/784;overflow:hidden;
+  background:var(--color-white);border-radius:12px;
+  box-shadow:0 40px 70px -30px rgba(0,0,31,0.35);
+  opacity:0;transform:translateY(16px);filter:blur(16px);
 }
-/* Hidden by default — JS reveals it (as split words) only once SplitText
-   has actually mounted, so nothing flashes fully-visible before the
-   scrub takes over. If GSAP/SplitText fails to load, the JS below falls
-   back to un-hiding the plain sentence so the copy is never lost. */
-.film__headline{opacity:0;}
-/* Each split word starts invisible and heavily blurred; the scroll-scrub
-   below brings it up to full opacity and clears the blur, word by word. */
-.film__headline .word{opacity:0;filter:blur(16px);}
 @media (max-width:900px){
   .film__video-wrap{width:82vw;}
 }
 @media (max-width:760px){
-  .film__headline{font-size:40px;letter-spacing:-1px;line-height:1.1;}
+  .film__card{width:min(260px,84vw);}
+}
+
+/* ---------------------------------------------------------------------
+   AI Summary Loop widget (supplied design, ported as-is — a looping
+   demo: cursor taps a prompt card, an AI summary types out, skeleton
+   bars shimmer in, then a feedback row before it resets). Every
+   selector is scoped/prefixed under .asl so its generic source names
+   (#stage, .layer, #controls…) can never collide with this page's
+   own styles. Layer positions/sizes are still applied by the JS below
+   (ported from the source's CONFIG.LAYERS), just at a responsive scale
+   instead of the source's fixed 1x/2x toggle. */
+.asl-stage{
+  position:absolute;top:0;left:0;
+  width:487px;height:784px;
+  background:#fff;overflow:hidden;
+  transform-origin:top left; /* scale set by JS to fit .film__card's width */
+}
+.asl-layer{
+  position:absolute;top:0;left:0;
+  display:block;pointer-events:none;user-select:none;
+  transition:
+    opacity 0.30s cubic-bezier(0.4,0,0.2,1),
+    transform 0.38s cubic-bezier(0.4,0,0.2,1),
+    filter 0.30s cubic-bezier(0.4,0,0.2,1);
+}
+.asl-text-el{
+  position:absolute;
+  transition:opacity 0.30s cubic-bezier(0.4,0,0.2,1);
+  white-space:pre-wrap;
+}
+
+/* Frame 1 — idle suggestion grid (fades out at phase>=3, back in at 8/9) */
+#asl-heading,#asl-aiball,#asl-blank2,#asl-blank3,#asl-blank4,#asl-prevhealth{opacity:1;}
+#asl-stage[data-phase="3"] #asl-heading,#asl-stage[data-phase="4"] #asl-heading,
+#asl-stage[data-phase="5"] #asl-heading,#asl-stage[data-phase="6"] #asl-heading,
+#asl-stage[data-phase="7"] #asl-heading,
+#asl-stage[data-phase="3"] #asl-aiball,#asl-stage[data-phase="4"] #asl-aiball,
+#asl-stage[data-phase="5"] #asl-aiball,#asl-stage[data-phase="6"] #asl-aiball,
+#asl-stage[data-phase="7"] #asl-aiball,
+#asl-stage[data-phase="3"] #asl-blank2,#asl-stage[data-phase="4"] #asl-blank2,
+#asl-stage[data-phase="5"] #asl-blank2,#asl-stage[data-phase="6"] #asl-blank2,
+#asl-stage[data-phase="7"] #asl-blank2,
+#asl-stage[data-phase="3"] #asl-blank3,#asl-stage[data-phase="4"] #asl-blank3,
+#asl-stage[data-phase="5"] #asl-blank3,#asl-stage[data-phase="6"] #asl-blank3,
+#asl-stage[data-phase="7"] #asl-blank3,
+#asl-stage[data-phase="3"] #asl-blank4,#asl-stage[data-phase="4"] #asl-blank4,
+#asl-stage[data-phase="5"] #asl-blank4,#asl-stage[data-phase="6"] #asl-blank4,
+#asl-stage[data-phase="7"] #asl-blank4,
+#asl-stage[data-phase="3"] #asl-prevhealth,#asl-stage[data-phase="4"] #asl-prevhealth,
+#asl-stage[data-phase="5"] #asl-prevhealth,#asl-stage[data-phase="6"] #asl-prevhealth,
+#asl-stage[data-phase="7"] #asl-prevhealth{opacity:0;}
+
+/* PrevHealth_state and PrevHealth_Glow are two exports of the same card
+   and don't align pixel-for-pixel once the glow lifts — hide the plain
+   card the moment the glow becomes active instead of layering them. */
+#asl-prevhealth.asl-hover-active,
+#asl-stage[data-phase="2"] #asl-prevhealth{opacity:0;}
+
+/* Orb breathing — keyframe only touches transform/filter, opacity stays
+   owned by the phase rules above. */
+#asl-aiball{animation:aslBreathe var(--aslBreatheDur) ease-in-out infinite;transform-origin:center;}
+#asl-stage[data-phase="3"] #asl-aiball,#asl-stage[data-phase="4"] #asl-aiball,
+#asl-stage[data-phase="5"] #asl-aiball,#asl-stage[data-phase="6"] #asl-aiball,
+#asl-stage[data-phase="7"] #asl-aiball{animation:none;}
+@keyframes aslBreathe{
+  0%,100%{transform:scale(1);filter:brightness(0.97);}
+  50%{transform:scale(1.045);filter:brightness(1.04);}
+}
+
+/* Preventative-health glow card (hover/click state) */
+#asl-glow{opacity:0;filter:brightness(1) drop-shadow(0 0px 0px rgba(0,0,0,0));}
+#asl-glow.asl-hover-active{
+  opacity:1;filter:brightness(1) drop-shadow(0 10px 18px rgba(0,131,129,0.22));
+  transition:opacity 0.20s cubic-bezier(0.4,0,0.2,1),filter 0.20s cubic-bezier(0.4,0,0.2,1);
+}
+#asl-stage[data-phase="2"] #asl-glow{
+  opacity:1;filter:brightness(1.12) drop-shadow(0 4px 10px rgba(0,131,129,0.18));
+  transition:opacity 0.30s cubic-bezier(0.4,0,0.2,1),filter 0.15s ease;
+}
+#asl-stage[data-phase="3"] #asl-glow,#asl-stage[data-phase="4"] #asl-glow,
+#asl-stage[data-phase="5"] #asl-glow,#asl-stage[data-phase="6"] #asl-glow,
+#asl-stage[data-phase="7"] #asl-glow,#asl-stage[data-phase="8"] #asl-glow,
+#asl-stage[data-phase="9"] #asl-glow{opacity:0;}
+
+/* Cursor — moves via transform:translate() (GPU-composited), not left/top */
+#asl-cursor{
+  opacity:0;transform:translate(0,0);
+  transition:transform var(--aslCursorGlideDur,0.6s) cubic-bezier(0.4,0,0.2,1),opacity 0.2s ease 0.15s;
+}
+#asl-stage[data-phase="1"] #asl-cursor{opacity:1;}
+#asl-cursor.asl-clicking{transition:transform 0.12s ease,opacity 0.2s ease 0.15s;}
+#asl-stage[data-phase="2"] #asl-cursor{opacity:0;}
+#asl-cursor-img{display:block;width:100%;height:100%;transform-origin:22% 18%;}
+#asl-cursor-img.asl-pressing{animation:aslCursorPress 0.20s cubic-bezier(0.4,0,0.2,1) 1;}
+@keyframes aslCursorPress{0%{transform:scale(1);}45%{transform:scale(0.9);}100%{transform:scale(1);}}
+
+/* Frame 2 — prompt bubble */
+#asl-bubble{opacity:0;transform:translateY(12px);}
+#asl-stage[data-phase="3"] #asl-bubble,#asl-stage[data-phase="4"] #asl-bubble,
+#asl-stage[data-phase="5"] #asl-bubble,#asl-stage[data-phase="6"] #asl-bubble,
+#asl-stage[data-phase="7"] #asl-bubble{opacity:1;transform:translateY(0);}
+
+/* Summary label (icon + "AI Summary" text) */
+#asl-orbicon,#asl-summarylabel{opacity:0;}
+#asl-stage[data-phase="4"] #asl-orbicon,#asl-stage[data-phase="5"] #asl-orbicon,
+#asl-stage[data-phase="6"] #asl-orbicon,#asl-stage[data-phase="7"] #asl-orbicon,
+#asl-stage[data-phase="4"] #asl-summarylabel,#asl-stage[data-phase="5"] #asl-summarylabel,
+#asl-stage[data-phase="6"] #asl-summarylabel,#asl-stage[data-phase="7"] #asl-summarylabel{opacity:1;}
+
+/* Status line + stop row (fade out again once bars start, phase>=6) */
+#asl-status{opacity:0;}
+#asl-stage[data-phase="4"] #asl-status,#asl-stage[data-phase="5"] #asl-status{opacity:1;}
+#asl-stoprow{opacity:0;}
+#asl-stage[data-phase="5"] #asl-stoprow,#asl-stage[data-phase="6"] #asl-stoprow{opacity:1;}
+
+/* Skeleton bars — cascade in with per-bar stagger via transition-delay */
+.asl-bar{
+  opacity:0;transform:translateX(-8px);
+  transition:opacity 0.40s cubic-bezier(0.4,0,0.2,1),transform 0.48s cubic-bezier(0.4,0,0.2,1);
+}
+#asl-stage[data-phase="6"] .asl-bar,#asl-stage[data-phase="7"] .asl-bar{opacity:1;transform:translateX(0);}
+#asl-bar1{transition-delay:0ms;}
+#asl-bar2{transition-delay:90ms;}
+#asl-bar3{transition-delay:180ms;}
+#asl-bar4{transition-delay:270ms;}
+#asl-bar5{transition-delay:360ms;}
+
+/* Shimmer sweep — masked to the bars bounding box */
+#asl-shimmerMask{position:absolute;overflow:hidden;pointer-events:none;}
+#asl-shimmerBand{
+  position:absolute;top:0;left:-40%;width:40%;height:100%;
+  background:linear-gradient(100deg,rgba(255,255,255,0) 0%,rgba(255,255,255,0.55) 50%,rgba(255,255,255,0) 100%);
+  transform:translateX(0);opacity:0;
+}
+#asl-shimmerMask.asl-shimmer-active #asl-shimmerBand{animation:aslShimmerSweep var(--aslShimmerDur) cubic-bezier(0.4,0,0.2,1) 1;}
+@keyframes aslShimmerSweep{
+  0%{opacity:0;transform:translateX(0);}
+  10%{opacity:1;}90%{opacity:1;}
+  100%{opacity:0;transform:translateX(330%);}
+}
+
+/* Feedback bar */
+#asl-feedback{opacity:0;transform:translateY(10px);}
+#asl-stage[data-phase="7"] #asl-feedback{opacity:1;transform:translateY(0);}
+
+/* Loop-out is two sequential steps — phase 8 fades Frame 2/3 content out
+   (Frame 1 stays hidden), then phase 9 fades Frame 1 back in. */
+#asl-stage[data-phase="8"] #asl-bubble,#asl-stage[data-phase="8"] #asl-orbicon,
+#asl-stage[data-phase="8"] #asl-summarylabel,#asl-stage[data-phase="8"] #asl-status,
+#asl-stage[data-phase="8"] #asl-stoprow,#asl-stage[data-phase="8"] .asl-bar,
+#asl-stage[data-phase="8"] #asl-feedback{opacity:0;}
+#asl-stage[data-phase="8"] .asl-bar{transition-delay:0ms;}
+#asl-stage[data-phase="8"] #asl-heading,#asl-stage[data-phase="8"] #asl-aiball,
+#asl-stage[data-phase="8"] #asl-blank2,#asl-stage[data-phase="8"] #asl-blank3,
+#asl-stage[data-phase="8"] #asl-blank4,#asl-stage[data-phase="8"] #asl-prevhealth,
+#asl-stage[data-phase="9"] #asl-heading,#asl-stage[data-phase="9"] #asl-aiball,
+#asl-stage[data-phase="9"] #asl-blank2,#asl-stage[data-phase="9"] #asl-blank3,
+#asl-stage[data-phase="9"] #asl-blank4{opacity:0;}
+#asl-stage[data-phase="9"] #asl-heading,#asl-stage[data-phase="9"] #asl-aiball,
+#asl-stage[data-phase="9"] #asl-blank2,#asl-stage[data-phase="9"] #asl-blank3,
+#asl-stage[data-phase="9"] #asl-blank4,#asl-stage[data-phase="9"] #asl-prevhealth{opacity:1;}
+
+/* Instant reset — disable all transitions/animations for one frame when looping */
+#asl-stage.asl-no-transition,#asl-stage.asl-no-transition *{transition:none !important;animation:none !important;}
+
+#asl-summarylabel{font-weight:700;white-space:nowrap;}
+#asl-status{white-space:normal;}
+#asl-status .asl-ellipsis.asl-pulse{animation:aslEllipsisPulse 0.55s ease-in-out 2;}
+@keyframes aslEllipsisPulse{0%,100%{opacity:1;}50%{opacity:0.25;}}
+#asl-heading{text-align:center;white-space:nowrap;}
+#asl-heading .asl-accent{color:#1777FC;}
+
+@media (prefers-reduced-motion:reduce){
+  #asl-cursor,#asl-shimmerMask{display:none !important;}
+  .asl-layer,.asl-text-el,.asl-bar{transition:opacity 0.4s ease !important;transform:none !important;animation:none !important;}
+  #asl-glow{transform:none !important;filter:none !important;}
 }
 
 /* =====================================================================
@@ -371,24 +543,11 @@ section,.card,.badge,.pager__dot,.impact__block{border-radius:var(--radius-none)
 .lede{font-size:var(--text-body);line-height:var(--leading-body);
   letter-spacing:var(--tracking-body);max-width:80ch;}
 .lede + .lede{margin-top:var(--spacing-20);}
-/* Foundation caption: heading-sm sized, reveals line-by-line (see JS —
-   GSAP SplitText masks each line and slides it up from the bottom,
-   scrubbed to scroll). Re-splits responsively since line breaks change
-   with viewport width. No CSS hidden-state needed: SplitText's own line
-   masks handle it, and the plain heading is the accessible no-JS state. */
-.foundation-caption{max-width:50ch;}
 @media (max-width:760px){
   .h-sm{font-size:34px;letter-spacing:-0.6px;}
   .h-md{font-size:40px;letter-spacing:-0.8px;line-height:1.08;}
   .h-lg{font-size:44px;letter-spacing:-1px;line-height:1.06;}
 }
-
-/* ---------- Research: text block + showcase card gallery ---------- */
-.research__intro{width:100%; text-align:center; margin-bottom:var(--spacing-64);}
-.research__intro .badge{margin-bottom:var(--spacing-30);}
-.research__caption{margin:var(--spacing-20) auto 0;}
-.card-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--spacing-30);}
-@media (max-width:900px){.card-grid{grid-template-columns:1fr;max-width:520px;}}
 
 /* ---------- The insight: badge+headline group, Info Card row ---------- */
 .insight-head{display:flex;flex-direction:column;align-items:center;text-align:center;
@@ -407,25 +566,6 @@ section,.card,.badge,.pager__dot,.impact__block{border-radius:var(--radius-none)
   font-size:var(--text-caption);line-height:var(--leading-caption);letter-spacing:var(--tracking-caption);}
 .info-card__body{color:var(--color-navy);
   font-size:var(--text-body);line-height:var(--leading-body);letter-spacing:var(--tracking-body);}
-
-/* Showcase Card — 3:4 photographic tile, text block pinned bottom */
-.card{
-  position:relative;aspect-ratio:3/4;overflow:hidden;background:#0a0f3d;
-  display:flex;align-items:flex-end;
-}
-.card__img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
-.card__ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
-  color:rgba(255,255,255,0.28);font-size:var(--text-caption);letter-spacing:var(--tracking-caption);
-  text-transform:uppercase;}
-.card__text{
-  position:relative;z-index:2;width:100%;
-  padding:var(--spacing-38) var(--spacing-30) var(--spacing-38);
-  display:flex;flex-direction:column;gap:var(--spacing-10);
-  background:linear-gradient(to top,rgba(0,0,31,0.6) 0%,rgba(0,0,31,0) 100%);
-}
-.card__sub{color:var(--color-white);font-weight:300;
-  font-size:var(--text-subheading);line-height:var(--leading-subheading);letter-spacing:var(--tracking-subheading);}
-.card__text .badge{align-self:flex-start;}
 
 /* ---------- The Landscape: pinned split-headline gallery ----------
    Section pins; the image+caption groups scroll internally on the right.
@@ -512,9 +652,6 @@ section,.card,.badge,.pager__dot,.impact__block{border-radius:var(--radius-none)
 /* ---------- The Challenge: two-column prose block ---------- */
 /* ---------- Primary Content Section organism (image + labeled content, 3-col grid) ---------- */
 .content-organism{display:grid;grid-template-columns:1fr 1.5fr;gap:var(--spacing-108);align-items:stretch;}
-/* #foundation vertically centers its image + copy against each other,
-   instead of the default stretch-to-match-height used elsewhere. */
-#foundation .content-organism{align-items:center;}
 #challenge .content-organism{align-items:center;}
 /* Challenge: even 50/50 split between the video and the content column,
    overriding the default 1fr 1.5fr (image-minority) ratio used elsewhere. */
@@ -551,9 +688,6 @@ section,.card,.badge,.pager__dot,.impact__block{border-radius:var(--radius-none)
 @media (max-width:600px){
   .challenge-visual__callout{transform:scale(.82);}
 }
-/* Foundation image: oversized (10% top offset, 120% height) so the JS
-   parallax drift below never exposes empty edges at top/bottom. */
-#foundation .content-organism__image img{top:-10%;height:120%;}
 .content-organism__ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
   color:rgba(255,255,255,0.28);font-size:var(--text-caption);letter-spacing:var(--tracking-caption);
   text-transform:uppercase;}
@@ -588,31 +722,6 @@ section,.card,.badge,.pager__dot,.impact__block{border-radius:var(--radius-none)
      viewBox to fill the container as a no-JS fallback; the inline script
      rewrites viewBox/points to the real pixel size on load/resize, which
      is what actually keeps the stroke even on every edge. */
-}
-
-/* ---------- Quote organism (center-aligned pull-quote; Light = white surface, navy text) ---------- */
-.quote__inner{
-  display:flex;flex-direction:column;align-items:center;text-align:center;
-  max-width:900px;margin:0 auto;
-}
-.quote__inner .badge{margin-bottom:var(--spacing-36);}
-.quote__mark{
-  font-weight:700;font-size:var(--text-display);line-height:0.6;
-  color:var(--color-blue);margin:0 0 -0.2em 0;
-}
-.quote__headline{
-  font-weight:700;font-size:var(--text-heading);
-  line-height:var(--leading-heading);letter-spacing:var(--tracking-heading);
-  color:var(--color-navy);
-}
-.quote--navy .quote__headline,.quote--navy .quote__caption{color:var(--color-white);}
-.quote__caption{
-  font-style:italic;font-size:var(--text-body);line-height:var(--leading-body);
-  letter-spacing:var(--tracking-body);color:var(--color-navy);
-  margin-top:var(--spacing-20);
-}
-@media (max-width:760px){
-  .quote__headline{font-size:34px;letter-spacing:-0.6px;line-height:1.15;}
 }
 
 /* ---------- Results (fanned card stack) — white/light-blue wash. Cards sit
@@ -863,41 +972,157 @@ section,.card,.badge,.pager__dot,.impact__block{border-radius:var(--radius-none)
   .ai-demo__window{position:static !important;width:100% !important;left:auto !important;top:auto !important;opacity:1 !important;transform:none !important;}
 }
 
-/* ---------- Impact (white) — headline + four horizontal metric rows ----------
-   Each row lays the big number and its caption out side-by-side (vertically
-   centred against each other), with an edge-to-edge hairline dividing every
-   row from the next — the number's fixed column keeps all four captions
-   starting at the same x-position down the list. */
-.impact__headline{max-width:26ch;margin-bottom:var(--spacing-64);}
-.impact-row{
-  position:relative;
-  display:grid;align-items:center;gap:var(--spacing-64);
-  grid-template-columns: 1fr 1fr;
-  padding-block:var(--spacing-108);
+
+/* ---------- Partner (white) — two-col intro: left is the heading only;
+   right column stacks the description above a four-up stat row, so the
+   stats share the same (right-half) column width as the description
+   rather than spanning the full section. Each stat block is divided from
+   its neighbour by a vertical hairline, number above its caption. ---------- */
+.partner__intro{
+  display:grid;grid-template-columns:1fr 1fr;gap:var(--spacing-64);
+  align-items:start;
 }
-/* Divider between rows, plus one above the first row — each breaks out of
-   .section's inline padding to touch both viewport edges, regardless of
-   --page-margin-x. */
-.impact-row:not(:last-child)::after{
-  content:"";position:absolute;left:50%;bottom:0;width:100vw;height:1px;
-  transform:translateX(-50%);background:rgba(0,0,31,0.18);pointer-events:none;
+.partner__heading{color:var(--color-navy);}
+.partner__col{display:flex;flex-direction:column;gap:var(--spacing-64);}
+.partner__desc{color:var(--color-navy);opacity:0.72;}
+.partner-stats{
+  display:grid;grid-template-columns:repeat(4,1fr);
 }
-.impact-row:first-child::before{
-  content:"";position:absolute;left:50%;top:0;width:100vw;height:1px;
-  transform:translateX(-50%);background:rgba(0,0,31,0.18);pointer-events:none;
+.partner-stat{
+  position:relative;display:flex;flex-direction:column;gap:var(--spacing-10);
+  padding-inline:var(--spacing-20);
 }
-.impact-row__num{
-  flex:0 0 auto;width:24vw;font-weight:700;color:var(--color-navy);
-  font-size:var(--text-heading);line-height:1.02;letter-spacing:var(--tracking-heading);
+.partner-stat:first-child{padding-left:0;}
+.partner-stat:last-child{padding-right:0;}
+/* Vertical divider between blocks (not before the first or after the last). */
+.partner-stat:not(:first-child)::before{
+  content:"";position:absolute;left:0;top:0;bottom:0;width:1px;
+  background:rgba(0,0,31,0.18);pointer-events:none;
 }
-.impact-row__cap{
-  flex:1 1 0;max-width:44ch;text-align:left;color:var(--color-navy);
-  font-size:var(--text-body);line-height:var(--leading-body);letter-spacing:var(--tracking-body);opacity:0.72;
+.partner-stat__num{
+  font-weight:700;color:var(--color-navy);
+  font-size:var(--text-subheading);line-height:var(--leading-subheading);
+  letter-spacing:var(--tracking-subheading);
+}
+.partner-stat__cap{
+  color:var(--color-navy);opacity:0.72;
+  font-size:var(--text-body);line-height:var(--leading-body);letter-spacing:var(--tracking-body);
+}
+@media (max-width:900px){
+  .partner__intro{grid-template-columns:1fr;gap:var(--spacing-30);}
+  .partner__col{gap:var(--spacing-30);}
+}
+@media (max-width:520px){
+  .partner-stats{grid-template-columns:repeat(2,1fr);row-gap:var(--spacing-30);}
+  .partner-stat:nth-child(odd){padding-left:0;}
+  .partner-stat:nth-child(even){padding-right:0;}
+  .partner-stat:nth-child(odd)::before{display:none;}
+}
+@media (max-width:400px){
+  .partner-stats{grid-template-columns:1fr;row-gap:var(--spacing-30);}
+  .partner-stat{padding-inline:0;}
+  .partner-stat::before{display:none;}
+}
+
+/* ---------- Problem (white) — a giant, near-invisible "Problem" watermark
+   sits near the top of a full-viewport section, anchored so only its
+   bottom half shows (the rest bleeds off the top edge) — "moved to the
+   top, 50% above" the centered statement below it, set at heading-sm
+   scale. The watermark is purely decorative (aria-hidden, unselectable)
+   and never competes for reading attention at 5% opacity. ---------- */
+.problem{
+  position:relative;height:100vh;
+  display:flex;align-items:center;justify-content:center;
+  overflow:hidden;
+}
+.problem__bg{
+  position:absolute;top:40vh;left:50%;transform:translate(-50%,-50%);
+  font-weight:700;font-size:160px; /* scaled well past --text-display (100px) —
+    a decorative, aria-hidden watermark rather than a type-scale label, so it
+    takes its own oversized ad-hoc size (min. 124px) instead of a token. */
+  line-height:var(--leading-display);
+  letter-spacing:-4px;color:var(--color-navy);opacity:0.05;
+  white-space:nowrap;pointer-events:none;user-select:none;z-index:0;
+}
+.problem__text{
+  position:relative;z-index:1;max-width:40ch;margin:0 auto;
+  text-align:center;color:var(--color-navy); /* solid-navy no-JS fallback —
+    JS pins the section and scrubs each split word from pale grey up to
+    this same navy, word by word, so the sentence is never lost if
+    GSAP/SplitText fails to load. */
+}
+@media (max-width:900px){
+  .problem__bg{font-size:96px;letter-spacing:-2.4px;}
 }
 @media (max-width:760px){
-  .impact-row{flex-direction:column;align-items:flex-start;gap:var(--spacing-15);padding-block:var(--spacing-30);}
-  .impact-row__num{width:auto;font-size:48px;letter-spacing:-1.18px;}
-  .impact-row__cap{text-align:left;max-width:none;}
+  .problem__bg{font-size:64px;letter-spacing:-1.6px;}
+}
+
+/* ---------- Barriers (white) — two-column grid: a subheading + quote
+   card on the left, a square image slot on the right. --------- */
+.barriers__grid{
+  /* Even 1fr/1fr split — content and image share the row equally. The
+     image itself is capped below (see .barriers__img-frame's max-width)
+     rather than the column ratio being skewed, so it doesn't balloon to match
+     the full half-width column (aspect-ratio:1/1 at that width would
+     tower well past the text+card content's own height). */
+  display:grid;grid-template-columns:1fr 1fr;align-items:center;
+  gap:var(--spacing-64);
+}
+.barriers__col{display:flex;flex-direction:column;gap:var(--spacing-36);}
+.barriers__subheading{
+  font-weight:600;font-size:var(--text-subheading);
+  line-height:var(--leading-subheading);letter-spacing:var(--tracking-subheading);
+  color:var(--color-navy);max-width:44ch;
+}
+/* Quote card: bright-blue solid fill at 20% opacity, 16px rounded corners.
+   This is a deliberate, spec-called-out exception to the system-wide
+   sharp-corner default (DESIGN.md: "no border-radius... only deviate
+   where a component's spec explicitly calls out an exception") — flagged
+   here rather than silently applied. Sizes to its own content only (no
+   fixed/min height), so it always wraps tightly around the quote mark +
+   text with just its own padding on every side. */
+.quote-card{
+  background:rgba(23,119,252,0.2); /* --color-blue (#1777FC) at 20% opacity */
+  border-radius:16px;
+  padding:var(--spacing-30);
+  display:flex;align-items:center;gap:var(--spacing-20);
+}
+.quote-card__mark{
+  font-weight:700;font-size:80px;line-height:1;color:var(--color-navy);
+  flex-shrink:0;
+}
+.quote-card__text{
+  font-size:var(--text-body);line-height:var(--leading-body);
+  letter-spacing:var(--tracking-body);color:var(--color-navy);
+}
+.quote-card__text strong{font-weight:700;}
+/* Frame carries the sizing (square, capped width, no border-radius) and
+   clips the oversized image inside it; the image itself is what drifts
+   (see JS — same oversized-image + yPercent-drift parallax technique as
+   the Landscape section's per-image parallax). */
+.barriers__img-frame{
+  position:relative;overflow:hidden;
+  width:100%;max-width:40vw; /* caps the square well short of the full
+    half-width column, so it stays in scale with the text+card content
+    next to it instead of ballooning to match the column's own width */
+  aspect-ratio:1/1; /* square, no border-radius, per the
+    system-wide sharp-corner default */
+  justify-self:end; /* flush with the section's right inset, matching the
+    right-column media convention used elsewhere in the system */
+}
+.barriers__img{
+  position:absolute;left:0;top:-10%;width:100%;height:120%;object-fit:cover;
+  /* oversized + recentred so the scroll-driven parallax drift (JS) never
+     exposes empty edges */
+}
+@media (max-width:900px){
+  .barriers__img-frame{max-width:none;justify-self:stretch;} /* full-width
+    square once the grid stacks to a single column below */
+  .barriers__grid{grid-template-columns:1fr;gap:var(--spacing-36);}
+}
+@media (max-width:760px){
+  .barriers__subheading{font-size:24px;}
 }
 
 /* ---------- Closing section (dark navy full-bleed video bg, centered) ---------- */
@@ -936,6 +1161,318 @@ section,.card,.badge,.pager__dot,.impact__block{border-radius:var(--radius-none)
 .footer img{height:20px;width:auto;}
 .footer__meta{font-size:var(--text-caption);letter-spacing:var(--tracking-caption);
   text-transform:uppercase;opacity:0.6;}
+
+/* =====================================================================
+   IMPACTS v2 (team build, ported verbatim from projects/impacts-v2/)
+   A scroll-driven reworking of the "Impact" section. Shares this page's
+   fonts + `:root` tokens (all matched byte-for-byte, so nothing here
+   redeclares them) — only the section's own derived tints (--ink-*,
+   --divider, added to :root above) and layout rules are new.
+
+   Now three pieces rather than one continuous pinned stage:
+     Stage A (pinned)      → heading is already revealed (solid navy) the
+                              moment it scrolls in, then blurs/fades out
+                              word by word as the scrub continues.
+     Partnership lede      → NOT pinned — plain scroll-through content;
+                              its words scrub from pale grey to navy as
+                              it passes through the viewport.
+     Stage BC (pinned)     → impact rows slide in one at a time, then the
+                              dark navy callouts fan out + typing lede.
+
+   NOTE — the team's original build also had a line-draw + falling-dots
+   "rail" animation ahead of the heading, and typed the heading in char by
+   char rather than starting it revealed; both removed per request (the
+   rail's ad-hoc colour, #D8E9FB, wasn't in DESIGN.md's palette either).
+   One brand-spec deviation remains, carried over as-is and flagged rather
+   than silently kept: the callout cards use `border-radius:14px` + a drop
+   shadow, where DESIGN.md's system-wide default is sharp corners and no
+   elevation.
+   ===================================================================== */
+/* Scoped tint — NOT applied to <body>, unlike the standalone prototype, so
+   the rest of the page keeps its normal white surface. The top edge fades
+   in FROM white over the first 400px rather than cutting straight to the
+   tint, so the seam against the (pure white) Barriers section above never
+   reads as a hard colour break. */
+.impacts-v2-wrap{background:linear-gradient(180deg,#FFFFFF 0,#FBFCFF 400px);}
+
+/* .stage/.scene/.is-animated below are Stage A's own pin-and-crossfade
+   mechanics ONLY now — Scene B and Scene C used to share this system too
+   (absolutely stacked, sliding via yPercent), but that's what caused the
+   overlap bug reported: Scene B's content ran taller than the fixed
+   100vh box a .scene is forced into (inset:0, so the crossfade's yPercent
+   maths lines up), and the overflow spilled out past its own bottom edge
+   into Scene C's area below it. Scene B and Scene C are now independent,
+   normal-flow sections (see their own rules further down) — neither uses
+   .scene/.stage any more. */
+.stage{position:relative;}
+.stage.is-animated{height:100vh;overflow:hidden;}
+.stage.is-animated .scene{position:absolute;inset:0;}
+
+.scene{
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  padding:0 var(--page-margin-x);
+}
+
+/* ---------- Gradient backdrop, shared across Stage A → Partnership lede
+   → Business Impact ----------
+   .ab-field-wrap is a plain block wrapping all three (no fixed height of
+   its own — it simply sizes to their combined content), giving .ab-field
+   one continuous background to paint across, rather than being confined
+   to Business Impact's own box. None of the sections inside need
+   z-index — .ab-field is first in the DOM, so normal stacking order
+   already paints it behind them. overflow:hidden on the wrap clips the
+   oversized, moving/rotating field below so it never exposes an edge. */
+.ab-field-wrap{position:relative;overflow:hidden;}
+/* Oversized (130%, inset by -15% on every side) and given room to drift +
+   rotate (see JS — a scroll-scrubbed move/rotate tied to this same wrap)
+   without ever revealing a hard edge or an empty corner as it moves. */
+.ab-field{
+  position:absolute;top:-15%;left:-15%;width:130%;height:130%;
+  z-index:0;pointer-events:none;
+  background:radial-gradient(58% 31% at 100% 50%, rgba(23,119,252,0.24) 0%, rgba(23,119,252,0) 68%);
+  will-change:transform;
+}
+
+/* ---------- Scene A — heading only ---------- */
+.sceneA{align-items:center;text-align:center;}
+
+.sceneA__body{position:relative;max-width:1100px;margin:0 auto;}
+
+/* Already revealed (solid navy) the moment it scrolls in — no incoming
+   fill animation. JS then scrubs each split word from this same navy up
+   to blurred/transparent as the pin's scroll range continues, i.e. an
+   "unreveal" rather than a reveal. */
+.headingA{
+  font-weight:var(--font-weight-display);
+  font-size:var(--text-heading);
+  line-height:var(--leading-heading);
+  letter-spacing:var(--tracking-heading);
+  color:var(--color-navy);
+  max-width:60ch;
+  margin:0 auto;
+}
+@media (max-width:760px){
+  .headingA{font-size:40px;letter-spacing:-0.8px;line-height:1.08;}
+}
+
+/* ---------- Partnership lede ----------
+   A plain, unpinned section — scrolls through like any other. Its words
+   reveal one at a time from pale grey to navy as the section passes
+   through the viewport (see JS — a wider scrub range + a bigger gap
+   between each word's own transition than the Problem section uses, so
+   each word visibly steps into navy in turn rather than the whole line
+   reading as one soft, blended fade). Set at the brand's --text-display
+   scale (100px/700) per request, a step up from the --text-heading scale
+   used by the heading above. */
+.partnership-lede{
+  min-height: 100vh;
+  padding:clamp(96px,14vh,180px) var(--page-margin-x);
+  display:flex;align-items:center;justify-content:center;
+}
+.partnership-lede__text{
+  max-width:70vw;margin:0 auto;text-align:center;
+  font-weight:var(--font-weight-display);font-size:var(--text-display);
+  line-height:var(--leading-display);letter-spacing:var(--tracking-display);
+  color:var(--color-navy); /* solid-navy no-JS fallback */
+}
+@media (max-width:900px){
+  .partnership-lede__text{font-size:64px;letter-spacing:-1.25px;line-height:1.14;}
+}
+@media (max-width:760px){
+  .partnership-lede__text{font-size:40px;letter-spacing:-0.8px;line-height:1.08;}
+}
+
+/* ---------- Business Impact (Scene B) — "impacts slide in" ----------
+   A plain, NON-PINNED section — normal scroll flow, not the .scene/.stage
+   pinned-crossfade system used elsewhere on this page. Top-aligned with
+   generous clearance; content spreads the full browser width (page
+   margins only, via its own padding rather than inheriting .scene's). */
+.sceneB{
+  position:relative;
+  min-height:100vh;
+  display:flex;flex-direction:column;
+  align-items:flex-start;justify-content:flex-start;
+  padding:clamp(72px,9vh,124px) var(--page-margin-x) clamp(64px,9vh,124px);
+  overflow:hidden; /* contains the .ab-field bloom + each row's slide-in */
+  /* No own background fill — the .ab-field behind provides the bloom. */
+}
+.sceneB__inner{position:relative;z-index:1;width:100%;max-width:none;margin:0;}
+
+/* Two-column intro row — its own block, separate from the .impact-list
+   numbering rows below it (not visually grouped with them, just stacked
+   above). Heading and paragraph split the full row 1fr/1fr, rather than
+   a fixed-width label + a max-width-capped paragraph, so the pair fills
+   the row edge-to-edge instead of leaving dead space on the right. */
+.introB-row{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  align-items:baseline;
+  gap:clamp(24px,4vw,80px);
+  margin-bottom:48px; /* viewport-relative, not a fixed
+    64px — see .impact-item's comment: fixed spacing here was part of
+    what pushed Scene B's total content past 100vh. */
+}
+.introB-row__heading{
+  font-weight:var(--font-weight-display);
+  font-size:var(--text-heading-sm);
+  line-height:var(--leading-heading-sm);
+  letter-spacing:var(--tracking-heading-sm);
+  color:var(--color-navy);
+}
+.introB{
+  font-size:clamp(15px,1.5vw,17px);
+  line-height:1.62;
+  color:var(--ink-muted);
+}
+.introB strong{color:var(--color-navy);font-weight:600;}
+
+.impact-list{position:relative;}
+.impact-item{
+  min-height: 20vh;
+  position:relative;
+  padding:48px 0; /* viewport-relative, not a fixed 48px —
+    with 4 rows plus the intro row above them, a fixed padding was tall
+    enough to push the whole section past 100vh on common viewport
+    heights, which is what caused the Scene B/C overlap bug above. */
+  overflow:hidden;            /* keep the slide-in tucked off the right edge */
+}
+/* Divider rules are their OWN elements so they can draw in from the right
+   alongside their row — nothing shows by default in the animated view
+   (JS starts them at scaleX:0). In the static fallback they read full. */
+.impact-rule{
+  position:absolute;left:0;right:0;top:0;height:1px;
+  background:var(--divider);
+  transform-origin:right center;
+}
+.impact-rule--end{top:auto;bottom:0;}
+.impact-item__inner{
+  display:flex;
+  align-items:center;
+  gap:clamp(24px,4vw,80px);
+}
+.impact-item__num{
+  flex:0 0 auto;
+  width:clamp(160px,26vw,340px);
+  font-weight:var(--font-weight-display);
+  font-size:clamp(36px,5.2vw,70px);
+  line-height:1.02;
+  letter-spacing:var(--tracking-heading);
+  color:var(--color-navy);
+}
+.impact-item__cap{
+  flex:1 1 auto;
+  max-width:56ch;
+  font-size:clamp(15px,1.45vw,18px);
+  line-height:1.5;
+  color:var(--ink-cap);
+}
+
+/* ---------- Scene C — "When the data connects, the time comes back" ----------
+   Same two-phase technique as the Film section near the top of this
+   page: Phase 1 (no pin) grows .sceneC__growbox from a smaller, centred
+   navy card up to full-bleed (100vw/100vh) tied to the section's own
+   natural scroll entrance; Phase 2 pins once that's done, so the callout
+   cards can fan out and the lede can type. Scene C itself is a plain,
+   fixed-height (100vh) normal-flow section — like Film's own section,
+   it doesn't move; only the box inside it grows. Inside the growing
+   box, a centred column: headline → 4 cards → typing lede. */
+.sceneC{
+  position:relative;z-index:2;width:100%;height:100vh;height:100svh;
+  overflow:hidden;
+  display:flex;align-items:center;justify-content:center;text-align:center;
+  background:transparent; /* the navy fill lives on .sceneC__growbox below,
+    which is the element that actually grows */
+}
+.sceneC__growbox{
+  position:relative;width:84vw;height:70vh;overflow:hidden;
+  background:var(--surface-navy);
+  display:flex;align-items:center;justify-content:center;
+  padding:0 var(--page-margin-x);
+  /* JS grows width to 100vw and height to 100vh as Scene C scrolls into
+     view (no pin yet — Phase 1); this boxed size is also the no-JS/
+     reduced-motion static fallback. */
+}
+.sceneC__inner{
+  width:100%;max-width:1120px;margin:0 auto;
+  display:flex;flex-direction:column;align-items:center;
+  gap:clamp(30px,6vh,76px);
+}
+.sceneC__headline{
+  font-weight:var(--font-weight-display);
+  font-size:48px;
+  line-height:56px;
+  letter-spacing:var(--tracking-heading);
+}
+.hl-line{display:block;}
+.hl-line--1{color:var(--color-white);}
+.hl-line--2{color:var(--color-blue);margin-top:clamp(8px,1.6vh,20px);}
+
+/* ---------- Scene C callout cards ----------
+   Final state = a centred single row, side by side (readable). The cards
+   start stacked at centre and FAN OUT into this row on scroll (JS). */
+.callouts{
+  position:relative;   /* offset parent for the cards, so the fan maths centre correctly */
+  width:100%;
+  display:flex;justify-content:center;gap:clamp(14px,1.4vw,26px);
+  align-items:stretch;
+}
+.callout{
+  flex:1 1 0;min-width:0;max-width:250px;
+  background:var(--color-white);
+  border-radius:14px;
+  padding:clamp(15px,1.3vw,20px);
+  box-shadow:0 24px 50px -22px rgba(0,0,25,0.7);
+  text-align:left;
+  display:flex;flex-direction:column;gap:clamp(18px,2.6vh,30px);
+  will-change:transform;
+}
+.callout__icon{width:20px;height:20px;color:var(--color-navy);opacity:0.72;}
+.callout__icon svg{width:100%;height:100%;display:block;}
+.callout__text{font-size:clamp(12px,0.92vw,14px);line-height:1.42;color:var(--ink-cap);}
+.callout__text strong{color:var(--color-navy);font-weight:600;}
+
+/* Typing lede — white by default (accessible / no-JS); in the animated path
+   JS sets the characters faint and fills them to white on scroll, exactly
+   like the opening "Together, we built the foundations…" heading. */
+.sceneC__lede{
+  max-width:min(760px,88vw);
+  font-weight:var(--font-weight-display);
+  font-size:40px;
+  line-height:1.3;
+  letter-spacing:var(--tracking-heading);
+  color:var(--color-white);
+}
+
+@media (max-width:820px){
+  .callouts{flex-wrap:wrap;}
+  .callout{flex:1 1 44%;}
+}
+
+/* ---------- Tail scroll room so the pin has somewhere to release ----------
+   Navy, so it continues seamlessly out of Scene C's dark panel. */
+.after{
+  min-height:52vh;
+  display:flex;align-items:center;justify-content:center;
+  padding:0 var(--page-margin-x);
+  background:var(--surface-navy);
+}
+.after__note{
+  font-size:var(--text-caption);
+  letter-spacing:var(--tracking-caption);
+  text-transform:uppercase;
+  color:rgba(255,255,255,0.32);
+}
+
+
+@media (max-width:720px){
+  .impact-item__inner{flex-direction:column;gap:8px;align-items:flex-start;}
+  .impact-item__num{width:auto;}
+  .introB-row{grid-template-columns:1fr;gap:12px;align-items:flex-start;}
+  .introB-row__heading{font-size:34px;letter-spacing:-0.6px;}
+}
 </style>
 </head>
 
@@ -950,7 +1487,6 @@ section,.card,.badge,.pager__dot,.impact__block{border-radius:var(--radius-none)
   </a>
   <ul class="nav__links">
     <li><a class="nav__link" href="#top">Building the foundation</a></li>
-    <li><a class="nav__link" href="#research">Our research</a></li>
     <li><a class="nav__link" href="#landscape">The landscape</a></li>
     <li><a class="nav__link" href="#challenge">The challenge</a></li>
   </ul>
@@ -966,90 +1502,243 @@ section,.card,.badge,.pager__dot,.impact__block{border-radius:var(--radius-none)
   <div class="hero__text">
     <div class="hero__text-inner">
       <div class="hero__badges">
-        <span class="badge badge--navy">Case study</span>
-        <span class="badge badge--navy">Digital health transformation</span>
+        <span class="badge badge--navy">CASE STUDY - HEALTH CARE</span>
       </div>
-      <h1 class="hero__headline">Leading healthcare solutions provider</h1>
+      <h1 class="hero__headline">Unifying data into insight for better patient outcomes</h1>
     </div>
   </div>
 </header>
 
-<!-- ===================== FILM (pinned video reveal + scrub headline) ===================== -->
+<!-- ===================== FILM (pinned video reveal + AI Patient Summaries card) ===================== -->
 <section class="film" id="film" data-nav="dark">
   <div class="film__video-wrap">
     <video class="film__video" src="assets/vid/healthcare.mov" autoplay muted loop playsinline aria-hidden="true"></video>
     <div class="film__scrim" aria-hidden="true"></div>
   </div>
-  <h2 class="film__headline">We built the foundations of connected healthcare with our partner</h2>
-</section>
 
-<!-- ===================== SECTION — BUILDING THE FOUNDATIONS (white, notch-framed image) ===================== -->
-<section class="section section--white pad-y" id="foundation" data-nav="light">
-  <!-- No .reveal class here (unlike other content-organism blocks): the
-       image and caption already have their own bespoke scroll-synced
-       motion (parallax, line-split scrub — see CSS/JS). Layering the
-       generic IntersectionObserver-driven .reveal fade on top of those
-       double-hides them — the wrapper sits at opacity:0 until its own
-       (separately timed) threshold fires, by which point the scrub
-       effects have already progressed against the real scroll position,
-       so they "pop" to a partially-revealed state the instant the
-       wrapper's fade finally triggers instead of appearing gradually. -->
-  <div class="content-organism">
-    <div class="content-organism__image notch-frame">
-      <img src="assets/img/foundation.png" alt="" onerror="this.style.display='none'">
+  <!-- White card floating on top of the video — houses the AI Summary
+       Loop product demo (supplied design, ported as-is; see the scoped
+       .asl-* CSS above and the "AI Summary Loop" JS block below). -->
+  <div class="film__card">
+    <div class="asl-stage" id="asl-stage" data-phase="0">
+
+      <!-- Layers — back to front, matching the source stacking order -->
+      <img id="asl-blank2" class="asl-layer" src="assets/img/ai-summary-loop/l-blank2.png" alt="">
+      <img id="asl-blank3" class="asl-layer" src="assets/img/ai-summary-loop/l-blank3.png" alt="">
+      <img id="asl-blank4" class="asl-layer" src="assets/img/ai-summary-loop/l-blank4.png" alt="">
+      <img id="asl-prevhealth" class="asl-layer" src="assets/img/ai-summary-loop/l-prevhealth.png" alt="">
+      <img id="asl-glow" class="asl-layer" src="assets/img/ai-summary-loop/l-glow.png" alt="">
+      <img id="asl-aiball" class="asl-layer" src="assets/img/ai-summary-loop/l-aiball.png" alt="">
+
+      <div id="asl-heading" class="asl-text-el"><span class="asl-main">Tell me </span><span class="asl-accent">about&hellip;</span></div>
+
+      <img id="asl-bubble" class="asl-layer" src="assets/img/ai-summary-loop/l-bubble.png" alt="">
+
+      <img id="asl-orbicon" class="asl-layer" src="assets/img/ai-summary-loop/l-orbicon.png" alt="">
+      <div id="asl-summarylabel" class="asl-text-el">AI Summary</div>
+
+      <img id="asl-bar1" class="asl-layer asl-bar" src="assets/img/ai-summary-loop/l-bar1.png" alt="">
+      <img id="asl-bar2" class="asl-layer asl-bar" src="assets/img/ai-summary-loop/l-bar2.png" alt="">
+      <img id="asl-bar3" class="asl-layer asl-bar" src="assets/img/ai-summary-loop/l-bar3.png" alt="">
+      <img id="asl-bar4" class="asl-layer asl-bar" src="assets/img/ai-summary-loop/l-bar4.png" alt="">
+      <img id="asl-bar5" class="asl-layer asl-bar" src="assets/img/ai-summary-loop/l-bar5.png" alt="">
+      <div id="asl-shimmerMask">
+        <div id="asl-shimmerBand"></div>
+      </div>
+
+      <img id="asl-feedback" class="asl-layer" src="assets/img/ai-summary-loop/l-feedback.png" alt="">
+
+      <div id="asl-status" class="asl-text-el"><span class="asl-statusMain"></span><span class="asl-ellipsis">&hellip;</span></div>
+      <img id="asl-stoprow" class="asl-layer" src="assets/img/ai-summary-loop/l-stoprow.png" alt="">
+
+      <div id="asl-cursor" class="asl-layer">
+        <img id="asl-cursor-img" src="assets/img/ai-summary-loop/l-cursor-img.png" alt="">
+      </div>
+
+      <!-- Persistent header — always visible, never fades -->
+      <img id="asl-topcallout" class="asl-layer" src="assets/img/ai-summary-loop/l-topcallout.png" alt="" style="opacity:1;">
+
     </div>
-    <div class="content-organism__body">
-      <h3 class="h-sm foundation-caption">We connected health customers, data, systems, and workflows, removing friction and accelerating digital transformation to deliver better patient outcomes in aged care through product innovation, AI, data, compliance, and new ways of working.</h3>
+  </div>
+</section>
+
+<!-- ===================== SECTION — OUR PARTNER (white, two-col intro + four-stat row) ===================== -->
+<section class="section section--white pad-y partner" id="partner" data-nav="light">
+  <div class="partner__intro reveal">
+    <h2 class="h-sm partner__heading">Our partner in care</h2>
+    <div class="partner__col">
+      <p class="lede partner__desc">This digital health solutions provider sits on one of Australia&rsquo;s largest health data footprints. Together, we bring product, AI, innovation, data and compliance into one way of working.</p>
+      <div class="partner-stats">
+        <div class="partner-stat">
+          <p class="partner-stat__num">20+</p>
+          <p class="partner-stat__cap">digital products</p>
+        </div>
+        <div class="partner-stat">
+          <p class="partner-stat__num">16m</p>
+          <p class="partner-stat__cap">population records</p>
+        </div>
+        <div class="partner-stat">
+          <p class="partner-stat__num">100m</p>
+          <p class="partner-stat__cap">clinical billing &amp; hospital claim transactions</p>
+        </div>
+        <div class="partner-stat">
+          <p class="partner-stat__num">60k+</p>
+          <p class="partner-stat__cap">residential aged care beds</p>
+        </div>
+      </div>
     </div>
   </div>
 </section>
 
-<!-- ===================== SECTION 1 — OUR RESEARCH (white) ===================== -->
-<section class="section section--white pad-y" id="research" data-nav="light">
-  <div class="research__intro reveal">
-    <span class="badge badge--navy">Our research</span>
-    <h2 class="h-sm">The quest for <span class="kw">connection</span> and <span class="kw">interoperability</span> in an evolving landscape</h2>
-    <p class="lede research__caption">These days, it's not just a one hit service.</p>
-  </div>
-  <div class="card-grid stagger reveal">
-    <article class="card pressable">
-      <img class="card__img" src="assets/img/home-care.png" alt="" onerror="this.style.display='none'">
-      <div class="card__text">
-        <span class="badge badge--navy">Home &amp; Connected care</span>
-        <p class="card__sub">Connected, personalised care at home</p>
+<!-- ===================== SECTION — PROBLEM (white, oversized watermark word behind a centered statement) ===================== -->
+<section class="section section--white pad-y problem" id="problem" data-nav="light">
+  <span class="problem__bg" aria-hidden="true">Problem</span>
+  <!-- No .reveal class: this statement manages its own pinned,
+       word-by-word colour-scrub reveal (see JS — GSAP SplitText), same
+       pin-then-release technique as the film headline above. -->
+  <p class="h-sm problem__text">However, underlying clinical records, billing claims and resident data historically operated in isolated tech stacks without a unified, cross-platform data layer.</p>
+</section>
+
+<!-- ===================== SECTION — BARRIERS (white, two-column: subheading + quote card / square image) ===================== -->
+<section class="section section--white pad-y barriers" id="barriers" data-nav="light">
+  <div class="barriers__grid blur-reveal">
+    <div class="barriers__col">
+      <p class="barriers__subheading">This data siloing creates critical barriers for how data is used and care gets delivered and for Healthcare workers, this limits their ability to make connected insights for proactive care.</p>
+      <div class="quote-card">
+        <p class="quote-card__mark" aria-hidden="true">&ldquo;</p>
+        <p class="quote-card__text">Healthcare workers are racing between residents, managing clinical tasks while documenting clinical notes&hellip;<br><strong>20% of a shift can be lost to paperwork.</strong></p>
       </div>
-    </article>
-    <article class="card pressable">
-      <img class="card__img" src="assets/img/AI-value.png" alt="" onerror="this.style.display='none'">
-      <div class="card__text">
-        <span class="badge badge--navy">AI value</span>
-        <p class="card__sub">AI: from hype to targeted, operational value</p>
-      </div>
-    </article>
-    <article class="card pressable">
-      <img class="card__img" src="assets/img/governance.png" alt="" onerror="this.style.display='none'">
-      <div class="card__text">
-        <span class="badge badge--navy">Governance &amp; Trust</span>
-        <p class="card__sub">From technology to governance, trust and adoption</p>
-      </div>
-    </article>
+    </div>
+    <div class="barriers__img-frame">
+      <img class="barriers__img" src="assets/img/healthcare.png" alt="Healthcare worker reviewing resident records">
+    </div>
   </div>
 </section>
 
-<!-- ===================== SECTION — QUOTE (white, Quote organism, Light) ===================== -->
-<section class="section section--white pad-y quote" id="quote-research" data-nav="light">
-  <div class="quote__inner reveal">
-    <span class="badge badge--navy">Our research</span>
-    <p class="quote__mark" aria-hidden="true">&ldquo;</p>
-    <!-- No CSS hidden-state needed: SplitText's own line masks handle it
-         (see JS), and the plain heading is the accessible no-JS state. Only
-         transform (yPercent) is animated here — never opacity — so it layers
-         cleanly under the parent .quote__inner's own .reveal fade instead of
-         double-hiding on the same property. -->
-    <h2 class="quote__headline">Staff surveyed using up to 10 disparate IT systems in a single shift</h2>
-    <p class="quote__caption">Cognizant | ServiceNow: Every minute matters</p>
+<!-- ===================== SECTION — IMPACTS v2 (team build, ported from projects/impacts-v2/) =====================
+     Stage A (heading only, pinned — already revealed the moment it scrolls
+     in, then blurs/fades out as the scrub continues) → the Partnership
+     lede (a plain, non-pinned section, its words scrubbing from pale grey
+     to navy as it passes through) → Business Impact (a plain, NON-PINNED
+     section — each impact row slides in from the right on its own, as it
+     individually scrolls into view, not on a shared pinned timeline) →
+     Scene C (grows from a smaller boxed navy card to full-bleed as it
+     scrolls in — no pin yet — then pins once fully grown so the callout
+     cards can fan out + the lede can type; same two-phase technique as
+     the Film section near the top of this page), then a navy tail so
+     that pin has room to release. See the JS below (its own self-
+     contained script block) for the timelines. ===================== -->
+<div class="impacts-v2-wrap">
+
+  <!-- Shared backdrop: the .ab-field blue bloom now spans continuously
+       behind Stage A, the Partnership lede, AND Business Impact — one
+       continuous background across all three, rather than being confined
+       to Business Impact's own box. Positioned first so it paints behind
+       everything that follows inside this wrap (normal DOM-order
+       stacking; no z-index needed on the sections themselves). -->
+  <div class="ab-field-wrap">
+    <div class="ab-field" id="abField" aria-hidden="true"></div>
+
+    <!-- Stage A — heading only. Pinned just long enough to scrub the
+         already-visible heading out to blurred/transparent. -->
+    <div class="stage" id="stageA">
+      <section class="scene sceneA" id="sceneA" aria-label="Together, we built the foundations" data-nav="light">
+        <div class="sceneA__body">
+          <h2 class="headingA" id="headingA">Together, we built the foundations <br>for a connected, data-driven future</h2>
+        </div>
+      </section>
+    </div>
+
+    <!-- Partnership lede — NOT pinned; scrolls through like any normal
+         section. Its words scrub from pale grey to navy as the section
+         passes through the viewport (same colour-scrub technique as the
+         Problem section earlier on this page, minus the pin). -->
+    <section class="partnership-lede" id="partnershipLede" data-nav="light">
+      <p class="partnership-lede__text" id="partnershipLedeText">Our partnership set out to enhance the healthcare worker experience through better data utilisation and timelier care intervention to drive better patient outcomes.</p>
+    </section>
+
+    <!-- Business Impact — NOT pinned; a plain scroll-through section. Each
+         impact row slides in from the right on its own scroll trigger as
+         it individually enters view (see JS), rather than all four being
+         driven by one shared pinned timeline. -->
+    <section class="sceneB" id="sceneB" aria-label="The impact" data-nav="light">
+      <div class="sceneB__inner">
+      <div class="introB-row">
+        <h3 class="introB-row__heading">Business Impact</h3>
+        <p class="introB" id="introB">Starting at the core of the problem — we architected a secure, single data platform which allowed us to innovate and test at scale. <strong>The results showed clear growth opportunities for AI-generated clinical summaries</strong> to support wider business initiatives and customer value.</p>
+      </div>
+
+      <div class="impact-list">
+        <div class="impact-item">
+          <span class="impact-rule" aria-hidden="true"></span>
+          <div class="impact-item__inner">
+            <p class="impact-item__num">$2.5m</p>
+            <p class="impact-item__cap">Estimated year one opportunity identified through the Snowflake proof of concept</p>
+          </div>
+        </div>
+        <div class="impact-item">
+          <span class="impact-rule" aria-hidden="true"></span>
+          <div class="impact-item__inner">
+            <p class="impact-item__num">&lt;10s</p>
+            <p class="impact-item__cap">To generate clinical summaries using agentic AI orchestration</p>
+          </div>
+        </div>
+        <div class="impact-item">
+          <span class="impact-rule" aria-hidden="true"></span>
+          <div class="impact-item__inner">
+            <p class="impact-item__num">Multiple products</p>
+            <p class="impact-item__cap">Data unified across the organisation&rsquo;s product ecosystem in a single proof of concept</p>
+          </div>
+        </div>
+        <div class="impact-item">
+          <span class="impact-rule" aria-hidden="true"></span>
+          <div class="impact-item__inner">
+            <p class="impact-item__num">2 hours saved</p>
+            <p class="impact-item__cap">on daily documentation review, problems caught earlier before they escalate, and time given back to healthcare workers</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    </section>
   </div>
-</section>
+  <!-- /.ab-field-wrap -->
+
+  <!-- Scene C — the navy "When the data connects, the time comes back" frame:
+       headline (top), 4 callout cards (fan out from centre on scroll), and a
+       typing lede below. Two-phase, same technique as the Film section:
+       Phase 1 (no pin) grows .sceneC__growbox from a smaller boxed card to
+       full-bleed as the section scrolls in; Phase 2 (pin, once fully grown)
+       fans the cards out and types the lede. -->
+  <section class="sceneC" id="sceneC" aria-label="When the data connects, the time comes back" data-nav="dark">
+    <div class="sceneC__growbox" id="sceneCGrowbox">
+      <div class="sceneC__inner">
+        <h2 class="sceneC__headline">
+          <span class="hl-line hl-line--1">When the data connects,</span>
+          <span class="hl-line hl-line--2">the time comes back</span>
+        </h2>
+        <div class="callouts" id="callouts">
+          <article class="callout">
+            <span class="callout__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg></span>
+            <p class="callout__text"><strong>Family contacted.</strong> Daughter expressed concern regarding pain management</p>
+          </article>
+          <article class="callout">
+            <span class="callout__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h13a2 2 0 0 1 2 2z"/></svg></span>
+            <p class="callout__text"><strong>Appetite reduced.</strong> Diet changed to soft diet</p>
+          </article>
+          <article class="callout">
+            <span class="callout__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M12 11v5M9.5 13.5h5"/></svg></span>
+            <p class="callout__text"><strong>Minor fall incident</strong> on 4 August; no injury, but fall risk increased</p>
+          </article>
+          <article class="callout">
+            <span class="callout__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="8" rx="4"/><path d="M12 8v8"/></svg></span>
+            <p class="callout__text"><strong>Medication updates</strong> in the last 72 hours</p>
+          </article>
+        </div>
+        <p class="sceneC__lede" id="sceneCLede">But it&rsquo;s more than a time saver, <br>it&rsquo;s a shift in how care gets delivered.</p>
+      </div>
+    </div>
+  </section>
+</div>
 
 <!-- ===================== SECTION 2 — THE LANDSCAPE (pinned split-headline gallery) ===================== -->
 <section class="landscape" id="landscape" data-nav="light">
@@ -1211,32 +1900,6 @@ section,.card,.badge,.pager__dot,.impact__block{border-radius:var(--radius-none)
   </div>
 </section>
 
-<!-- ===================== SECTION 4 — THE IMPACT (white, horizontal metric rows) ===================== -->
-<section class="section section--white pad-y" id="impact" data-nav="light">
-  <!-- No .reveal class: this headline manages its own word-by-word,
-       blur-to-clear scroll reveal (see JS — GSAP SplitText), so the plain
-       heading below is simply the accessible no-JS fallback state. -->
-  <h2 class="h-md impact__headline">Numbers rarely tell the whole story. But these are worth <span class="kw">pausing on</span>.</h2>
-  <div class="impact-rows">
-    <div class="impact-row">
-      <p class="impact-row__num">$2.5M</p>
-      <p class="impact-row__cap">Estimated year one opportunity identified through the Snowflake proof of concept</p>
-    </div>
-    <div class="impact-row">
-      <p class="impact-row__num">&lt;10s</p>
-      <p class="impact-row__cap">Estimated year one opportunity identified through the Snowflake proof of concept</p>
-    </div>
-    <div class="impact-row">
-      <p class="impact-row__num">Multiple<br>products</p>
-      <p class="impact-row__cap">Data unified across the organisation&rsquo;s product ecosystem in a single proof of concept</p>
-    </div>
-    <div class="impact-row">
-      <p class="impact-row__num">Directly<br>validated</p>
-      <p class="impact-row__cap">Outputs confirmed directly with healthcare professionals, not assumed</p>
-    </div>
-  </div>
-</section>
-
 <!-- ===================== CLOSING SECTION — Dark navy, full-bleed, centered ===================== -->
 <section class="closing-section" data-nav="dark">
   <video class="closing-section__bg" src="assets/vid/footer-bg.mov" autoplay muted loop playsinline aria-hidden="true"></video>
@@ -1291,7 +1954,7 @@ section,.card,.badge,.pager__dot,.impact__block{border-radius:var(--radius-none)
   var supportsTimeline = (window.CSS && CSS.supports && CSS.supports('animation-timeline:view()')) && !smootherActive;
   if(!supportsTimeline){
     document.documentElement.classList.add('io-mode');
-    var reveals = document.querySelectorAll('.reveal, .stagger, .impact-row');
+    var reveals = document.querySelectorAll('.reveal, .stagger, .blur-reveal');
     if('IntersectionObserver' in window){
       // set stagger indices
       document.querySelectorAll('.stagger').forEach(function(g){
@@ -1468,17 +2131,17 @@ section,.card,.badge,.pager__dot,.impact__block{border-radius:var(--radius-none)
   /* ---- Film: video grows from a centred 70vw box to a full-bleed,
      full-viewport-height frame as the section scrolls into view (tied to
      its natural entrance — top of section travelling from the bottom of
-     the viewport to the top), then pins and scrub-reveals the headline
-     word by word (GSAP SplitText) before releasing the pin so scroll
-     continues normally. ---- */
-  if(window.gsap && window.ScrollTrigger && window.SplitText){
-    gsap.registerPlugin(ScrollTrigger, SplitText);
+     the viewport to the top), then pins while the headline card fades/
+     lifts in once (no scroll-scrub — SplitText is no longer needed here)
+     before releasing the pin so scroll continues normally. ---- */
+  if(window.gsap && window.ScrollTrigger){
+    gsap.registerPlugin(ScrollTrigger);
 
     var filmSection = document.getElementById('film');
     var filmVideoWrap = document.querySelector('.film__video-wrap');
-    var filmHeadline = document.querySelector('.film__headline');
+    var filmCard = document.querySelector('.film__card');
 
-    if(filmSection && filmVideoWrap && filmHeadline){
+    if(filmSection && filmVideoWrap && filmCard){
       /* Phase 1 — grow: no pin yet, just a plain scrub tied to the
          section's own entrance scroll distance (always exactly one
          viewport height, regardless of the section's own height). */
@@ -1494,29 +2157,29 @@ section,.card,.badge,.pager__dot,.impact__block{border-radius:var(--radius-none)
         }
       });
 
-      /* Phase 2 — pin + reveal: split the headline into words, hide each
-         one (invisible + heavily blurred), then scrub every word up to
-         full opacity/zero blur across one extra viewport of scroll once
-         the section's top reaches the top of the viewport. No word is
-         visible until the scrub actually reaches it. The pin releases
-         automatically once that scroll range is passed. */
-      var filmSplit = SplitText.create(filmHeadline, { type: 'words' });
-      gsap.set(filmHeadline, { opacity: 1 }); // un-hide the container now that its words are individually hidden
-      gsap.set(filmSplit.words, { opacity: 0, filter: 'blur(16px)' });
-      gsap.to(filmSplit.words, {
+      /* Phase 2 — pin only: holds the fully-grown video on screen for one
+         viewport of scroll (Phase 3 below shrinks it back out once this
+         releases). No scroll-scrub — the white product card just fades/
+         lifts in once, plainly, the moment the section is in view
+         (toggleActions plays it going down, reverses coming back up). */
+      ScrollTrigger.create({
+        id: 'filmPin',
+        trigger: filmSection,
+        start: 'top top',
+        end: '+=100%',
+        pin: true,
+        invalidateOnRefresh: true
+      });
+      gsap.to(filmCard, {
         opacity: 1,
+        y: 0,
         filter: 'blur(0px)',
-        duration: 1.8,
-        stagger: 0.6,
-        ease: 'none',
+        duration: 0.8,
+        ease: 'power2.out',
         scrollTrigger: {
-          id: 'filmPin',
           trigger: filmSection,
           start: 'top top',
-          end: '+=100%',
-          pin: true,
-          scrub: true,
-          invalidateOnRefresh: true
+          toggleActions: 'play none none reverse'
         }
       });
 
@@ -1569,79 +2232,84 @@ section,.card,.badge,.pager__dot,.impact__block{border-radius:var(--radius-none)
       ScrollTrigger.refresh();
     }
   } else {
-    /* GSAP/SplitText unavailable — un-hide the plain sentence rather than
+    /* GSAP/ScrollTrigger unavailable — un-hide the card rather than
        leaving it invisible forever. */
-    var filmHeadlineFallback = document.querySelector('.film__headline');
-    if(filmHeadlineFallback) filmHeadlineFallback.style.opacity = '1';
-  }
-
-  /* ---- Foundation caption: line-by-line reveal, scrubbed to the
-     caption's own entrance scroll — each line is masked and slides up
-     from the bottom of its own line box, settling before it's fully
-     scrolled in (finishes once its top reaches the vertical middle of
-     the viewport). autoSplit re-splits into lines responsively, since
-     line breaks change with viewport width — onSplit() re-creates the
-     scrubbed tween each time and SplitText syncs/reverts the old one. */
-  if(window.gsap && window.ScrollTrigger && window.SplitText){
-    gsap.registerPlugin(ScrollTrigger, SplitText);
-    var foundationCaption = document.querySelector('.foundation-caption');
-    if(foundationCaption){
-      SplitText.create(foundationCaption, {
-        type: 'lines',
-        mask: 'lines',
-        autoSplit: true,
-        onSplit: function(self){
-          return gsap.fromTo(self.lines, { yPercent: 110 }, {
-            yPercent: 0,
-            ease: 'power1.out',
-            stagger: 0.3,
-            scrollTrigger: {
-              trigger: foundationCaption,
-              start: 'top bottom',
-              end: 'top 30%',
-              scrub: true
-            }
-          });
-        }
-      });
+    var filmCardFallback = document.querySelector('.film__card');
+    if(filmCardFallback){
+      filmCardFallback.style.opacity = '1';
+      filmCardFallback.style.filter = 'none';
+      filmCardFallback.style.transform = 'none';
     }
   }
 
-  /* ---- Impact headline: word-by-word blur-to-clear reveal, triggered
-     once as the headline scrolls into view (a single play-on-enter, not a
-     continuous scrub — matches "scroll to trigger", unlike the film
-     headline's pinned scrub-reveal above). Each word starts invisible and
-     blurred, then staggers up to full opacity/zero blur. autoSplit
-     re-splits responsively; onSplit() re-creates the tween each time and
-     SplitText syncs/reverts the old one. */
+  /* ---- Problem statement: pins the section, then scrubs the sentence
+     from pale grey up to solid navy one split word at a time (GSAP
+     SplitText), releasing the pin the instant the last word resolves —
+     same pin-then-release technique as the film headline above, but
+     scrubbing colour instead of opacity/blur. No autoSplit here: word
+     spans don't need re-splitting when line breaks change with viewport
+     width (only line/mask-based splits do), same reasoning as the film
+     headline. The pale-grey "from" is the navy brand colour at low
+     opacity (rgba(0,0,31,0.25)) rather than an off-system grey, so the
+     whole scrub stays within the one navy value the brand defines. */
   if(window.gsap && window.ScrollTrigger && window.SplitText){
     gsap.registerPlugin(ScrollTrigger, SplitText);
-    var impactHeadline = document.querySelector('.impact__headline');
-    if(impactHeadline){
-      SplitText.create(impactHeadline, {
-        type: 'words',
-        autoSplit: true,
-        onSplit: function(self){
-          return gsap.from(self.words, {
-            opacity: 0,
-            filter: 'blur(16px)',
-            duration: 0.8,
-            stagger: 0.06,
-            ease: 'power1.out',
-            scrollTrigger: {
-              trigger: impactHeadline,
-              start: 'top 80%'
-            }
-          });
+
+    var problemSection = document.getElementById('problem');
+    var problemText = document.querySelector('.problem__text');
+
+    if(problemSection && problemText){
+      var problemSplit = SplitText.create(problemText, { type: 'words' });
+      gsap.fromTo(problemSplit.words, {
+        color: 'rgba(0,0,31,0.25)'
+      }, {
+        color: '#00001F', /* var(--color-navy) — GSAP can't read a CSS
+          custom property directly here, so the literal is repeated. */
+        duration: 1,
+        stagger: 0.15,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: problemSection,
+          start: 'top top',
+          end: '+=100%',
+          pin: true,
+          scrub: true,
+          invalidateOnRefresh: true
+        }
+      });
+    }
+  } else {
+    /* GSAP/SplitText unavailable — the plain sentence is already solid
+       navy by default (see .problem__text), so nothing to un-hide. */
+  }
+
+  /* ---- Barriers image: parallax drift, scrubbed to its own scroll
+     entry/exit — same technique as the Landscape section's per-image
+     parallax (oversized image in CSS + a yPercent drift here so it never
+     exposes empty edges). Not pinned — a plain scrub tied to the frame's
+     own natural transit through the viewport. ---- */
+  if(window.gsap && window.ScrollTrigger){
+    gsap.registerPlugin(ScrollTrigger);
+    var barriersImg = document.querySelector('.barriers__img');
+    var barriersFrame = document.querySelector('.barriers__img-frame');
+    if(barriersImg && barriersFrame){
+      gsap.fromTo(barriersImg, { yPercent: -8 }, {
+        yPercent: 8,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: barriersFrame,
+          start: 'top bottom',
+          end: 'bottom top',
+          scrub: true,
+          invalidateOnRefresh: true
         }
       });
     }
   }
 
   /* ---- Challenge headline: line-by-line reveal, triggered once as the
-     headline scrolls into view (masked lines slide up from below, same
-     masking technique as the Foundation caption above, but a single
-     play-on-enter here rather than a continuous scrub). autoSplit
+     headline scrolls into view (masked lines slide up from below — a
+     single play-on-enter rather than a continuous scrub). autoSplit
      re-splits into lines responsively, since line breaks change with
      viewport width — onSplit() re-creates the tween each time and
      SplitText syncs/reverts the old one. */
@@ -1664,59 +2332,6 @@ section,.card,.badge,.pager__dot,.impact__block{border-radius:var(--radius-none)
               start: 'top 100%'
             }
           });
-        }
-      });
-    }
-  }
-
-  /* ---- Quote headline: line-by-line reveal, tied to scrub (continuous,
-     scroll-position-linked — same masking technique and scrub wiring as the
-     Foundation caption above, not a one-shot play-on-enter). autoSplit
-     re-splits into lines responsively; onSplit() re-creates the tween each
-     time and SplitText syncs/reverts the old one. */
-  if(window.gsap && window.ScrollTrigger && window.SplitText){
-    gsap.registerPlugin(ScrollTrigger, SplitText);
-    var quoteHeadline = document.querySelector('.quote__headline');
-    if(quoteHeadline){
-      SplitText.create(quoteHeadline, {
-        type: 'lines',
-        mask: 'lines',
-        autoSplit: true,
-        onSplit: function(self){
-          return gsap.fromTo(self.lines, { yPercent: 110 }, {
-            yPercent: 0,
-            ease: 'power1.out',
-            stagger: 0.3,
-            scrollTrigger: {
-              trigger: quoteHeadline,
-              start: 'top bottom',
-              end: 'top 20%',
-              scrub: true
-            }
-          });
-        }
-      });
-    }
-  }
-
-  /* ---- Foundation image: parallax drift, scrubbed to its own scroll
-     entry/exit — same technique as the landscape's per-image parallax
-     above (oversized image in CSS + a yPercent drift here so it never
-     exposes empty edges). ---- */
-  if(window.gsap && window.ScrollTrigger){
-    gsap.registerPlugin(ScrollTrigger);
-    var foundationImg = document.querySelector('#foundation .content-organism__image img');
-    var foundationFrame = document.querySelector('#foundation .content-organism__image');
-    if(foundationImg && foundationFrame){
-      gsap.fromTo(foundationImg, { yPercent: -8 }, {
-        yPercent: 8,
-        ease: 'none',
-        scrollTrigger: {
-          trigger: foundationFrame,
-          start: 'top bottom',
-          end: 'bottom top',
-          scrub: true,
-          invalidateOnRefresh: true
         }
       });
     }
@@ -1890,8 +2505,8 @@ section,.card,.badge,.pager__dot,.impact__block{border-radius:var(--radius-none)
     window.addEventListener('load', sizeAllNotchOutlines);
   }
 
-  /* ---- Content image fade-in: photographic images (foundation, cards,
-     landscape, carousel, etc.) otherwise pop in abruptly the instant
+  /* ---- Content image fade-in: photographic images (landscape,
+     carousel, etc.) otherwise pop in abruptly the instant
      their (often large) file finishes downloading — especially
      noticeable when you've already scrolled a section into view before
      the image is done loading. Fades each one in on its own 'load'
@@ -1906,6 +2521,527 @@ section,.card,.badge,.pager__dot,.impact__block{border-radius:var(--radius-none)
     img.style.transition = 'opacity 500ms ' + (getComputedStyle(document.documentElement).getPropertyValue('--ease-out') || 'ease');
     img.addEventListener('load', function(){ img.style.opacity = '1'; });
   });
+})();
+</script>
+
+<!-- ===================== IMPACTS v2 script (team build, own self-contained
+     IIFE — ported verbatim, only the two GSAP-plugin <script src> lines
+     dropped since gsap/ScrollTrigger/SplitText are already loaded above) ===================== -->
+<script>
+(function(){
+  "use strict";
+
+  var prefersReducedMotion = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+  /* ?static in the URL renders the flattened, normal-flow layout — handy
+     for reviewing the plain design (and for tooling that can't drive a
+     pinned scroll). Same code path as reduced-motion / no-JS. */
+  var forceStatic = /(?:\?|&)static\b/.test(location.search);
+  var canAnimate = window.gsap && window.ScrollTrigger && window.SplitText && !prefersReducedMotion && !forceStatic;
+
+  /* No-JS / reduced-motion / ?static / lib-failure: the base CSS already
+     renders everything static and readable (heading navy, partnership
+     lede navy, all four impact rows in place). Nothing to do. */
+  if(!canAnimate) return;
+
+  gsap.registerPlugin(ScrollTrigger, SplitText);
+
+  /* =====================================================================
+     AB-FIELD — the blue bloom shared across Stage A → Partnership lede →
+     Business Impact drifts and rotates as you scroll through that whole
+     span, tied to the same scrub rather than sitting static. Oversized in
+     CSS (130%, inset -15%) so the drift/rotation never exposes an edge;
+     the wrap's own overflow:hidden clips it besides. ===================== */
+  var abFieldWrap = document.querySelector('.ab-field-wrap');
+  var abField     = document.getElementById('abField');
+  if(abFieldWrap && abField){
+    gsap.fromTo(abField, {
+      xPercent: -6, yPercent: -8, rotation: -10
+    }, {
+      xPercent: 6, yPercent: 10, rotation: 18,
+      ease: 'none',
+      scrollTrigger: {
+        trigger: abFieldWrap,
+        start: 'top bottom',
+        end: 'bottom top',
+        scrub: true
+      }
+    });
+  }
+
+  /* =====================================================================
+     STAGE A — heading only. Already fully visible (solid navy) the
+     instant it scrolls in; a short pinned scrub then blurs/fades each
+     word out — an "unreveal" rather than a reveal, run in reverse of the
+     usual blur-in technique used elsewhere on this page (e.g. the Impact
+     headline below). ===================================================== */
+  var stageA   = document.getElementById('stageA');
+  var headingA = document.getElementById('headingA');
+  if(stageA && headingA){
+    stageA.classList.add('is-animated');
+    var headingSplit = SplitText.create(headingA, { type: 'words' });
+    gsap.set(headingSplit.words, { opacity: 1, filter: 'blur(0px)' }); // already revealed
+    gsap.to(headingSplit.words, {
+      opacity: 0,
+      filter: 'blur(16px)',
+      duration: 1,
+      stagger: 0.05,
+      ease: 'none',
+      scrollTrigger: {
+        trigger: stageA,
+        start: 'top top',
+        end: '+=100%',
+        pin: true,
+        scrub: true,
+        invalidateOnRefresh: true
+      }
+    });
+  }
+
+  /* =====================================================================
+     PARTNERSHIP LEDE — NOT pinned; a plain scroll-through section. Each
+     word steps from pale grey to solid navy in turn as the section
+     passes through the viewport — a literal word-by-word reveal, not a
+     blended fade. Each word's own colour tween is short relative to the
+     gap before the next one starts (duration ≪ stagger), which is what
+     makes the difference from the Problem section's scrub.
+     Range is 'top 85%' → 'bottom 15%' — i.e. tied to the text's own
+     traverse of the readable viewport window, not a fraction of the
+     distance to the section's centre. 'top bottom' → 'center center'
+     (the previous range) put full visibility of this multi-line, large-
+     type paragraph at ~70% of the way through the scrub already — so
+     most words had already flipped navy before the reader had even
+     scrolled the lower lines into view. 'bottom top' (fully exited) was
+     tried too and was worse the other way: the last word's tween landed
+     exactly as the text disappeared off the top of the viewport, so the
+     reveal never looked like it actually finished. Ending at 'bottom 15%'
+     instead completes the reveal while the last line is still on-screen. */
+  var partnershipText = document.getElementById('partnershipLedeText');
+  if(partnershipText){
+    var partnershipSplit = SplitText.create(partnershipText, { type: 'words' });
+    gsap.fromTo(partnershipSplit.words, {
+      color: 'rgba(0,0,15,0.25)'
+    }, {
+      color: '#00000f', /* var(--color-navy) — GSAP can't read a CSS
+        custom property directly here, so the literal is repeated. */
+      duration: 0.3,
+      stagger: 0.22,
+      ease: 'none',
+      scrollTrigger: {
+        trigger: partnershipText,
+        start: 'top 85%',
+        end: 'bottom 15%',
+        scrub: true
+      }
+    });
+  }
+
+  /* =====================================================================
+     BUSINESS IMPACT (Scene B) — NOT pinned. Each impact row slides in
+     from the right, its divider drawing with it, on its OWN scroll
+     trigger as it individually enters view — not on one shared pinned
+     timeline. This replaces the earlier shared-pin hand-off with Scene C,
+     which is what caused the overlap bug (Scene B's content ran taller
+     than the fixed 100vh box that hand-off needed). ===================== */
+  var rows  = gsap.utils.toArray('#sceneB .impact-item__inner');
+  var rules = gsap.utils.toArray('#sceneB .impact-item > .impact-rule');
+  rows.forEach(function(row, i){
+    var rule = rules[i];
+    gsap.set(row, { xPercent: 72, opacity: 0 });
+    if(rule) gsap.set(rule, { scaleX: 0, transformOrigin: 'right center' });
+    gsap.to(row, {
+      xPercent: 0, opacity: 1, duration: 1.2, ease: 'power3.out',
+      scrollTrigger: { trigger: row, start: 'top 85%' }
+    });
+    if(rule){
+      gsap.to(rule, {
+        scaleX: 1, duration: 1.2, ease: 'power3.out',
+        scrollTrigger: { trigger: row, start: 'top 85%' }
+      });
+    }
+  });
+
+  /* =====================================================================
+     SCENE C — "When the data connects, the time comes back". Same
+     two-phase technique as the Film section near the top of this page:
+     Phase 1 (no pin) grows .sceneC__growbox from a smaller, centred navy
+     card up to full-bleed (100vw/100vh) tied to Scene C's own natural
+     scroll entrance; Phase 2 pins once that's fully grown, so the callout
+     cards can fan out and the lede can type. ===================== */
+  var sceneC    = document.getElementById('sceneC');
+  var sceneCBox = document.getElementById('sceneCGrowbox');
+  var callouts  = document.getElementById('callouts');
+  var cards     = gsap.utils.toArray('#callouts .callout');
+  var lede      = document.getElementById('sceneCLede');
+
+  if(sceneC && sceneCBox){
+    /* Phase 1 — grow: no pin yet, a plain scrub tied to the section's own
+       entrance scroll distance (always exactly one viewport height,
+       regardless of the section's own height) — identical technique to
+       the Film section's video-wrap grow. */
+    gsap.to(sceneCBox, {
+      width: '100vw',
+      height: '100vh',
+      ease: 'none',
+      scrollTrigger: {
+        trigger: sceneC,
+        start: 'top bottom',
+        end: 'top top',
+        scrub: true
+      }
+    });
+
+    /* Callout cards START stacked at the centre (fanned closed), then fan
+       OUT on scroll into their resting flex row — two to the left, two to
+       the right. STACK holds each card's centre-converged offset + a
+       closed-fan tilt; the row is simply {x:0,rotation:0}. Measured via
+       offsetLeft so it's transform-safe, and recomputed whenever layout
+       settles. */
+    var STACK_ANGLE = [-10, -4, 4, 10];
+    var stack = [];
+    function computeStack(){
+      if(!callouts || !cards.length) return;
+      var mid = callouts.clientWidth / 2;
+      stack = cards.map(function(card, i){
+        var cardMid = card.offsetLeft + card.offsetWidth / 2;
+        return { x: mid - cardMid, rot: STACK_ANGLE[i] || 0 };   // full converge → centre stack
+      });
+    }
+    function setStack(){
+      cards.forEach(function(card, i){ gsap.set(card, { x: stack[i].x, rotation: stack[i].rot, transformOrigin: '50% 130%' }); });
+    }
+    computeStack();
+    setStack();
+    var cardsFannedOut = false;   // once true (post fan-out), refresh keeps them in the row
+    ScrollTrigger.addEventListener('refreshInit', function(){ computeStack(); if(!cardsFannedOut) setStack(); });
+
+    /* Lede types out exactly like Stage A's heading used to: split into
+       chars, set them faint, then fill to white on scroll. */
+    var ledeSplit = SplitText.create(lede, { type: 'words,chars' });
+    var ledeChars = ledeSplit.chars;
+    gsap.set(ledeChars, { color: 'rgba(255,255,255,0.14)' });   // very faint "untyped" state → strong fill contrast
+
+    /* Phase 2 — pin + reveal: once Scene C's top reaches the top of the
+       viewport (the box has already grown to full-bleed by then), pin
+       and scrub the cards fanning out + the lede typing in. */
+    var tlC = gsap.timeline({ defaults: { ease: 'power3.out' } });
+    tlC.to(cards, {
+        x: 0, rotation: 0, ease: 'power2.out', duration: 2.0,
+        stagger: { each: 0.06, from: 'center' },
+        onStart: function(){ cardsFannedOut = true; },
+        onReverseComplete: function(){ cardsFannedOut = false; }
+      }, 0.3)
+      .to(ledeChars, { color: '#FFFFFF', ease: 'none', duration: 0.5,
+                       stagger: { each: 0.035 } }, ">");
+    tlC.to({}, { duration: 0.3 }); // brief settle before releasing the pin
+
+    ScrollTrigger.create({
+      trigger: sceneC,
+      start: 'top top',
+      end: function(){ return "+=" + Math.round(tlC.duration() * 300); },
+      pin: true,
+      scrub: 1,
+      animation: tlC,
+      invalidateOnRefresh: true
+    });
+  }
+
+  /* Re-measure after fonts load (glyph metrics shift every split above). */
+  if(document.fonts && document.fonts.ready){
+    document.fonts.ready.then(function(){ ScrollTrigger.refresh(); });
+  }
+})();
+</script>
+
+<!-- ===================== AI Summary Loop (film card content) =====================
+     Ported as-is from the supplied prototype (ai-summary-loop.html): a looping
+     demo where a cursor taps a prompt card, an AI summary types out, skeleton
+     bars shimmer in, then a feedback row — before resetting. Every id/class is
+     prefixed asl- (see the scoped CSS above) so nothing here can collide with
+     the rest of this page. The only real change from the source file is that
+     CONFIG.SCALE (a fixed, manually-tuned zoom) is replaced by a ResizeObserver
+     that scales the fixed 487x784 stage to whatever width .film__card actually
+     renders at, since the card's width is responsive here, not fixed. -->
+<script>
+(function(){
+  var CONFIG = {
+    CYCLE_MS: 9600,
+    TYPE_STATUS_TEXT: true,
+    STATUS_TEXT: {
+      content: "Reviewing preventative health records",
+      left: 49, top: 538, width: 380, fontSize: 15, fontWeight: 400,
+      color: "#374151",
+      fontFamily: '-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif',
+      msPerChar: 22
+    },
+    SUMMARY_LABEL_TEXT: {
+      content: "AI Summary", left: 78, top: 500, fontSize: 18, color: "#202938",
+      fontFamily: '-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif'
+    },
+    HEADING_TEXT: {
+      left: 0, top: 344, width: 487, fontSize: 29,
+      mainColor: "#202938", accentColor: "#1777FC",
+      fontFamily: '-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif'
+    },
+    CURSOR_START: { x: 560, y: 815 },
+    CURSOR_TARGET: { x: 128, y: 462 },
+    CURSOR_SIZE: { w: 40, h: 49 },
+    TIMING: {
+      CURSOR_START_T: 1200, CURSOR_ARRIVE_T: 1850, CARD_CLICK_T: 2100,
+      TO_FRAME2_T: 2400, LABEL_IN_T: 3300, TYPE_START_T: 3700,
+      STOPROW_IN_T: 4900, BARS_IN_T: 6200, BAR_STAGGER_MS: 150,
+      SHIMMER_START_T: 7350, SHIMMER_DUR_MS: 550, FEEDBACK_IN_T: 7500,
+      LOOP_OUT_T: 9000, LOOP_IN_T: 9300
+    },
+    BREATHE_DURATION_MS: 2400,
+    LAYERS: {
+      topcallout: { left: 40, top: 48, width: 400.5, height: 140 },
+      aiball: { left: 184.5, top: 213.5, width: 117, height: 117 },
+      blank2: { left: 251.5, top: 427, width: 188.5, height: 138.5 },
+      blank3: { left: 47, top: 581.5, width: 188.5, height: 138.5 },
+      blank4: { left: 251.5, top: 581.5, width: 188.5, height: 138.5 },
+      prevhealth: { left: 47, top: 427, width: 188.5, height: 138.5 },
+      glow: { left: 44, top: 425, width: 200.5, height: 150.5 },
+      bubble: { left: 145.25, top: 295, width: 294.75, height: 114.375 },
+      orbicon: { left: 40.5, top: 491.5, width: 33, height: 33 },
+      bar1: { left: 47, top: 538, width: 393, height: 11 },
+      bar2: { left: 47, top: 559, width: 393, height: 11 },
+      bar3: { left: 47, top: 580, width: 393, height: 11 },
+      bar4: { left: 47, top: 601, width: 393, height: 11 },
+      bar5: { left: 47, top: 622, width: 112, height: 11 },
+      feedback: { left: 79.5, top: 695, width: 360.5, height: 32.8 },
+      stoprow: { left: 130.8, top: 692, width: 309.2, height: 39.3 }
+    }
+  };
+
+  var STAGE_W = 487; // native/unscaled stage size — matches .film__card's aspect-ratio
+  var stage = document.getElementById('asl-stage');
+  var filmCard = document.querySelector('.film__card');
+  if(!stage || !filmCard) return;
+
+  /* ---- Layer positions/sizes (native px) — applied once at load ---- */
+  (function applyLayers(){
+    var L = CONFIG.LAYERS;
+    var set = function(id, pos){
+      var el = document.getElementById(id);
+      if(!el || !pos) return;
+      el.style.left = pos.left + 'px';
+      el.style.top = pos.top + 'px';
+      el.style.width = pos.width + 'px';
+      el.style.height = pos.height + 'px';
+    };
+    set('asl-topcallout', L.topcallout);
+    set('asl-aiball', L.aiball);
+    set('asl-blank2', L.blank2);
+    set('asl-blank3', L.blank3);
+    set('asl-blank4', L.blank4);
+    set('asl-prevhealth', L.prevhealth);
+    set('asl-glow', L.glow);
+    set('asl-bubble', L.bubble);
+    set('asl-orbicon', L.orbicon);
+    set('asl-bar1', L.bar1);
+    set('asl-bar2', L.bar2);
+    set('asl-bar3', L.bar3);
+    set('asl-bar4', L.bar4);
+    set('asl-bar5', L.bar5);
+    set('asl-feedback', L.feedback);
+    set('asl-stoprow', L.stoprow);
+
+    var cursor = document.getElementById('asl-cursor');
+    cursor.style.width = CONFIG.CURSOR_SIZE.w + 'px';
+    cursor.style.height = CONFIG.CURSOR_SIZE.h + 'px';
+    cursor.style.left = CONFIG.CURSOR_START.x + 'px';
+    cursor.style.top = CONFIG.CURSOR_START.y + 'px';
+
+    var shimmerMask = document.getElementById('asl-shimmerMask');
+    shimmerMask.style.left = L.bar1.left + 'px';
+    shimmerMask.style.top = L.bar1.top + 'px';
+    shimmerMask.style.width = '393px';
+    shimmerMask.style.height = (L.bar5.top + 11 - L.bar1.top) + 'px';
+
+    var status = document.getElementById('asl-status');
+    status.style.left = CONFIG.STATUS_TEXT.left + 'px';
+    status.style.top = CONFIG.STATUS_TEXT.top + 'px';
+    status.style.width = CONFIG.STATUS_TEXT.width + 'px';
+    status.style.fontSize = CONFIG.STATUS_TEXT.fontSize + 'px';
+    status.style.fontWeight = CONFIG.STATUS_TEXT.fontWeight;
+    status.style.color = CONFIG.STATUS_TEXT.color;
+    status.style.fontFamily = CONFIG.STATUS_TEXT.fontFamily;
+
+    var label = document.getElementById('asl-summarylabel');
+    label.style.left = CONFIG.SUMMARY_LABEL_TEXT.left + 'px';
+    label.style.top = CONFIG.SUMMARY_LABEL_TEXT.top + 'px';
+    label.style.fontSize = CONFIG.SUMMARY_LABEL_TEXT.fontSize + 'px';
+    label.style.color = CONFIG.SUMMARY_LABEL_TEXT.color;
+    label.style.fontFamily = CONFIG.SUMMARY_LABEL_TEXT.fontFamily;
+
+    var heading = document.getElementById('asl-heading');
+    heading.style.left = CONFIG.HEADING_TEXT.left + 'px';
+    heading.style.top = CONFIG.HEADING_TEXT.top + 'px';
+    heading.style.width = CONFIG.HEADING_TEXT.width + 'px';
+    heading.style.fontSize = CONFIG.HEADING_TEXT.fontSize + 'px';
+    heading.style.fontFamily = CONFIG.HEADING_TEXT.fontFamily;
+    heading.querySelector('.asl-main').style.color = CONFIG.HEADING_TEXT.mainColor;
+    heading.querySelector('.asl-accent').style.color = CONFIG.HEADING_TEXT.accentColor;
+
+    document.documentElement.style.setProperty('--aslBreatheDur', CONFIG.BREATHE_DURATION_MS + 'ms');
+    document.documentElement.style.setProperty('--aslShimmerDur', CONFIG.TIMING.SHIMMER_DUR_MS + 'ms');
+    document.documentElement.style.setProperty('--aslCursorGlideDur',
+      (CONFIG.TIMING.CURSOR_ARRIVE_T - CONFIG.TIMING.CURSOR_START_T) + 'ms');
+  })();
+
+  /* ---- Responsive scale: fit the fixed 487x784 stage to .film__card's
+     current rendered width (replaces the source's fixed CONFIG.SCALE). ---- */
+  function rescale(){
+    var scale = filmCard.clientWidth / STAGE_W;
+    stage.style.transform = 'scale(' + scale + ')';
+  }
+  rescale();
+  if(window.ResizeObserver){
+    new ResizeObserver(rescale).observe(filmCard);
+  } else {
+    window.addEventListener('resize', rescale);
+  }
+
+  /* ---- Timeline — one array of {time, action}; play() walks it with
+     setTimeout. ---- */
+  var reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var shouldType = CONFIG.TYPE_STATUS_TEXT && !reducedMotion;
+
+  var statusMainEl = stage.querySelector('#asl-status .asl-statusMain');
+  var statusEllipsisEl = stage.querySelector('#asl-status .asl-ellipsis');
+  var shimmerMaskEl = document.getElementById('asl-shimmerMask');
+  var cursorEl = document.getElementById('asl-cursor');
+  var cursorImgEl = document.getElementById('asl-cursor-img');
+  var glowEl = document.getElementById('asl-glow');
+  var prevhealthEl = document.getElementById('asl-prevhealth');
+
+  var cursorDx = CONFIG.CURSOR_TARGET.x - CONFIG.CURSOR_START.x;
+  var cursorDy = CONFIG.CURSOR_TARGET.y - CONFIG.CURSOR_START.y;
+
+  function setPhase(n){ stage.dataset.phase = String(n); }
+  function moveCursorToTarget(){
+    cursorEl.style.transform = 'translate(' + cursorDx + 'px,' + cursorDy + 'px)';
+  }
+  function pressCursor(){
+    cursorEl.classList.add('asl-clicking');
+    cursorEl.style.transform = 'translate(' + cursorDx + 'px,' + (cursorDy + 2) + 'px)';
+    cursorImgEl.classList.add('asl-pressing');
+  }
+  function resetCursorPosition(){
+    cursorEl.classList.remove('asl-clicking');
+    cursorImgEl.classList.remove('asl-pressing');
+    cursorEl.style.transform = 'translate(0,0)';
+  }
+
+  var typingTimer = null;
+  function typeStatusText(){
+    var text = CONFIG.STATUS_TEXT.content;
+    statusMainEl.textContent = '';
+    statusEllipsisEl.classList.remove('asl-pulse');
+    if(!shouldType){
+      statusMainEl.textContent = text;
+      return;
+    }
+    var i = 0;
+    function step(){
+      i++;
+      statusMainEl.textContent = text.slice(0, i);
+      if(i < text.length){
+        typingTimer = setTimeout(step, CONFIG.STATUS_TEXT.msPerChar);
+      } else {
+        statusEllipsisEl.classList.add('asl-pulse');
+      }
+    }
+    typingTimer = setTimeout(step, CONFIG.STATUS_TEXT.msPerChar);
+  }
+
+  function buildTimeline(){
+    var T = CONFIG.TIMING;
+    return [
+      { t: 0, run: function(){ setPhase(0); resetCursorPosition(); } },
+      { t: T.CURSOR_START_T, run: function(){ setPhase(1); moveCursorToTarget(); } },
+      { t: T.CURSOR_ARRIVE_T, run: function(){
+          glowEl.classList.add('asl-hover-active');
+          prevhealthEl.classList.add('asl-hover-active');
+        } },
+      { t: T.CARD_CLICK_T, run: function(){ setPhase(2); pressCursor(); } },
+      { t: T.TO_FRAME2_T, run: function(){ setPhase(3); } },
+      { t: T.LABEL_IN_T, run: function(){ setPhase(4); } },
+      { t: T.TYPE_START_T, run: typeStatusText },
+      { t: T.STOPROW_IN_T, run: function(){ setPhase(5); } },
+      { t: T.BARS_IN_T, run: function(){ setPhase(6); } },
+      { t: T.SHIMMER_START_T, run: function(){ shimmerMaskEl.classList.add('asl-shimmer-active'); } },
+      { t: T.FEEDBACK_IN_T, run: function(){ setPhase(7); } },
+      { t: T.LOOP_OUT_T, run: function(){ setPhase(8); } },
+      { t: T.LOOP_IN_T, run: function(){ setPhase(9); } }
+    ];
+  }
+
+  var timers = [];
+  var cycleStartAt = 0;
+
+  function clearTimers(){
+    timers.forEach(clearTimeout);
+    timers = [];
+    if(typingTimer) clearTimeout(typingTimer);
+  }
+
+  function resetVisualState(){
+    stage.classList.add('asl-no-transition');
+    setPhase(0);
+    resetCursorPosition();
+    statusMainEl.textContent = '';
+    statusEllipsisEl.classList.remove('asl-pulse');
+    shimmerMaskEl.classList.remove('asl-shimmer-active');
+    glowEl.classList.remove('asl-hover-active');
+    prevhealthEl.classList.remove('asl-hover-active');
+    void stage.offsetWidth; // force reflow before releasing the no-transition snap
+    stage.classList.remove('asl-no-transition');
+  }
+
+  function scheduleFrom(elapsedMs){
+    clearTimers();
+    buildTimeline().forEach(function(step){
+      if(step.t < elapsedMs) return;
+      timers.push(setTimeout(step.run, step.t - elapsedMs));
+    });
+    timers.push(setTimeout(loopRestart, CONFIG.CYCLE_MS - elapsedMs));
+    cycleStartAt = performance.now() - elapsedMs;
+  }
+
+  function loopRestart(){
+    resetVisualState();
+    scheduleFrom(0);
+  }
+
+  /* Only run the loop while the card is actually on screen — no point
+     animating a demo the visitor can't see, and it's one less thing
+     ticking in the background on the rest of the page.
+     Every time it (re-)enters view — not just the first time — reset
+     and restart from phase 0. Without this, scrolling away mid-cycle and
+     back (the loop keeps running in the background once started) meant
+     whatever phase it happened to land on was whatever was showing when
+     the card came back into view — e.g. the cursor or a Frame 2/3 layer
+     from a scene the visitor never actually saw begin, sitting there
+     looking like it belongs to the wrong scene. Always reset-then-play
+     on entry guarantees every view starts clean from Frame 1, and
+     clearing timers on exit stops it drifting out of sync while hidden. */
+  var filmSectionEl = document.getElementById('film');
+  if(window.IntersectionObserver && filmSectionEl){
+    new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){
+        if(entry.isIntersecting){
+          resetVisualState();
+          scheduleFrom(0);
+        } else {
+          clearTimers();
+        }
+      });
+    }, { threshold: 0.3 }).observe(filmSectionEl);
+  } else {
+    resetVisualState();
+    scheduleFrom(0);
+  }
 })();
 </script>
 </body>
