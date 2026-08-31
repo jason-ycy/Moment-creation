@@ -1225,49 +1225,39 @@ section,.card,.badge,.pager__dot,.impact__block{border-radius:var(--radius-none)
   text-align:center;
 }
 
-.sceneA__body{position:relative;max-width:1100px;margin:0 auto;}
+.sceneA__body{position:relative;width:100%;max-width:1100px;margin:0 auto;}
 
-/* Masked lines slide up from below once, the moment the heading scrolls
-   into view (see JS — GSAP SplitText, same technique as the Challenge
-   headline further down) — a plain one-shot reveal, not a scrub. */
+/* Two lines slide in from opposite sides and meet in the middle, once,
+   the moment the heading scrolls into view (see JS) — a plain one-shot
+   reveal, not a scrub. Each line is its own block-level span rather than
+   a SplitText-split line, since the two need independent, opposite
+   travel directions instead of a shared vertical mask reveal. */
 .headingA{
   font-weight:var(--font-weight-display);
-  font-size:var(--text-heading);
-  line-height:var(--leading-heading);
-  letter-spacing:var(--tracking-heading);
+  font-size:var(--text-heading-sm);
+  line-height:var(--leading-heading-sm);
+  letter-spacing:var(--tracking-heading-sm);
   color:var(--color-navy);
   max-width:60ch;
   margin:0 auto;
 }
+.headingA__line{display:block;}
+.headingA__accent{color:#1777FC;}
 @media (max-width:760px){
-  .headingA{font-size:40px;letter-spacing:-0.8px;line-height:1.08;}
+  .headingA{font-size:34px;letter-spacing:-0.6px;}
 }
 
 /* ---------- Partnership lede ----------
-   A plain, unpinned section — scrolls through like any other. Its words
-   reveal one at a time from pale grey to navy as the section passes
-   through the viewport (see JS — a wider scrub range + a bigger gap
-   between each word's own transition than the Problem section uses, so
-   each word visibly steps into navy in turn rather than the whole line
-   reading as one soft, blended fade). Set at the brand's --text-display
-   scale (100px/700) per request, a step up from the --text-heading scale
-   used by the heading above. */
-.partnership-lede{
-  min-height: 100vh;
-  padding:clamp(96px,14vh,180px) var(--page-margin-x);
-  display:flex;align-items:center;justify-content:center;
-}
+   Sits directly under the Stage A heading, inside .sceneA__body, rather
+   than as its own full-viewport section — a body-copy deck line, not a
+   display-scale statement. No scroll-triggered reveal of its own: it
+   appears the same way the Business Impact intro paragraph below does,
+   i.e. plainly, as part of the normal scroll flow. */
 .partnership-lede__text{
-  max-width:70vw;margin:0 auto;text-align:center;
-  font-weight:var(--font-weight-display);font-size:var(--text-display);
-  line-height:var(--leading-display);letter-spacing:var(--tracking-display);
-  color:var(--color-navy); /* solid-navy no-JS fallback */
-}
-@media (max-width:900px){
-  .partnership-lede__text{font-size:64px;letter-spacing:-1.25px;line-height:1.14;}
-}
-@media (max-width:760px){
-  .partnership-lede__text{font-size:40px;letter-spacing:-0.8px;line-height:1.08;}
+  max-width:640px;margin:clamp(20px,3vh,32px) auto 0;text-align:center;
+  font-size:var(--text-body);
+  line-height:var(--leading-body);letter-spacing:var(--tracking-body);
+  color:var(--color-navy);
 }
 
 /* ---------- Business Impact (Scene B) — "impacts slide in" ----------
@@ -1286,16 +1276,15 @@ section,.card,.badge,.pager__dot,.impact__block{border-radius:var(--radius-none)
 }
 .sceneB__inner{position:relative;z-index:1;width:100%;max-width:none;margin:0;}
 
-/* Two-column intro row — its own block, separate from the .impact-list
-   numbering rows below it (not visually grouped with them, just stacked
-   above). Heading and paragraph split the full row 1fr/1fr, rather than
-   a fixed-width label + a max-width-capped paragraph, so the pair fills
-   the row edge-to-edge instead of leaving dead space on the right. */
+/* Intro row — its own block, separate from the .impact-list numbering
+   rows below it (not visually grouped with them, just stacked above).
+   Heading stacks above the paragraph, both left-aligned to the same
+   edge, rather than splitting the row into two columns. */
 .introB-row{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  align-items:baseline;
-  gap:clamp(24px,4vw,80px);
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:clamp(16px,2vw,32px);
   margin-bottom:48px; /* viewport-relative, not a fixed
     64px — see .impact-item's comment: fixed spacing here was part of
     what pushed Scene B's total content past 100vh. */
@@ -1306,8 +1295,10 @@ section,.card,.badge,.pager__dot,.impact__block{border-radius:var(--radius-none)
   line-height:var(--leading-heading-sm);
   letter-spacing:var(--tracking-heading-sm);
   color:var(--color-navy);
+  max-width:520px;
 }
 .introB{
+  max-width:640px;
   font-size:clamp(15px,1.5vw,17px);
   line-height:1.62;
   color:var(--ink-muted);
@@ -1381,11 +1372,15 @@ section,.card,.badge,.pager__dot,.impact__block{border-radius:var(--radius-none)
      reduced-motion static fallback. */
 }
 .sceneC__inner{
-  width:100%;max-width:1120px;margin:0 auto;
+  width:100%;max-width:1100px;margin:0 auto;
   display:flex;flex-direction:column;align-items:center;
   gap:clamp(30px,6vh,76px);
 }
 .sceneC__headline{
+  width:100%; /* spans .sceneC__inner's full width, same as .callouts below it,
+    so its left/right inset matches .headingA's — both containers now use the
+    same max-width (1100px) and the same page-margin-x padding, rather than
+    shrink-wrapping to their own (differently-sized) text content. */
   font-weight:var(--font-weight-display);
   font-size:48px;
   line-height:56px;
@@ -1455,8 +1450,9 @@ section,.card,.badge,.pager__dot,.impact__block{border-radius:var(--radius-none)
 @media (max-width:720px){
   .impact-item__inner{flex-direction:column;gap:8px;align-items:flex-start;}
   .impact-item__num{width:auto;}
-  .introB-row{grid-template-columns:1fr;gap:12px;align-items:flex-start;}
-  .introB-row__heading{font-size:34px;letter-spacing:-0.6px;}
+  .introB-row{gap:12px;}
+  .introB-row__heading{font-size:34px;letter-spacing:-0.6px;max-width:none;}
+  .introB{max-width:none;}
 }
 </style>
 </head>
@@ -1624,21 +1620,16 @@ section,.card,.badge,.pager__dot,.impact__block{border-radius:var(--radius-none)
   <div class="ab-field-wrap">
     <div class="ab-field" id="abField" aria-hidden="true"></div>
 
-    <!-- Stage A — heading only. NOT pinned; a plain scroll-through
-         section like the Partnership lede below it. Its lines mask and
-         slide up from below once, the moment it scrolls into view. -->
+    <!-- Stage A — heading + partnership lede. NOT pinned; a plain
+         scroll-through section. The heading's lines mask and slide up
+         from below once, the moment it scrolls into view; the lede below
+         it carries no reveal of its own — it appears the same way the
+         Business Impact intro paragraph does, plainly, in normal flow. -->
     <section class="sceneA" id="sceneA" aria-label="Together, we built the foundations" data-nav="light">
       <div class="sceneA__body">
-        <h2 class="headingA" id="headingA">Together, we built the foundations <br>for a connected, data-driven future</h2>
+        <h2 class="headingA" id="headingA"><span class="headingA__line headingA__line--1">Together, we built the foundations</span><span class="headingA__line headingA__line--2">for a <span class="headingA__accent">connected, data-driven future</span></span></h2>
+        <p class="partnership-lede__text" id="partnershipLedeText">Our partnership set out to enhance the healthcare worker experience through better data utilisation and timelier care intervention to drive better patient outcomes.</p>
       </div>
-    </section>
-
-    <!-- Partnership lede — NOT pinned; scrolls through like any normal
-         section. Its words scrub from pale grey to navy as the section
-         passes through the viewport (same colour-scrub technique as the
-         Problem section earlier on this page, minus the pin). -->
-    <section class="partnership-lede" id="partnershipLede" data-nav="light">
-      <p class="partnership-lede__text" id="partnershipLedeText">Our partnership set out to enhance the healthcare worker experience through better data utilisation and timelier care intervention to drive better patient outcomes.</p>
     </section>
 
     <!-- Business Impact — NOT pinned; a plain scroll-through section. Each
@@ -1648,7 +1639,7 @@ section,.card,.badge,.pager__dot,.impact__block{border-radius:var(--radius-none)
     <section class="sceneB" id="sceneB" aria-label="The impact" data-nav="light">
       <div class="sceneB__inner">
       <div class="introB-row">
-        <h3 class="introB-row__heading">Business Impact</h3>
+        <h3 class="introB-row__heading">Results users can trust</h3>
         <p class="introB" id="introB">Starting at the core of the problem — we architected a secure, single data platform which allowed us to innovate and test at scale. <strong>The results showed clear growth opportunities for AI-generated clinical summaries</strong> to support wider business initiatives and customer value.</p>
       </div>
 
@@ -2553,79 +2544,51 @@ section,.card,.badge,.pager__dot,.impact__block{border-radius:var(--radius-none)
   }
 
   /* =====================================================================
-     STAGE A — heading only. NOT pinned; a plain scroll-through section.
-     Its lines mask and slide up from below once as it scrolls into view
-     — a one-shot reveal-on-enter, same technique as the Challenge
-     headline further down (autoSplit re-splits into lines responsively,
-     since line breaks change with viewport width — onSplit() re-creates
-     the tween each time and SplitText syncs/reverts the old one).
+     STAGE A — heading only. The two lines slide in from opposite sides
+     and meet at centre SCRUBBED to the section's own natural entrance
+     distance (top bottom → top top — one full viewport, same range/
+     technique as Scene C's box-grow below), so the reveal is guaranteed
+     to land exactly when .sceneA itself reaches its centred, full-
+     viewport resting position — not at some arbitrary moment that
+     depends on how fast the page happens to be scrolling. Right at that
+     landing point, a brief pin holds the section in place for a short,
+     fixed distance: a real GSAP pin (not a hard scroll-lock), so input
+     still registers smoothly, it just doesn't move the heading for a
+     beat — long enough to actually read the line before the page
+     continues. Each line is a block-level span (not a SplitText
+     line-split) so the two can travel in opposite x directions rather
+     than share one vertical mask.
      ===================================================================== */
   var headingA = document.getElementById('headingA');
   if(headingA){
-    SplitText.create(headingA, {
-      type: 'lines',
-      mask: 'lines',
-      autoSplit: true,
-      onSplit: function(self){
-        return gsap.from(self.lines, {
-          yPercent: 110,
-          duration: 1.5,
-          stagger: 0.12,
-          ease: 'power2.out',
-          scrollTrigger: {
-            trigger: headingA,
-            start: 'top 100%'
-          }
-        });
-      }
-    });
-  }
+    var headingALineLeft  = headingA.querySelector('.headingA__line--1');
+    var headingALineRight = headingA.querySelector('.headingA__line--2');
+    if(headingALineLeft && headingALineRight){
+      var headingALines = [headingALineLeft, headingALineRight];
+      var sceneAEl = document.getElementById('sceneA');
 
-  /* =====================================================================
-     PARTNERSHIP LEDE — NOT pinned; a plain scroll-through section. Each
-     word steps from pale grey to solid navy in turn as the section
-     passes through the viewport — a literal word-by-word reveal, not a
-     blended fade. Each word's own colour tween is short relative to the
-     gap before the next one starts (duration ≪ stagger), which is what
-     makes the difference from the Problem section's scrub.
-     Range is 'top 85%' → 'bottom 15%' — i.e. tied to the text's own
-     traverse of the readable viewport window, not a fraction of the
-     distance to the section's centre. 'top bottom' → 'center center'
-     (the previous range) put full visibility of this multi-line, large-
-     type paragraph at ~70% of the way through the scrub already — so
-     most words had already flipped navy before the reader had even
-     scrolled the lower lines into view. 'bottom top' (fully exited) was
-     tried too and was worse the other way: the last word's tween landed
-     exactly as the text disappeared off the top of the viewport, so the
-     reveal never looked like it actually finished. Ending at 'bottom 15%'
-     instead completes the reveal while the last line is still on-screen.
-     The word tween itself only fills the first 60% of that scrub range —
-     a trailing filler tween pads the timeline out to 100% — so every
-     word is already navy by 60% scroll progress rather than right at the
-     very end of the range. */
-  var partnershipText = document.getElementById('partnershipLedeText');
-  if(partnershipText){
-    var partnershipSplit = SplitText.create(partnershipText, { type: 'words' });
-    var partnershipTl = gsap.timeline({
-      scrollTrigger: {
-        trigger: partnershipText,
-        start: 'top 85%',
-        end: 'bottom 15%',
-        scrub: true
-      }
-    });
-    partnershipTl.fromTo(partnershipSplit.words, {
-      color: 'rgba(0,0,15,0.25)'
-    }, {
-      color: '#00000f', /* var(--color-navy) — GSAP can't read a CSS
-        custom property directly here, so the literal is repeated. */
-      duration: 0.3,
-      stagger: 0.22,
-      ease: 'none'
-    });
-    // Filler tween — no visual effect, just extends the timeline so the
-    // reveal above (currently 100% of it) becomes 60% of a longer whole.
-    partnershipTl.to({}, { duration: partnershipTl.duration() * (0.40 / 0.60) });
+      gsap.fromTo(headingALines, {
+        x: function(i){ return i === 0 ? '-60vw' : '60vw'; },
+        opacity: 0
+      }, {
+        x: 0, opacity: 1, ease: 'power2.out', // decelerates into its landing rather than
+          // travelling at a constant (linear) rate right up to the cut-off — softer finish
+        scrollTrigger: {
+          trigger: sceneAEl,
+          start: 'top bottom',
+          end: 'top top',
+          scrub: true
+        }
+      });
+
+      ScrollTrigger.create({
+        trigger: sceneAEl,
+        start: 'top top',
+        end: '+=300', // brief hold — short enough to read the line, not a stop-and-start
+        pin: true,
+        pinSpacing: true
+      });
+    }
   }
 
   /* =====================================================================
@@ -2658,8 +2621,11 @@ section,.card,.badge,.pager__dot,.impact__block{border-radius:var(--radius-none)
      two-phase technique as the Film section near the top of this page:
      Phase 1 (no pin) grows .sceneC__growbox from a smaller, centred navy
      card up to full-bleed (100vw/100vh) tied to Scene C's own natural
-     scroll entrance; Phase 2 pins once that's fully grown, so the callout
-     cards can fan out and the lede can type. ===================== */
+     scroll entrance, WITH the callout cards fanning out on that same
+     scrub — the two read as one continuous motion rather than "box
+     finishes growing, then cards start" — a separate start/stop beat.
+     Phase 2 pins once that's fully grown/fanned, so just the lede can
+     type. ===================== */
   var sceneC    = document.getElementById('sceneC');
   var sceneCBox = document.getElementById('sceneCGrowbox');
   var callouts  = document.getElementById('callouts');
@@ -2707,6 +2673,22 @@ section,.card,.badge,.pager__dot,.impact__block{border-radius:var(--radius-none)
     var cardsFannedOut = false;   // once true (post fan-out), refresh keeps them in the row
     ScrollTrigger.addEventListener('refreshInit', function(){ computeStack(); if(!cardsFannedOut) setStack(); });
 
+    /* Cards fan out on the SAME scrub window as the box grow above
+       (identical trigger/start/end), so both read off the same scroll
+       distance and finish together rather than handing off from one to
+       the other. */
+    gsap.to(cards, {
+      x: 0, rotation: 0, ease: 'none',
+      stagger: { each: 0.06, from: 'center' },
+      scrollTrigger: {
+        trigger: sceneC,
+        start: 'top bottom',
+        end: 'top top',
+        scrub: true,
+        onUpdate: function(self){ cardsFannedOut = self.progress > 0.5; }
+      }
+    });
+
     /* Lede types out exactly like Stage A's heading used to: split into
        chars, set them faint, then fill to white on scroll. */
     var ledeSplit = SplitText.create(lede, { type: 'words,chars' });
@@ -2714,17 +2696,12 @@ section,.card,.badge,.pager__dot,.impact__block{border-radius:var(--radius-none)
     gsap.set(ledeChars, { color: 'rgba(255,255,255,0.14)' });   // very faint "untyped" state → strong fill contrast
 
     /* Phase 2 — pin + reveal: once Scene C's top reaches the top of the
-       viewport (the box has already grown to full-bleed by then), pin
-       and scrub the cards fanning out + the lede typing in. */
+       viewport (the box has already grown to full-bleed and the cards
+       have already fanned out by then), pin and scrub just the lede
+       typing in. */
     var tlC = gsap.timeline({ defaults: { ease: 'power3.out' } });
-    tlC.to(cards, {
-        x: 0, rotation: 0, ease: 'power2.out', duration: 2.0,
-        stagger: { each: 0.06, from: 'center' },
-        onStart: function(){ cardsFannedOut = true; },
-        onReverseComplete: function(){ cardsFannedOut = false; }
-      }, 0.3)
-      .to(ledeChars, { color: '#FFFFFF', ease: 'none', duration: 0.5,
-                       stagger: { each: 0.035 } }, ">");
+    tlC.to(ledeChars, { color: '#FFFFFF', ease: 'none', duration: 0.5,
+                       stagger: { each: 0.035 } });
     tlC.to({}, { duration: 0.3 }); // brief settle before releasing the pin
 
     ScrollTrigger.create({
